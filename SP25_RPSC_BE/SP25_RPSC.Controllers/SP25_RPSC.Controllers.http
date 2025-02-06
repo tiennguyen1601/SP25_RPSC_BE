@@ -1,0 +1,6 @@
+@SP25_RPSC.Controllers_HostAddress = http://localhost:5262
+
+GET {{SP25_RPSC.Controllers_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
