@@ -26,4 +26,6 @@ public partial class LandlordContract
     public virtual Landlord? Landlord { get; set; }
 
     public virtual ServicePackage? Package { get; set; }
+
+    public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }

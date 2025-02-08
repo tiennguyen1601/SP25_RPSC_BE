@@ -6,18 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Data.Repositories.ExtendContractRepository
+namespace SP25_RPSC.Data.Repositories.OTPRepository
 {
-    public interface IExtendContractRepository : IGenericRepository<ExtendContract>
+    public interface IOTPRepository : IGenericRepository<Otp>
     {
 
     }
 
-    public class ExtendContractRepository : GenericRepository<ExtendContract>, IExtendContractRepository
+    public class OTPRepository : GenericRepository<Otp>, IOTPRepository
     {
         private readonly RpscContext _context;
 
-        public ExtendContractRepository(RpscContext context) : base(context)
+        public OTPRepository(RpscContext context) : base(context)
         {
             _context = context;
         }

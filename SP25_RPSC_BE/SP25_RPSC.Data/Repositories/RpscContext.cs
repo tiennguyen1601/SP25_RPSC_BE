@@ -23,9 +23,9 @@ public partial class RpscContext : DbContext
 
     public virtual DbSet<CustomerContract> CustomerContracts { get; set; }
 
-    public virtual DbSet<CustomerRequest> CustomerRequests { get; set; }
+    public virtual DbSet<CustomerMoveOut> CustomerMoveOuts { get; set; }
 
-    public virtual DbSet<ExtendContract> ExtendContracts { get; set; }
+    public virtual DbSet<CustomerRequest> CustomerRequests { get; set; }
 
     public virtual DbSet<Favorite> Favorites { get; set; }
 
@@ -37,7 +37,7 @@ public partial class RpscContext : DbContext
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
-    public virtual DbSet<Payment> Payments { get; set; }
+    public virtual DbSet<Otp> Otps { get; set; }
 
     public virtual DbSet<Post> Posts { get; set; }
 
@@ -48,6 +48,8 @@ public partial class RpscContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
+
+    public virtual DbSet<RoomAmenty> RoomAmenties { get; set; }
 
     public virtual DbSet<RoomImage> RoomImages { get; set; }
 
@@ -67,6 +69,8 @@ public partial class RpscContext : DbContext
 
     public virtual DbSet<ServicePackage> ServicePackages { get; set; }
 
+    public virtual DbSet<Transaction> Transactions { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -85,7 +89,7 @@ public partial class RpscContext : DbContext
     {
         modelBuilder.Entity<Address>(entity =>
         {
-            entity.HasKey(e => e.AddressId).HasName("PK__Address__091C2AFB802EFC72");
+            entity.HasKey(e => e.AddressId).HasName("PK__Address__091C2AFB28959F8B");
 
             entity.ToTable("Address");
 
@@ -105,7 +109,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D80E97AA8C");
+            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D83A7A3461");
 
             entity.ToTable("Customer");
 
@@ -126,7 +130,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<CustomerContract>(entity =>
         {
-            entity.HasKey(e => e.ContractId).HasName("PK__Customer__C90D3469D4A33116");
+            entity.HasKey(e => e.ContractId).HasName("PK__Customer__C90D34696C1FE416");
 
             entity.Property(e => e.ContractId)
                 .HasMaxLength(36)
@@ -151,9 +155,37 @@ public partial class RpscContext : DbContext
                 .HasConstraintName("FK_CustomerContracts_Tenant");
         });
 
+        modelBuilder.Entity<CustomerMoveOut>(entity =>
+        {
+            entity.HasKey(e => e.Cmoid).HasName("PK__Customer__041DE2C38468C86D");
+
+            entity.ToTable("CustomerMoveOut");
+
+            entity.Property(e => e.Cmoid)
+                .HasMaxLength(36)
+                .HasDefaultValueSql("(newid())")
+                .HasColumnName("CMOId");
+            entity.Property(e => e.DateRequest).HasColumnType("datetime");
+            entity.Property(e => e.RoomStayId).HasMaxLength(36);
+            entity.Property(e => e.UserDepositeId).HasMaxLength(36);
+            entity.Property(e => e.UserMoveId).HasMaxLength(36);
+
+            entity.HasOne(d => d.RoomStay).WithMany(p => p.CustomerMoveOuts)
+                .HasForeignKey(d => d.RoomStayId)
+                .HasConstraintName("FK__CustomerM__RoomS__31B762FC");
+
+            entity.HasOne(d => d.UserDeposite).WithMany(p => p.CustomerMoveOutUserDeposites)
+                .HasForeignKey(d => d.UserDepositeId)
+                .HasConstraintName("FK__CustomerM__UserD__30C33EC3");
+
+            entity.HasOne(d => d.UserMove).WithMany(p => p.CustomerMoveOutUserMoves)
+                .HasForeignKey(d => d.UserMoveId)
+                .HasConstraintName("FK__CustomerM__UserM__2FCF1A8A");
+        });
+
         modelBuilder.Entity<CustomerRequest>(entity =>
         {
-            entity.HasKey(e => e.CustomerRequestId).HasName("PK__Customer__C3E4074027089DCC");
+            entity.HasKey(e => e.CustomerRequestId).HasName("PK__Customer__C3E40740E7EE0004");
 
             entity.ToTable("CustomerRequest");
 
@@ -173,25 +205,9 @@ public partial class RpscContext : DbContext
                 .HasConstraintName("FK_CustomerRequest_RoommateRequests");
         });
 
-        modelBuilder.Entity<ExtendContract>(entity =>
-        {
-            entity.HasKey(e => e.ExtendContractId).HasName("PK__ExtendCo__550D76400F7D004B");
-
-            entity.Property(e => e.ExtendContractId)
-                .HasMaxLength(36)
-                .HasDefaultValueSql("(newid())");
-            entity.Property(e => e.ContractId).HasMaxLength(36);
-            entity.Property(e => e.EndDate).HasColumnType("datetime");
-            entity.Property(e => e.StartDate).HasColumnType("datetime");
-
-            entity.HasOne(d => d.Contract).WithMany(p => p.ExtendContracts)
-                .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK_ExtendContracts_Contract");
-        });
-
         modelBuilder.Entity<Favorite>(entity =>
         {
-            entity.HasKey(e => e.FavoriteId).HasName("PK__Favorite__CE74FAD5C6B9AAF8");
+            entity.HasKey(e => e.FavoriteId).HasName("PK__Favorite__CE74FAD501823D86");
 
             entity.ToTable("Favorite");
 
@@ -216,7 +232,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDD6735D8B15");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDD6830C0C4A");
 
             entity.ToTable("Feedback");
 
@@ -248,7 +264,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Landlord>(entity =>
         {
-            entity.HasKey(e => e.LandlordId).HasName("PK__Landlord__8EC79DA3E8201A2E");
+            entity.HasKey(e => e.LandlordId).HasName("PK__Landlord__8EC79DA3DD13D606");
 
             entity.ToTable("Landlord");
 
@@ -272,7 +288,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<LandlordContract>(entity =>
         {
-            entity.HasKey(e => e.LcontractId).HasName("PK__Landlord__F0935AFA13B38E8A");
+            entity.HasKey(e => e.LcontractId).HasName("PK__Landlord__F0935AFADB225511");
 
             entity.Property(e => e.LcontractId)
                 .HasMaxLength(36)
@@ -300,7 +316,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E12EBF0B96A");
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E1278E7CFB3");
 
             entity.ToTable("Notification");
 
@@ -317,35 +333,26 @@ public partial class RpscContext : DbContext
                 .HasConstraintName("FK_Notification_User");
         });
 
-        modelBuilder.Entity<Payment>(entity =>
+        modelBuilder.Entity<Otp>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payment__9B556A38B91F6F58");
+            entity.HasKey(e => e.Id).HasName("PK__Otp__3214EC07BD4EAD8F");
 
-            entity.ToTable("Payment");
+            entity.ToTable("Otp");
 
-            entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.ContractId).HasMaxLength(36);
-            entity.Property(e => e.ExtendContractId).HasMaxLength(36);
-            entity.Property(e => e.PaymentDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
-            entity.Property(e => e.TransactionId)
-                .HasMaxLength(255)
-                .HasColumnName("TransactionID");
+            entity.Property(e => e.Id)
+                .HasMaxLength(36)
+                .HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.CreatedBy).HasMaxLength(36);
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK_Payment_Contract");
-
-            entity.HasOne(d => d.ExtendContract).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.ExtendContractId)
-                .HasConstraintName("FK_Payment_ExtendContract");
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Otps)
+                .HasForeignKey(d => d.CreatedBy)
+                .HasConstraintName("FK_Otp_CreatedByNavigation");
         });
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.HasKey(e => e.PostId).HasName("PK__Post__AA1260189293FF94");
+            entity.HasKey(e => e.PostId).HasName("PK__Post__AA126018A7FAC62A");
 
             entity.ToTable("Post");
 
@@ -368,7 +375,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<PricePackage>(entity =>
         {
-            entity.HasKey(e => e.PriceId).HasName("PK__PricePac__49575BAFA87170DE");
+            entity.HasKey(e => e.PriceId).HasName("PK__PricePac__49575BAF2BD3844C");
 
             entity.ToTable("PricePackage");
 
@@ -386,7 +393,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Report>(entity =>
         {
-            entity.HasKey(e => e.ReportId).HasName("PK__Report__D5BD48050B72EAA2");
+            entity.HasKey(e => e.ReportId).HasName("PK__Report__D5BD4805B3F484F9");
 
             entity.ToTable("Report");
 
@@ -418,7 +425,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Role__8AFACE1A45ABFE66");
+            entity.HasKey(e => e.RoleId).HasName("PK__Role__8AFACE1A3B1205E7");
 
             entity.ToTable("Role");
 
@@ -430,7 +437,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<Room>(entity =>
         {
-            entity.HasKey(e => e.RoomId).HasName("PK__Rooms__328639396990C820");
+            entity.HasKey(e => e.RoomId).HasName("PK__Rooms__3286393971EE1420");
 
             entity.Property(e => e.RoomId)
                 .HasMaxLength(36)
@@ -447,9 +454,25 @@ public partial class RpscContext : DbContext
                 .HasConstraintName("FK_Rooms_Landlord");
         });
 
+        modelBuilder.Entity<RoomAmenty>(entity =>
+        {
+            entity.HasKey(e => e.RoomAmentyId).HasName("PK__RoomAmen__9611FEA37DF67DF3");
+
+            entity.Property(e => e.RoomAmentyId)
+                .HasMaxLength(36)
+                .HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Compensation).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.RoomTypeId).HasMaxLength(36);
+
+            entity.HasOne(d => d.RoomType).WithMany(p => p.RoomAmenties)
+                .HasForeignKey(d => d.RoomTypeId)
+                .HasConstraintName("FK_RoomAmenities_RoomType");
+        });
+
         modelBuilder.Entity<RoomImage>(entity =>
         {
-            entity.HasKey(e => e.ImageId).HasName("PK__RoomImag__7516F70C31AD2949");
+            entity.HasKey(e => e.ImageId).HasName("PK__RoomImag__7516F70C87C8D900");
 
             entity.ToTable("RoomImage");
 
@@ -466,7 +489,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoomPrice>(entity =>
         {
-            entity.HasKey(e => e.RoomPriceId).HasName("PK__RoomPric__CA197984441A4AEB");
+            entity.HasKey(e => e.RoomPriceId).HasName("PK__RoomPric__CA1979847A531ADB");
 
             entity.ToTable("RoomPrice");
 
@@ -484,7 +507,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoomService>(entity =>
         {
-            entity.HasKey(e => e.RoomServiceId).HasName("PK__RoomServ__A11E84C13CB69311");
+            entity.HasKey(e => e.RoomServiceId).HasName("PK__RoomServ__A11E84C1511E9CC5");
 
             entity.ToTable("RoomService");
 
@@ -506,7 +529,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoomServicePrice>(entity =>
         {
-            entity.HasKey(e => e.RoomServicePriceId).HasName("PK__RoomServ__81684856C9E579F6");
+            entity.HasKey(e => e.RoomServicePriceId).HasName("PK__RoomServ__81684856AC35A98D");
 
             entity.ToTable("RoomServicePrice");
 
@@ -524,7 +547,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoomStay>(entity =>
         {
-            entity.HasKey(e => e.RoomStayId).HasName("PK__RoomStay__B2D2F2DB55A035C8");
+            entity.HasKey(e => e.RoomStayId).HasName("PK__RoomStay__B2D2F2DB3A0B8DA4");
 
             entity.ToTable("RoomStay");
 
@@ -547,7 +570,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoomStayCustomer>(entity =>
         {
-            entity.HasKey(e => e.RoomStayCustomerId).HasName("PK__RoomStay__C4276ED780904FB5");
+            entity.HasKey(e => e.RoomStayCustomerId).HasName("PK__RoomStay__C4276ED77612EFDA");
 
             entity.ToTable("RoomStayCustomer");
 
@@ -574,7 +597,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoomType>(entity =>
         {
-            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC89631B501F3D5");
+            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC89631A14274E4");
 
             entity.ToTable("RoomType");
 
@@ -596,7 +619,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<RoommateRequest>(entity =>
         {
-            entity.HasKey(e => e.RequestId).HasName("PK__Roommate__33A8517A53E67D3D");
+            entity.HasKey(e => e.RequestId).HasName("PK__Roommate__33A8517A306F7E55");
 
             entity.Property(e => e.RequestId)
                 .HasMaxLength(36)
@@ -614,7 +637,7 @@ public partial class RpscContext : DbContext
 
         modelBuilder.Entity<ServicePackage>(entity =>
         {
-            entity.HasKey(e => e.PackageId).HasName("PK__ServiceP__322035CC49185468");
+            entity.HasKey(e => e.PackageId).HasName("PK__ServiceP__322035CC6B505DE3");
 
             entity.ToTable("ServicePackage");
 
@@ -625,13 +648,34 @@ public partial class RpscContext : DbContext
             entity.Property(e => e.Status).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Transaction>(entity =>
+        {
+            entity.HasKey(e => e.TransactionId).HasName("PK__Transact__55433A6B0494392A");
+
+            entity.ToTable("Transaction");
+
+            entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.EndDateContract).HasColumnType("datetime");
+            entity.Property(e => e.LcontractId)
+                .HasMaxLength(36)
+                .HasColumnName("LContractId");
+            entity.Property(e => e.PaymentDate).HasColumnType("datetime");
+            entity.Property(e => e.PaymentId).HasMaxLength(255);
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+            entity.Property(e => e.StartDateContract).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Lcontract).WithMany(p => p.Transactions)
+                .HasForeignKey(d => d.LcontractId)
+                .HasConstraintName("FK_Transaction_LandlordContracts");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__User__1788CC4CD3AC2573");
+            entity.HasKey(e => e.UserId).HasName("PK__User__1788CC4CA49ED30B");
 
             entity.ToTable("User");
 
-            entity.HasIndex(e => e.Email, "UQ__User__A9D105342B0119D8").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__User__A9D10534CA0EC8CB").IsUnique();
 
             entity.Property(e => e.UserId)
                 .HasMaxLength(36)

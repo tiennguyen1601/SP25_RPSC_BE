@@ -1,18 +1,18 @@
-﻿-- Tạo database RPSC và chuyển sang database đó
+﻿﻿-- Tạo database RPSC và chuyển sang database đó
 CREATE DATABASE RPSC;
 GO
 
 USE RPSC;
 GO
 
--- 1. Bảng Role (vai trò)
+--Bảng Role
 CREATE TABLE Role (
     RoleId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoleName NVARCHAR(255) NOT NULL
 );
 GO
 
--- 2. Bảng ServicePackage (gói dịch vụ)
+--Bảng ServicePackage
 CREATE TABLE ServicePackage (
     PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE ServicePackage (
 );
 GO
 
--- 3. Bảng User
+--Bảng User
 CREATE TABLE [User] (
     UserId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Email NVARCHAR(255) NOT NULL UNIQUE,
@@ -41,7 +41,7 @@ CREATE TABLE [User] (
 );
 GO
 
--- 4. Bảng Landlord (chủ nhà)
+--Bảng Landlord
 CREATE TABLE Landlord (
     LandlordId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     CompanyName NVARCHAR(255),
@@ -56,7 +56,7 @@ CREATE TABLE Landlord (
 );
 GO
 
--- 5. Bảng Customer (khách hàng)
+--Bảng Customer
 CREATE TABLE Customer (
     CustomerId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Preferences NVARCHAR(MAX),
@@ -71,7 +71,7 @@ CREATE TABLE Customer (
 );
 GO
 
--- 6. Bảng Rooms (phòng cho thuê)
+--Bảng Rooms
 CREATE TABLE Rooms (
     RoomId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Title NVARCHAR(255),
@@ -85,7 +85,7 @@ CREATE TABLE Rooms (
 );
 GO
 
--- 7. Bảng Post (tin đăng)
+--Bảng Post
 CREATE TABLE Post (
     PostId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Title NVARCHAR(255),
@@ -94,12 +94,12 @@ CREATE TABLE Post (
     Status NVARCHAR(50),
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME,
-    RentalRoomId NVARCHAR(36),  -- FK tham chiếu đến Rooms (phòng cho thuê)
+    RentalRoomId NVARCHAR(36),
     CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
 );
 GO
 
--- 8. Bảng RoommateRequests (yêu cầu tìm bạn ở ghép)
+--Bảng RoommateRequests
 CREATE TABLE RoommateRequests (
     RequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Message NVARCHAR(MAX),
@@ -110,7 +110,7 @@ CREATE TABLE RoommateRequests (
 );
 GO
 
--- 9. Bảng CustomerRequest (yêu cầu của khách hàng)
+--Bảng CustomerRequest
 CREATE TABLE CustomerRequest (
     CustomerRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Status NVARCHAR(50),
@@ -121,7 +121,7 @@ CREATE TABLE CustomerRequest (
 );
 GO
 
--- 10. Bảng CustomerContracts (hợp đồng khách hàng)
+--Bảng CustomerContracts
 CREATE TABLE CustomerContracts (
     ContractId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     StartDate DATETIME,
@@ -137,31 +137,9 @@ CREATE TABLE CustomerContracts (
 );
 GO
 
--- 11. Bảng ExtendContracts (hợp đồng gia hạn)
-CREATE TABLE ExtendContracts (
-    ExtendContractId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    StartDate DATETIME,
-    EndDate DATETIME,
-    ContractId NVARCHAR(36),
-    CONSTRAINT FK_ExtendContracts_Contract FOREIGN KEY (ContractId) REFERENCES CustomerContracts(ContractId)
-);
-GO
 
--- 12. Bảng Payment (thanh toán)
-CREATE TABLE Payment (
-    PaymentId INT PRIMARY KEY IDENTITY(1,1),
-    Amount DECIMAL(18,2),
-    PaymentDate DATETIME DEFAULT GETDATE(),
-    TransactionID NVARCHAR(255),
-    PaymentMethod NVARCHAR(50), -- Ví dụ: Online, Cash
-    ContractId NVARCHAR(36),
-    ExtendContractId NVARCHAR(36),
-    CONSTRAINT FK_Payment_Contract FOREIGN KEY (ContractId) REFERENCES CustomerContracts(ContractId),
-    CONSTRAINT FK_Payment_ExtendContract FOREIGN KEY (ExtendContractId) REFERENCES ExtendContracts(ExtendContractId)
-);
-GO
 
--- 13. Bảng Report (báo cáo)
+--Bảng Report
 CREATE TABLE Report (
     ReportId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Description NVARCHAR(MAX),
@@ -178,7 +156,7 @@ CREATE TABLE Report (
 );
 GO
 
--- 14. Bảng Notification (thông báo)
+--Bảng Notification
 CREATE TABLE Notification (
     NotificationId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Message NVARCHAR(MAX),
@@ -188,7 +166,7 @@ CREATE TABLE Notification (
 );
 GO
 
--- 15. Bảng LandlordContracts (hợp đồng của chủ nhà)
+--Bảng LandlordContracts
 CREATE TABLE LandlordContracts (
     LContractId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     StartDate DATETIME,
@@ -204,7 +182,21 @@ CREATE TABLE LandlordContracts (
 );
 GO
 
--- 16. Bảng Feedback (phản hồi)
+-- Bảng Transaction
+CREATE TABLE [Transaction] (
+    TransactionId INT IDENTITY(1,1) PRIMARY KEY,
+    Amount DECIMAL(18,2),
+    StartDateContract DATETIME,
+    EndDateContract DATETIME,
+    PaymentDate DATETIME,
+    PaymentId NVARCHAR(255),
+    PaymentMethod NVARCHAR(50) CHECK (PaymentMethod IN ('Online', 'Cash')),
+    LContractId NVARCHAR(36),
+    CONSTRAINT FK_Transaction_LandlordContracts FOREIGN KEY (LContractId) REFERENCES LandlordContracts(LContractId)
+);
+
+GO
+--Bảng Feedback
 CREATE TABLE Feedback (
     FeedbackId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Description NVARCHAR(MAX),
@@ -222,7 +214,7 @@ CREATE TABLE Feedback (
 );
 GO
 
--- 17. Bảng Favorite (yêu thích)
+--Bảng Favorite
 CREATE TABLE Favorite (
     FavoriteId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     CreateDate DATETIME DEFAULT GETDATE(),
@@ -234,7 +226,7 @@ CREATE TABLE Favorite (
 );
 GO
 
--- 18. Bảng PricePackage (bảng giá)
+--Bảng PricePackage
 CREATE TABLE PricePackage (
     PriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
@@ -244,7 +236,7 @@ CREATE TABLE PricePackage (
 );
 GO
 
--- 19. Bảng Address (địa chỉ)
+--Bảng Address
 CREATE TABLE Address (
     AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     City NVARCHAR(255),
@@ -258,7 +250,7 @@ CREATE TABLE Address (
 );
 GO
 
--- 20. Bảng RoomType (loại phòng)
+--Bảng RoomType
 CREATE TABLE RoomType (
     RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomTypeName NVARCHAR(255),
@@ -273,7 +265,7 @@ CREATE TABLE RoomType (
 );
 GO
 
--- 21. Bảng RoomImage (hình ảnh phòng)
+--Bảng RoomImage
 CREATE TABLE RoomImage (
     ImageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ImageUrl NVARCHAR(255),
@@ -282,7 +274,7 @@ CREATE TABLE RoomImage (
 );
 GO
 
--- 22. Bảng RoomPrice (giá phòng theo loại)
+--Bảng RoomPrice
 CREATE TABLE RoomPrice (
     RoomPriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
@@ -292,7 +284,7 @@ CREATE TABLE RoomPrice (
 );
 GO
 
--- 23. Bảng RoomService (dịch vụ của phòng)
+--Bảng RoomService
 CREATE TABLE RoomService (
     RoomServiceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomServiceName NVARCHAR(255),
@@ -305,7 +297,7 @@ CREATE TABLE RoomService (
 );
 GO
 
--- 24. Bảng RoomServicePrice (giá dịch vụ phòng)
+--Bảng RoomServicePrice
 CREATE TABLE RoomServicePrice (
     RoomServicePriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
@@ -315,7 +307,7 @@ CREATE TABLE RoomServicePrice (
 );
 GO
 
--- 25. Bảng RoomStay (lưu trú)
+--Bảng RoomStay
 CREATE TABLE RoomStay (
     RoomStayId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomId NVARCHAR(36),
@@ -327,7 +319,7 @@ CREATE TABLE RoomStay (
 );
 GO
 
--- 26. Bảng RoomStayCustomer (khách lưu trú)
+--Bảng RoomStayCustomer
 CREATE TABLE RoomStayCustomer (
     RoomStayCustomerId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomStayId NVARCHAR(36),
@@ -339,3 +331,31 @@ CREATE TABLE RoomStayCustomer (
     CONSTRAINT FK_RoomStayCustomer_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
+
+--Bảng RoomAmenties
+CREATE TABLE RoomAmenties (
+    RoomAmentyId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Name NVARCHAR(255),
+    Description NVARCHAR(MAX),
+    Compensation DECIMAL(18,2),
+    RoomTypeId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmenities_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+);
+--Bảng CustomerMoveOut
+CREATE TABLE CustomerMoveOut (
+    CMOId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    UserMoveId NVARCHAR(36) FOREIGN KEY REFERENCES [User](UserId),
+    UserDepositeId NVARCHAR(36) FOREIGN KEY REFERENCES [User](UserId),
+    RoomStayId NVARCHAR(36) FOREIGN KEY REFERENCES RoomStay(RoomStayId),
+    DateRequest DATETIME,
+    Status INT
+);
+
+CREATE TABLE Otp (
+    Id NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL , 
+    Code NVARCHAR(MAX) NULL, 
+    CreatedAt DATETIME NULL, 
+    IsUsed BIT NULL,               
+    CreatedBy NVARCHAR(36) NULL,
+	CONSTRAINT FK_Otp_CreatedByNavigation FOREIGN KEY (CreatedBy) REFERENCES [User](UserId)
+);
