@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SP25_RPSC.Controllers.Controllers.Middleware;
 using SP25_RPSC.Data.Repositories;
-using SP25_RPSC.Data.Repositories.UserRepository;
 using SP25_RPSC.Services.JWTService;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Services.Utils.MapperProfile;

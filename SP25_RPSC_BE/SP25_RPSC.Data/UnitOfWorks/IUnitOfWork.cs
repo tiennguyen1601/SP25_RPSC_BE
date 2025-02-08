@@ -3,13 +3,11 @@ using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
-using SP25_RPSC.Data.Repositories.ExtendContractRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
 using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
-using SP25_RPSC.Data.Repositories.PaymentRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
@@ -39,13 +37,11 @@ namespace SP25_RPSC.Data.UnitOfWorks
         ICustomerContractRepository CustomerContractRepository { get; }
         ICustomerRepository CustomerRepository { get; }
         ICustomerRequestRepository CustomerRequestRepository { get; }
-        IExtendContractRepository ExtendContractRepository { get; }
         IFavoriteRepository FavoriteRepository { get; }
         IFeedbackRepository FeedbackRepository { get; }
         ILandlordContractRepository LandlordContractRepository { get; }
         ILandlordRepository LandlordRepository { get; }
         INotificationRepository NotificationRepository { get; }
-        IPaymentRepository PaymentRepository { get; }
         IPostRepository PostRepository { get; }
         IPricePackageRepository PricePackageRepository { get; }
         IReportRepository ReportRepository { get; }

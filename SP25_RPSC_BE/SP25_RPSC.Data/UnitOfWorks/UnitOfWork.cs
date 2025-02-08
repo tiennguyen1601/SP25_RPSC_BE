@@ -4,7 +4,6 @@ using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
-using SP25_RPSC.Data.Repositories.ExtendContractRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
 using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
@@ -42,13 +41,11 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private ICustomerContractRepository _customerContractRepository;
         private ICustomerRepository _customerRepository;
         private ICustomerRequestRepository _customerRequestRepository;
-        private IExtendContractRepository _extendContractRepository;
         private IFavoriteRepository _favoriteRepository;
         private IFeedbackRepository _feedbackRepository;
         private ILandlordContractRepository _landlordContractRepository;
         private ILandlordRepository _landlordRepository;
         private INotificationRepository _notificationRepository;
-        private IPaymentRepository _paymentRepository;
         private IPostRepository _postRepository;
         private IPricePackageRepository _pricePackageRepository;
         private IReportRepository _reportRepository;
@@ -64,7 +61,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomTypeRepository _roomTypeRepository;
         private IServicePackageRepository _servicePackageRepository;
         private IUserRepository _usersRepository;
-        
+
 
         public UnitOfWork(RpscContext context)
         {
@@ -78,175 +75,184 @@ namespace SP25_RPSC.Data.UnitOfWorks
             }
         }
 
-        public ICustomerContractRepository CustomerContractRepository {
+        public ICustomerContractRepository CustomerContractRepository
+        {
             get
             {
                 return _customerContractRepository ??= new CustomerContractRepository(_context);
             }
         }
 
-        public ICustomerRepository CustomerRepository {
+        public ICustomerRepository CustomerRepository
+        {
             get
             {
                 return _customerRepository ??= new CustomerRepository(_context);
             }
         }
 
-        public ICustomerRequestRepository CustomerRequestRepository {
+        public ICustomerRequestRepository CustomerRequestRepository
+        {
             get
             {
                 return _customerRequestRepository ??= new CustomerRequestRepository(_context);
             }
         }
 
-        public IExtendContractRepository ExtendContractRepository {
-            get
-            {
-                return _extendContractRepository ??= new ExtendContractRepository(_context);
-            }
-        }
-
-        public IFavoriteRepository FavoriteRepository{
+        public IFavoriteRepository FavoriteRepository
+        {
             get
             {
                 return _favoriteRepository ??= new FavoriteRepository(_context);
             }
         }
 
-        public IFeedbackRepository FeedbackRepository {
+        public IFeedbackRepository FeedbackRepository
+        {
             get
             {
                 return _feedbackRepository ??= new FeedbackRepository(_context);
             }
         }
 
-        public ILandlordContractRepository LandlordContractRepository {
+        public ILandlordContractRepository LandlordContractRepository
+        {
             get
             {
                 return _landlordContractRepository ??= new LandlordContractRepository(_context);
             }
         }
 
-        public ILandlordRepository LandlordRepository {
+        public ILandlordRepository LandlordRepository
+        {
             get
             {
                 return _landlordRepository ??= new LandlordRepository(_context);
             }
         }
 
-        public INotificationRepository NotificationRepository {
+        public INotificationRepository NotificationRepository
+        {
             get
             {
                 return _notificationRepository ??= new NotificationRepository(_context);
             }
         }
 
-        public IPaymentRepository PaymentRepository {
-            get
-            {
-                return _paymentRepository ??= new PaymentRepository(_context);
-            }
-        }
-
-        public IPostRepository PostRepository {
+        public IPostRepository PostRepository
+        {
             get
             {
                 return _postRepository ??= new PostRepository(_context);
             }
         }
 
-        public IPricePackageRepository PricePackageRepository {
+        public IPricePackageRepository PricePackageRepository
+        {
             get
             {
                 return _pricePackageRepository ??= new PricePackageRepository(_context);
             }
         }
 
-        public IReportRepository ReportRepository {
+        public IReportRepository ReportRepository
+        {
             get
             {
                 return _reportRepository ??= new ReportRepository(_context);
             }
         }
 
-        public IRoleRepository RoleRepository {
+        public IRoleRepository RoleRepository
+        {
             get
             {
                 return _roleRepository ??= new RoleRepository(_context);
             }
         }
 
-        public IRoomImageRepository RoomImageRepository {
+        public IRoomImageRepository RoomImageRepository
+        {
             get
             {
                 return _roomImageRepository ??= new RoomImageRepository(_context);
             }
         }
 
-        public IRoommateRequestRepository RoommateRequestRepository {
+        public IRoommateRequestRepository RoommateRequestRepository
+        {
             get
             {
                 return _roommateRequestRepository ??= new RoommateRequestRepository(_context);
             }
         }
 
-        public IRoomPriceRepository RoomPriceRepository {
+        public IRoomPriceRepository RoomPriceRepository
+        {
             get
             {
                 return _roomPriceRepository ??= new RoomPriceRepository(_context);
             }
         }
 
-        public IRoomRepository RoomRepository {
+        public IRoomRepository RoomRepository
+        {
             get
             {
                 return _roomRepository ??= new RoomRepository(_context);
             }
         }
 
-        public IRoomServicePriceRepository RoomServicePriceRepository {
+        public IRoomServicePriceRepository RoomServicePriceRepository
+        {
             get
             {
                 return _roomServicePriceRepository ??= new RoomServicePriceRepository(_context);
             }
         }
 
-        public IRoomServiceRepository RoomServiceRepository {
+        public IRoomServiceRepository RoomServiceRepository
+        {
             get
             {
                 return _roomServiceRepository ??= new RoomServiceRepository(_context);
             }
         }
 
-        public IRoomStayCustomerRepository RoomStayCustomerRepository {
+        public IRoomStayCustomerRepository RoomStayCustomerRepository
+        {
             get
             {
                 return _roomStayCustomerRepository ??= new RoomStayCustomerRepository(_context);
             }
         }
 
-        public IRoomStayRepository RoomStayRepository{
+        public IRoomStayRepository RoomStayRepository
+        {
             get
             {
                 return _roomStayRepository ??= new RoomStayRepository(_context);
             }
         }
 
-        public IRoomTypeRepository RoomTypeRepository{
+        public IRoomTypeRepository RoomTypeRepository
+        {
             get
             {
                 return _roomTypeRepository ??= new RoomTypeRepository(_context);
             }
         }
 
-        public IServicePackageRepository ServicePackageRepository {
+        public IServicePackageRepository ServicePackageRepository
+        {
             get
             {
                 return _servicePackageRepository ??= new ServicePackageRepository(_context);
             }
         }
 
-        public IUserRepository UserRepository {
+        public IUserRepository UserRepository
+        {
             get
             {
                 return _usersRepository ??= new UserRepository(_context);
