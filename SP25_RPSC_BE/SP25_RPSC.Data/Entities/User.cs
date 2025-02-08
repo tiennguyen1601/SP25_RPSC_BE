@@ -31,6 +31,10 @@ public partial class User
 
     public string? RoleId { get; set; }
 
+    public virtual ICollection<CustomerMoveOut> CustomerMoveOutUserDeposites { get; set; } = new List<CustomerMoveOut>();
+
+    public virtual ICollection<CustomerMoveOut> CustomerMoveOutUserMoves { get; set; } = new List<CustomerMoveOut>();
+
     public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 
     public virtual ICollection<Feedback> FeedbackReviewees { get; set; } = new List<Feedback>();
@@ -40,6 +44,8 @@ public partial class User
     public virtual ICollection<Landlord> Landlords { get; set; } = new List<Landlord>();
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    public virtual ICollection<Otp> Otps { get; set; } = new List<Otp>();
 
     public virtual ICollection<Report> ReportReportedUsers { get; set; } = new List<Report>();
 

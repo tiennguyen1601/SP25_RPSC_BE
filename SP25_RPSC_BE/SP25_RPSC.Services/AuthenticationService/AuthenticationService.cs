@@ -1,7 +1,6 @@
 ﻿using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
-using SP25_RPSC.Data.Repositories.UserRepository;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.JWTService;
 using SP25_RPSC.Services.Security;

@@ -23,10 +23,6 @@ public partial class CustomerContract
 
     public string? RentalRoomId { get; set; }
 
-    public virtual ICollection<ExtendContract> ExtendContracts { get; set; } = new List<ExtendContract>();
-
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
     public virtual Room? RentalRoom { get; set; }
 
     public virtual Customer? Tenant { get; set; }

@@ -15,6 +15,8 @@ public partial class RoomStay
 
     public DateTime? UpdatedAt { get; set; }
 
+    public virtual ICollection<CustomerMoveOut> CustomerMoveOuts { get; set; } = new List<CustomerMoveOut>();
+
     public virtual Landlord? Landlord { get; set; }
 
     public virtual Room? Room { get; set; }

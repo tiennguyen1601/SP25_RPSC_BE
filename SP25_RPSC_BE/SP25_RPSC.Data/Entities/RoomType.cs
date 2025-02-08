@@ -25,6 +25,8 @@ public partial class RoomType
 
     public virtual Room? Room { get; set; }
 
+    public virtual ICollection<RoomAmenty> RoomAmenties { get; set; } = new List<RoomAmenty>();
+
     public virtual ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
 
     public virtual ICollection<RoomPrice> RoomPrices { get; set; } = new List<RoomPrice>();
