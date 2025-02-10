@@ -8,6 +8,7 @@ using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
+using SP25_RPSC.Data.Repositories.OTPRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
@@ -57,6 +58,8 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IRoomTypeRepository RoomTypeRepository { get; }
         IServicePackageRepository ServicePackageRepository { get; }
         IUserRepository UserRepository { get; }
+
+        IOTPRepository OTPRepository { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync();
 

@@ -11,5 +11,7 @@ namespace SP25_RPSC.Services.AuthenticationService
     public interface IAuthenticationService
     {
         Task<UserLoginResModel> Login(UserLoginReqModel userLoginReqModel);
+
+        Task Register(UserRegisterReqModel userRegisterReqModel);
     }
 }

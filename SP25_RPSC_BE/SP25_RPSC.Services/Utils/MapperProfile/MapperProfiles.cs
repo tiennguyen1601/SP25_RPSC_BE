@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.UserModels.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
     {
         public MapperProfiles() 
         {
+            CreateMap<User, UserRegisterReqModel>().ReverseMap();
         }
     }
 }

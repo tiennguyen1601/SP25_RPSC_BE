@@ -10,7 +10,7 @@ namespace SP25_RPSC.Data.Repositories.RoleRepository
 {
     public interface IRoleRepository : IGenericRepository<Role>
     {
-
+       Role GetRoleByRoleName(string roleName);
     }
 
     public class RoleRepository : GenericRepository<Role>, IRoleRepository
@@ -20,6 +20,11 @@ namespace SP25_RPSC.Data.Repositories.RoleRepository
         public RoleRepository(RpscContext context) : base(context)
         {
             _context = context;
+        }
+
+        public Role GetRoleByRoleName(string roleName)
+        {
+           return (Role)_context.Roles.Where(x => x.RoleName == roleName);
         }
     }
 }

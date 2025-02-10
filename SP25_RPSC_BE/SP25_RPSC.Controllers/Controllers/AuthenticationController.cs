@@ -34,5 +34,21 @@ namespace SP25_RPSC.Controllers.Controllers
 
             return StatusCode(response.Code, response);
         }
+
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] UserRegisterReqModel userRegisterReqModel)
+        {
+             await _authenticationService.Register(userRegisterReqModel);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Register successfully",
+            };
+
+            return StatusCode(response.Code, response);
+        }
     }
 }
