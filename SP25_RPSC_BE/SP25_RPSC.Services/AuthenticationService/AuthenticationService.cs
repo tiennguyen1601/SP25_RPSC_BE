@@ -4,11 +4,13 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.EmailService;
 using SP25_RPSC.Services.JWTService;
 using SP25_RPSC.Services.OTPService;
 using SP25_RPSC.Services.Security;
 using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
+using SP25_RPSC.Services.Utils.Email;
 using SP25_RPSC.Services.Utils.OTPs;
 using System;
 using System.Collections.Generic;
@@ -26,12 +28,14 @@ namespace SP25_RPSC.Services.AuthenticationService
         private readonly IJWTService _jWTService;
         private readonly IOTPService _oTPService;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
         public AuthenticationService(IUnitOfWork unitOfWork,
             IDecodeTokenHandler decodeToken,
             IJWTService jWTService,
             IOTPService oTPService,
-            IMapper mapper
+            IMapper mapper,
+            IEmailService emailService
             )
         {
             _unitOfWork = unitOfWork;
@@ -39,6 +43,7 @@ namespace SP25_RPSC.Services.AuthenticationService
             _jWTService = jWTService;
             _oTPService = oTPService;
             _mapper = mapper;
+            _emailService = emailService;
         }
         public async Task<UserLoginResModel> Login(UserLoginReqModel userLoginReqModel)
         {
@@ -100,6 +105,14 @@ namespace SP25_RPSC.Services.AuthenticationService
             newUser.UpdateAt = DateTime.Now;
             //newUser.Avatar = model.Avatar
 
+            var htmlBody = EmailTemplate.VerifyEmailOTP(model.Email, newOtp);
+            bool sendEmailSuccess = await _emailService.SendEmail(model.Email, "Verify Email", htmlBody);
+
+            if (!sendEmailSuccess)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "An error occurred while sending email!");
+            }
+
             Otp newOTPCode = new Otp()
             {
                 Id = Guid.NewGuid().ToString(),
@@ -108,9 +121,8 @@ namespace SP25_RPSC.Services.AuthenticationService
                 CreatedAt = DateTime.Now,
                 IsUsed = false,
             };
-
-            await _unitOfWork.UserRepository.Add(newUser);
-            await _unitOfWork.OTPRepository.Add(newOTPCode);
+            //await _unitOfWork.UserRepository.Add(newUser);
+            //await _unitOfWork.OTPRepository.Add(newOTPCode);
         }
     }
 }
