@@ -11,6 +11,8 @@ using SP25_RPSC.Services.Utils.MapperProfile;
 using SP25_RPSC.Services.AuthenticationService;
 using System.Text;
 using SP25_RPSC.Controllers.Extensions;
+using SP25_RPSC.Services.OTPService;
+using SP25_RPSC.Services.EmailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,8 @@ builder.Services.AddSingleton<GlobalExceptionMiddleware>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IDecodeTokenHandler, DecodeTokenHandler>();
 builder.Services.AddScoped<IJWTService, JWTService>();
+builder.Services.AddScoped<IOTPService, OTPService>();
+builder.Services.AddScoped < IEmailService,  EmailService>();
 //-----------------------------------------DB-----------------------------------------
 
 builder.Services.AddDbContext<RpscContext>(options =>

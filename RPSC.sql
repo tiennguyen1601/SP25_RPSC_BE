@@ -359,3 +359,8 @@ CREATE TABLE Otp (
     CreatedBy NVARCHAR(36) NULL,
 	CONSTRAINT FK_Otp_CreatedByNavigation FOREIGN KEY (CreatedBy) REFERENCES [User](UserId)
 );
+INSERT INTO Role (RoleId, RoleName)
+VALUES 
+(NEWID(), 'Customer'),
+(NEWID(), 'Landlord'),
+(NEWID(), 'Admin');

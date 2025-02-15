@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# AppSettings files (sensitive configuration)
+appsettings.json
+appsettings.*.json

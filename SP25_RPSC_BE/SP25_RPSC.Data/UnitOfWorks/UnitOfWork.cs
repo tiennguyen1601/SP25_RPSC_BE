@@ -9,6 +9,7 @@ using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
+using SP25_RPSC.Data.Repositories.OTPRepository;
 using SP25_RPSC.Data.Repositories.PaymentRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
@@ -61,6 +62,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomTypeRepository _roomTypeRepository;
         private IServicePackageRepository _servicePackageRepository;
         private IUserRepository _usersRepository;
+        private IOTPRepository _otpRepository;
 
 
         public UnitOfWork(RpscContext context)
@@ -256,6 +258,14 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _usersRepository ??= new UserRepository(_context);
+            }
+        }
+
+        public IOTPRepository OTPRepository
+        {
+            get
+            {
+                return _otpRepository ??= new OTPRepository(_context);
             }
         }
 
