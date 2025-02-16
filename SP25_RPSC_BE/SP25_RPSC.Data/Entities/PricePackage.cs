@@ -11,7 +11,7 @@ public partial class PricePackage
 
     public decimal? Price { get; set; }
 
-    public string? PackageId { get; set; }
+    public string? ServiceDetailId { get; set; }
 
-    public virtual ServicePackage? Package { get; set; }
+    public virtual ServiceDetail? ServiceDetail { get; set; }
 }

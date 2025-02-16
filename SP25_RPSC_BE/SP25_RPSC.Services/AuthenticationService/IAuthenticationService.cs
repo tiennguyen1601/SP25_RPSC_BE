@@ -13,5 +13,7 @@ namespace SP25_RPSC.Services.AuthenticationService
         Task<UserLoginResModel> Login(UserLoginReqModel userLoginReqModel);
 
         Task Register(UserRegisterReqModel userRegisterReqModel);
+
+        Task Logout(string refreshToken);
     }
 }

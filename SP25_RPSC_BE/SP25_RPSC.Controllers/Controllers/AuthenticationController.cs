@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SP25_RPSC.Data.Models.RefreshTokenModel.Request;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Services.AuthenticationService;
@@ -30,6 +31,22 @@ namespace SP25_RPSC.Controllers.Controllers
                 Code = (int)HttpStatusCode.OK,
                 Message = "Login successfully",
                 Data = result,
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> Logout(RefreshTokenReqModel refreshTokenReqModel)
+        {
+            await _authenticationService.Logout(refreshTokenReqModel.RefreshToken);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Logout successfully",
             };
 
             return StatusCode(response.Code, response);

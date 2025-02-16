@@ -17,5 +17,5 @@ public partial class ServicePackage
 
     public virtual ICollection<LandlordContract> LandlordContracts { get; set; } = new List<LandlordContract>();
 
-    public virtual ICollection<PricePackage> PricePackages { get; set; } = new List<PricePackage>();
+    public virtual ICollection<ServiceDetail> ServiceDetails { get; set; } = new List<ServiceDetail>();
 }

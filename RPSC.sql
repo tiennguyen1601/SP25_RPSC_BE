@@ -16,7 +16,7 @@ GO
 CREATE TABLE ServicePackage (
     PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255) NOT NULL,
-    Duration INT,  -- ví dụ: số ngày hoặc số tháng
+    Duration INT,
     Description NVARCHAR(MAX),
     Status NVARCHAR(50)
 );
@@ -226,13 +226,25 @@ CREATE TABLE Favorite (
 );
 GO
 
+--Bảng ServiceDetail
+CREATE TABLE ServiceDetail (
+    ServiceDetailId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    [Type] NVARCHAR(50),
+    LimitPost INT,
+    Price DECIMAL(18,2),
+	Status NVARCHAR(36),
+	PackageId  NVARCHAR(36),
+    CONSTRAINT FK_ServicePackage FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
+);
+GO
+
 --Bảng PricePackage
 CREATE TABLE PricePackage (
     PriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
     Price DECIMAL(18,2),
-    PackageId NVARCHAR(36),
-    CONSTRAINT FK_PricePackage_Package FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
+    ServiceDetailId NVARCHAR(36),
+    CONSTRAINT FK_ServiceDetail FOREIGN KEY (ServiceDetailId) REFERENCES ServiceDetail(ServiceDetailId)
 );
 GO
 
@@ -350,7 +362,7 @@ CREATE TABLE CustomerMoveOut (
     DateRequest DATETIME,
     Status INT
 );
-
+--Bảng OTP
 CREATE TABLE Otp (
     Id NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL , 
     Code NVARCHAR(MAX) NULL, 
@@ -358,6 +370,23 @@ CREATE TABLE Otp (
     IsUsed BIT NULL,               
     CreatedBy NVARCHAR(36) NULL,
 	CONSTRAINT FK_Otp_CreatedByNavigation FOREIGN KEY (CreatedBy) REFERENCES [User](UserId)
+);
+--Bảng RefreshToken
+CREATE TABLE RefreshToken (
+   RefreshTokenID NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL ,
+   ExpiredAt Datetime NOT NULL,
+   Token VARCHAR (255) NOT NULL,
+   UserId NVARCHAR(36),
+   CONSTRAINT FK_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
+);
+--Bảng ExtendCContracts
+CREATE TABLE ExtendCContracts (
+   ExtendCContractID NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL ,
+   StartDateContract Datetime NOT NULL,
+   EndDateContract Datetime  NOT NULL,
+   ExtendCount INT,
+   ContractID  NVARCHAR(36),
+   CONSTRAINT FK_CustomerContracts FOREIGN KEY (ContractID) REFERENCES [CustomerContracts](ContractID)
 );
 INSERT INTO Role (RoleId, RoleName)
 VALUES 

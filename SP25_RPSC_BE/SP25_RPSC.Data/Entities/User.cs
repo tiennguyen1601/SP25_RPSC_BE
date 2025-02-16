@@ -47,6 +47,8 @@ public partial class User
 
     public virtual ICollection<Otp> Otps { get; set; } = new List<Otp>();
 
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
     public virtual ICollection<Report> ReportReportedUsers { get; set; } = new List<Report>();
 
     public virtual ICollection<Report> ReportReporters { get; set; } = new List<Report>();

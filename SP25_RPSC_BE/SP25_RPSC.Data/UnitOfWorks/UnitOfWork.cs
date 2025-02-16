@@ -13,6 +13,7 @@ using SP25_RPSC.Data.Repositories.OTPRepository;
 using SP25_RPSC.Data.Repositories.PaymentRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
+using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
@@ -63,7 +64,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IServicePackageRepository _servicePackageRepository;
         private IUserRepository _usersRepository;
         private IOTPRepository _otpRepository;
-
+        private IRefreshTokenRepository _refreshTokenRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -266,6 +267,14 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _otpRepository ??= new OTPRepository(_context);
+            }
+        }
+
+        public IRefreshTokenRepository RefreshTokenRepository
+        {
+            get
+            {
+                return _refreshTokenRepository ??= new RefreshTokenRepository(_context);
             }
         }
 

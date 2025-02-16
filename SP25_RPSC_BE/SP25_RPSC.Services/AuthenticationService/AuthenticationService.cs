@@ -57,6 +57,17 @@ namespace SP25_RPSC.Services.AuthenticationService
                 {
                     var token = _jWTService.GenerateJWT(currentUser);
 
+                    var refreshToken = _jWTService.GenerateRefreshToken();
+
+                    var newRefreshToken = new RefreshToken
+                    {
+                        Token = refreshToken,
+                        ExpiredAt = DateTime.Now.AddDays(1),
+                        UserId = currentUser.UserId
+                    };
+
+                    await _unitOfWork.RefreshTokenRepository.Add(newRefreshToken);
+
                     var userLoginRes = new UserLoginResModel
                     {
                         UserId = currentUser.UserId,
@@ -77,6 +88,18 @@ namespace SP25_RPSC.Services.AuthenticationService
             {
                 throw new ApiException(HttpStatusCode.NotFound, "User does not exist");
             }
+        }
+
+        public async Task Logout(string refreshToken)
+        {
+            var currRefreshToken = await _unitOfWork.RefreshTokenRepository.GetByRefreshToken(refreshToken);
+
+            if (currRefreshToken == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Refresh token does not exist");
+            }
+
+            await _unitOfWork.RefreshTokenRepository.Remove(currRefreshToken);
         }
 
         public async Task Register(UserRegisterReqModel model)

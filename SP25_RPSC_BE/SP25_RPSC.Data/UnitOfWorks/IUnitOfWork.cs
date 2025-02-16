@@ -11,6 +11,7 @@ using SP25_RPSC.Data.Repositories.NotificationRepository;
 using SP25_RPSC.Data.Repositories.OTPRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
+using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
@@ -58,6 +59,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IRoomTypeRepository RoomTypeRepository { get; }
         IServicePackageRepository ServicePackageRepository { get; }
         IUserRepository UserRepository { get; }
+        IRefreshTokenRepository RefreshTokenRepository { get; }
 
         IOTPRepository OTPRepository { get; }
 
