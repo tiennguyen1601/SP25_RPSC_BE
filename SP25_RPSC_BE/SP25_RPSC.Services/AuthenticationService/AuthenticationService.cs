@@ -144,8 +144,8 @@ namespace SP25_RPSC.Services.AuthenticationService
                 CreatedAt = DateTime.Now,
                 IsUsed = false,
             };
-            //await _unitOfWork.UserRepository.Add(newUser);
-            //await _unitOfWork.OTPRepository.Add(newOTPCode);
+            await _unitOfWork.UserRepository.Add(newUser);
+            await _unitOfWork.OTPRepository.Add(newOTPCode);
         }
     }
 }
