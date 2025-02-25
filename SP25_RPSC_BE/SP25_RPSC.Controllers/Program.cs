@@ -13,6 +13,7 @@ using System.Text;
 using SP25_RPSC.Controllers.Extensions;
 using SP25_RPSC.Services.OTPService;
 using SP25_RPSC.Services.EmailService;
+using SP25_RPSC.Services.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,13 @@ builder.Services.AddScoped<IDecodeTokenHandler, DecodeTokenHandler>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IOTPService, OTPService>();
 builder.Services.AddScoped < IEmailService,  EmailService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.WriteIndented = true;
+});
 //-----------------------------------------DB-----------------------------------------
 
 builder.Services.AddDbContext<RpscContext>(options =>

@@ -1,4 +1,5 @@
-﻿using SP25_RPSC.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace SP25_RPSC.Data.Repositories.OTPRepository
 {
     public interface IOTPRepository : IGenericRepository<Otp>
     {
-
+        Task<Otp?> GetLatestOTP(string userId);
     }
 
     public class OTPRepository : GenericRepository<Otp>, IOTPRepository
@@ -20,6 +21,12 @@ namespace SP25_RPSC.Data.Repositories.OTPRepository
         public OTPRepository(RpscContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<Otp?> GetLatestOTP(string userId)
+        {
+            var latestOTPList = await _context.Otps.Where(o => o.CreatedBy == userId).FirstOrDefaultAsync();
+            return latestOTPList;
         }
     }
 }
