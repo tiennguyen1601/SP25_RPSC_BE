@@ -7,13 +7,8 @@ using SP25_RPSC.Services.Utils.CustomException;
 using System.Net;
 
 
-namespace SP25_RPSC.Services.OTPService
+namespace SP25_RPSC.Services.Service.OTPService
 {
-    public interface IOTPService
-    {
-        //bool SendOtp(string phone, string otp);
-        Task VerifyOTPToActivateAccount(OTPVerifyRequestModel model);
-    }
     public class OTPService : IOTPService
     {
         private readonly IConfiguration _config;
@@ -34,7 +29,7 @@ namespace SP25_RPSC.Services.OTPService
 
             if (currentUser == null)
             {
-                throw new ApiException(HttpStatusCode.BadRequest,"Email bạn nhập không kết nối với tài khoản nào.");
+                throw new ApiException(HttpStatusCode.BadRequest, "Email bạn nhập không kết nối với tài khoản nào.");
             }
 
             var latestOTP = await _unitOfWork.OTPRepository.GetLatestOTP(currentUser.UserId);
@@ -52,7 +47,7 @@ namespace SP25_RPSC.Services.OTPService
                 }
                 else
                 {
-                    throw new ApiException(HttpStatusCode.BadRequest,"Mã OTP không hợp lệ.");
+                    throw new ApiException(HttpStatusCode.BadRequest, "Mã OTP không hợp lệ.");
                 }
 
                 await _unitOfWork.OTPRepository.Update(latestOTP);

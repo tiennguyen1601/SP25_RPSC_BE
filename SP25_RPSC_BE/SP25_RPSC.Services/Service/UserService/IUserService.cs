@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.UserService
+namespace SP25_RPSC.Services.Service.UserService
 {
     public interface IUserService
     {

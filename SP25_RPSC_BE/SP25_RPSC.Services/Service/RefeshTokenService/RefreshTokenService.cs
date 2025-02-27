@@ -1,7 +1,7 @@
 ﻿using SP25_RPSC.Data.Models.RefreshTokenModel.Request;
 using SP25_RPSC.Data.Models.RefreshTokenModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
-using SP25_RPSC.Services.JWTService;
+using SP25_RPSC.Services.Service.JWTService;
 using SP25_RPSC.Services.Utils.CustomException;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.RefeshTokenService
+namespace SP25_RPSC.Services.Service.RefeshTokenService
 {
     public class RefreshTokenService : IRefreshTokenService
     {
