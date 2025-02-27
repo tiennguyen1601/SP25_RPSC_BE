@@ -30,5 +30,8 @@ namespace SP25_RPSC.Services.UserService
            var res = await _unitOfWork.LandlordRepository.GetAllLanlord();
             return res;
         }
+
+
+
     }
 }

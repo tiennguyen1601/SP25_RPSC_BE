@@ -104,10 +104,16 @@ namespace SP25_RPSC.Services.AuthenticationService
 
         public async Task Register(UserRegisterReqModel model)
         {
-            var exist = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
-            if (exist != null)
+            var existMail = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
+            if (existMail != null)
             {
                 throw new ApiException(HttpStatusCode.BadRequest, "The email has already registered by other account!");
+            }
+
+            var existPhone = await _unitOfWork.UserRepository.GetUserByPhoneNumber(model.PhoneNumber);
+            if (existPhone != null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "The Phone has already registered by other account!");
             }
 
             var newOtp = OTPGeneration.CreateNewOTPCode();
