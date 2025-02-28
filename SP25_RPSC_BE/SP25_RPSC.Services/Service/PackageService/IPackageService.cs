@@ -1,4 +1,5 @@
-﻿using SP25_RPSC.Data.Models.PackageModel;
+﻿using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.PackageModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,9 @@ namespace SP25_RPSC.Services.Service.PackageService
     public interface IPackageService
     {
         Task CreatePackage(PackageCreateRequestModel model);
+
+        Task<List<ServicePackage>> GetAllServicePackage();
+
+        Task<ServicePackage> GetServicePackageById(string id);
     }
 }

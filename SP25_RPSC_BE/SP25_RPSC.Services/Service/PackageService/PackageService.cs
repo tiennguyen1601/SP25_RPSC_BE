@@ -45,7 +45,6 @@ namespace SP25_RPSC.Services.Service.PackageService
                 throw new ApiException(HttpStatusCode.BadRequest, "PricePackageEmty");
             }     
 
-            // Tạo mới package
             var package = new ServicePackage
             {
                 Name = model.Name,
@@ -54,13 +53,33 @@ namespace SP25_RPSC.Services.Service.PackageService
                 ServiceDetails = packageDetails,
                 Status = StatusEnums.Active.ToString(),
             };
+
             //foreach (var serviceDetail in package.ServiceDetails)
             //{
             //    serviceDetail.PricePackages = (ICollection<PricePackage>)pricePackages;
             //}
 
-            // Lưu package vào database
             await _unitOfWork.ServicePackageRepository.Add(package);
+        }
+
+        public async Task<List<ServicePackage>> GetAllServicePackage()
+        {
+            var servicePackages = await _unitOfWork.ServicePackageRepository.GetAll();
+            if (servicePackages == null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "ServicePackageEmty");
+            }
+            return servicePackages;
+        }
+
+        public async Task<ServicePackage> GetServicePackageById(string id)
+        {
+            var servicePackage = await _unitOfWork.ServicePackageRepository.GetServicePackageById(id);
+            if(servicePackage == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "ServicePackageNotFound");
+            }
+            return servicePackage;
         }
     }
 }
