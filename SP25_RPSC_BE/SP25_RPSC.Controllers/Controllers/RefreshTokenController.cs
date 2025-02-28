@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.RefreshTokenModel.Request;
 using SP25_RPSC.Data.Models.ResultModel;
-using SP25_RPSC.Services.RefeshTokenService;
+using SP25_RPSC.Services.Service.RefeshTokenService;
 using System.Net;
 
 namespace SP25_RPSC.Controllers.Controllers

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.UserService
+namespace SP25_RPSC.Services.Service.UserService
 {
     public class UserService : IUserService
     {
@@ -22,12 +22,12 @@ namespace SP25_RPSC.Services.UserService
         public async Task<IEnumerable<ListCustomerRes>> GetAllCustomer()
         {
             var res = await _unitOfWork.CustomerRepository.GetAllCustomer();
-                return res;
+            return res;
         }
 
         public async Task<IEnumerable<ListLandlordRes>> GetAllLandLord()
         {
-           var res = await _unitOfWork.LandlordRepository.GetAllLanlord();
+            var res = await _unitOfWork.LandlordRepository.GetAllLanlord();
             return res;
         }
 

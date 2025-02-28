@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.OTPModel;
-using SP25_RPSC.Services.OTPService;
+using SP25_RPSC.Services.Service.OTPService;
 
 namespace EXE201_Workshopista.Controllers
 {

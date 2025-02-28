@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,19 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
         public MapperProfiles() 
         {
             CreateMap<User, UserRegisterReqModel>().ReverseMap();
+            CreateMap<PackageCreateDetailReqestModel, ServiceDetail>()
+      .ForMember(dest => dest.PricePackages, opt => opt.MapFrom(src =>
+          new List<PricePackage>
+          {
+            new PricePackage
+            {
+                PriceId =  src.PricePackageModel.PriceId.ToString() ,
+                Price = src.PricePackageModel.Price,
+                ApplicableDate = src.PricePackageModel.ApplicableDate
+            }
+          }
+      ))
+      .ReverseMap();
         }
     }
 }

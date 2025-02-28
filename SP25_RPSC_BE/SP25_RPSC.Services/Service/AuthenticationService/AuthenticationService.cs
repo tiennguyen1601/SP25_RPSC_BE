@@ -4,10 +4,10 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
-using SP25_RPSC.Services.EmailService;
-using SP25_RPSC.Services.JWTService;
-using SP25_RPSC.Services.OTPService;
 using SP25_RPSC.Services.Security;
+using SP25_RPSC.Services.Service.EmailService;
+using SP25_RPSC.Services.Service.JWTService;
+using SP25_RPSC.Services.Service.OTPService;
 using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Services.Utils.Email;
@@ -19,7 +19,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.AuthenticationService
+namespace SP25_RPSC.Services.Service.AuthenticationService
 {
     public class AuthenticationService : IAuthenticationService
     {

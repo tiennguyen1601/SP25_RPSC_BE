@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.RefeshTokenService
+namespace SP25_RPSC.Services.Service.RefeshTokenService
 {
     public interface IRefreshTokenService
     {
