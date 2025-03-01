@@ -1,5 +1,5 @@
 ﻿using SP25_RPSC.Data.Models.DecodeTokenModel;
-using SP25_RPSC.Services.JWTService;
+using SP25_RPSC.Services.Service.JWTService;
 using System;
 using System.Collections.Generic;
 using System.Linq;

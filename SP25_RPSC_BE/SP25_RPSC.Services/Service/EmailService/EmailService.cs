@@ -1,12 +1,8 @@
 ﻿using MailKit.Security;
 using MimeKit;
 
-namespace SP25_RPSC.Services.EmailService
+namespace SP25_RPSC.Services.Service.EmailService
 {
-    public interface IEmailService
-    {
-        Task<bool> SendEmail(string Email, string Subject, string Html);
-    }
     public class EmailService : IEmailService
     {
         public async Task<bool> SendEmail(string Email, string Subject, string Html)
@@ -14,8 +10,8 @@ namespace SP25_RPSC.Services.EmailService
             try
             {
                 var toEmail = Email;
-                string from = "nhathao230803@gmail.com";
-                string pass = "dhzd wtwo ouwy lexn";
+                string from = "easyroomie.rpsc@gmail.com";
+                string pass = "qezl jqym egfs zdal";
                 MimeMessage message = new();
                 message.From.Add(MailboxAddress.Parse(from));
                 message.Subject = "[EasyRoomie] " + Subject;

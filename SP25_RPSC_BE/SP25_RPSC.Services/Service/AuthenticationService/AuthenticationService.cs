@@ -4,10 +4,10 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
-using SP25_RPSC.Services.EmailService;
-using SP25_RPSC.Services.JWTService;
-using SP25_RPSC.Services.OTPService;
 using SP25_RPSC.Services.Security;
+using SP25_RPSC.Services.Service.EmailService;
+using SP25_RPSC.Services.Service.JWTService;
+using SP25_RPSC.Services.Service.OTPService;
 using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Services.Utils.Email;
@@ -19,7 +19,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.AuthenticationService
+namespace SP25_RPSC.Services.Service.AuthenticationService
 {
     public class AuthenticationService : IAuthenticationService
     {
@@ -104,10 +104,16 @@ namespace SP25_RPSC.Services.AuthenticationService
 
         public async Task Register(UserRegisterReqModel model)
         {
-            var exist = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
-            if (exist != null)
+            var existMail = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
+            if (existMail != null)
             {
                 throw new ApiException(HttpStatusCode.BadRequest, "The email has already registered by other account!");
+            }
+
+            var existPhone = await _unitOfWork.UserRepository.GetUserByPhoneNumber(model.PhoneNumber);
+            if (existPhone != null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "The Phone has already registered by other account!");
             }
 
             var newOtp = OTPGeneration.CreateNewOTPCode();
@@ -144,8 +150,8 @@ namespace SP25_RPSC.Services.AuthenticationService
                 CreatedAt = DateTime.Now,
                 IsUsed = false,
             };
-            //await _unitOfWork.UserRepository.Add(newUser);
-            //await _unitOfWork.OTPRepository.Add(newOTPCode);
+            await _unitOfWork.UserRepository.Add(newUser);
+            await _unitOfWork.OTPRepository.Add(newOTPCode);
         }
     }
 }

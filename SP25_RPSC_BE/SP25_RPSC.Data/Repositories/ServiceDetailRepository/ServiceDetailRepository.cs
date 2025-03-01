@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Repositories.ServiceDetailRepository
 {
-    public interface IServiceDetailRepository : IGenericRepository<RoomType>
+    public interface IServiceDetailRepository : IGenericRepository<ServiceDetail>
     {
 
     }
 
-    public class ServiceDetailRepository : GenericRepository<RoomType>, IServiceDetailRepository
+    public class ServiceDetailRepository : GenericRepository<ServiceDetail>, IServiceDetailRepository
     {
         private readonly RpscContext _context;
 

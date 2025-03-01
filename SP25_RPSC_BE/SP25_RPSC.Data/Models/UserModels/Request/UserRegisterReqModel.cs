@@ -19,10 +19,16 @@ namespace SP25_RPSC.Data.Models.UserModels.Request
         [PasswordComplexity]
         public string? Password { get; set; }
 
+        [Required(ErrorMessage = "Please input your confirm password!")]
+        [ConfirmPassword]
+        public string? ConfirmPassword { get; set; }
+
         [Required(ErrorMessage = "Please input your fullname!")]
+        [FullNameAttribute]
         public string? FullName { get; set; }
 
         [Required(ErrorMessage = "Please input your phone number!")]
+        [PhoneNumber]
         public string? PhoneNumber { get; set; }
 
         [Required(ErrorMessage = "Please select your gender!")]
