@@ -63,25 +63,37 @@ CREATE TABLE Customer (
     LifeStyle NVARCHAR(255),
     BudgetRange NVARCHAR(50),
     PreferredLocation NVARCHAR(255),
-    Gender NVARCHAR(50),
     Requirement NVARCHAR(MAX),
     Status NVARCHAR(50),
     UserId NVARCHAR(36),
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 GO
-
+CREATE TABLE RoomType (
+    RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    RoomTypeName NVARCHAR(255),
+	Deposite DECIMAL(18,2),
+    Square DECIMAL(10,2),
+    Description NVARCHAR(MAX),
+    MaxOccupancy INT,
+	Status NVARCHAR(36),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+);
+GO
 --Bảng Rooms
 CREATE TABLE Rooms (
     RoomId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	RoomNumber NVARCHAR(50),
     Title NVARCHAR(255),
     Description NVARCHAR(MAX),
-    Deposite DECIMAL(18,2),
     Status NVARCHAR(50),
     Location NVARCHAR(255),
     UpdatedAt DATETIME,
     LandlordId NVARCHAR(36),
-    CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
+	RoomTypeId NVARCHAR(36),
+    CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId),
+	CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
 
@@ -242,7 +254,6 @@ GO
 CREATE TABLE PricePackage (
     PriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
-    Price DECIMAL(18,2),
     ServiceDetailId NVARCHAR(36),
     CONSTRAINT FK_ServiceDetail FOREIGN KEY (ServiceDetailId) REFERENCES ServiceDetail(ServiceDetailId)
 );
@@ -262,20 +273,6 @@ CREATE TABLE Address (
 );
 GO
 
---Bảng RoomType
-CREATE TABLE RoomType (
-    RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    RoomTypeName NVARCHAR(255),
-    Square DECIMAL(10,2),
-    Description NVARCHAR(MAX),
-    Amenities NVARCHAR(MAX),
-    MaxOccupancy INT,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    UpdatedAt DATETIME,
-    RoomId NVARCHAR(36),
-    CONSTRAINT FK_RoomType_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
-);
-GO
 
 --Bảng RoomImage
 CREATE TABLE RoomImage (
@@ -348,11 +345,20 @@ GO
 CREATE TABLE RoomAmenties (
     RoomAmentyId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255),
-    Description NVARCHAR(MAX),
     Compensation DECIMAL(18,2),
-    RoomTypeId NVARCHAR(36),
-	CONSTRAINT FK_RoomAmenities_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    LandlordId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmenities_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
+GO
+CREATE TABLE RoomAmentiesList (
+    RoomAmenitiesListId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Description NVARCHAR(MAX),
+    RoomId NVARCHAR(36),
+	RoomAmentyId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmentiesList_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
+	CONSTRAINT FK_RoomAmentiesList_RoomAmenties FOREIGN KEY (RoomAmentyId) REFERENCES RoomAmenties(RoomAmentyId)
+);
+GO
 --Bảng CustomerMoveOut
 CREATE TABLE CustomerMoveOut (
     CMOId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),

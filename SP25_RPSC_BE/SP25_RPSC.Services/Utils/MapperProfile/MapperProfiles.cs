@@ -22,7 +22,6 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             new PricePackage
             {
                 PriceId =  src.PricePackageModel.PriceId.ToString() ,
-                Price = src.PricePackageModel.Price,
                 ApplicableDate = src.PricePackageModel.ApplicableDate
             }
           }

@@ -9,8 +9,6 @@ public partial class PricePackage
 
     public DateTime? ApplicableDate { get; set; }
 
-    public decimal? Price { get; set; }
-
     public string? ServiceDetailId { get; set; }
 
     public virtual ServiceDetail? ServiceDetail { get; set; }
