@@ -34,9 +34,9 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpGet]
         [Route("Get-Customer")]
-        public async Task<ActionResult<IEnumerable<Landlord>>> GetAllCustomer()
+        public async Task<ActionResult> GetAllCustomer(int pageIndex, int pageSize, string searchQuery = null)
         {
-            var customers = await _userService.GetAllCustomer();
+            var customers = await _userService.GetAllCustomer(searchQuery, pageIndex, pageSize);
             ResultModel response = new ResultModel
             {
                 IsSuccess = true,

@@ -12,7 +12,7 @@ namespace SP25_RPSC.Data.Repositories.CustomerRepository
 {
     public interface ICustomerRepository : IGenericRepository<Customer>
     {
-        Task<IEnumerable<ListCustomerRes>> GetAllCustomer();
+        //Task<ListCustomerRes> GetAllCustomer();
     }
 
     public class CustomerRepository : GenericRepository<Customer>, ICustomerRepository
@@ -24,29 +24,29 @@ namespace SP25_RPSC.Data.Repositories.CustomerRepository
             _context = context;
         }
 
-        public async Task<IEnumerable<ListCustomerRes>> GetAllCustomer()
-        {
-            var customers = await _context.Customers
-                           .Include(c => c.User)
-                           .Select(c => new ListCustomerRes
-                           {
-                               CustomerId = c.CustomerId,
-                               Preferences = c.Preferences,
-                               LifeStyle = c.LifeStyle,
-                               BudgetRange = c.BudgetRange,
-                               PreferredLocation = c.PreferredLocation,
-                               Requirement = c.Requirement,
-                               Status = c.Status,
-                               Email = c.User.Email,
-                               FullName = c.User.FullName,
-                               Address = c.User.Address,
-                               PhoneNumber = c.User.PhoneNumber,
-                               Gender = c.User.Gender,
-                               Avatar = c.User.Avatar,
-                               UserStatus = c.User.Status
-                           })
-                           .ToListAsync();
-            return customers;
-        }
+        //public async Task<ListCustomerRes> GetAllCustomer()
+        //{
+        //    var customers = await _context.Customers
+        //                   .Include(c => c.User)
+        //                   .Select(c => new ListCustomerRes
+        //                   {
+        //                       CustomerId = c.CustomerId,
+        //                       Preferences = c.Preferences,
+        //                       LifeStyle = c.LifeStyle,
+        //                       BudgetRange = c.BudgetRange,
+        //                       PreferredLocation = c.PreferredLocation,
+        //                       Requirement = c.Requirement,
+        //                       Status = c.Status,
+        //                       Email = c.User.Email,
+        //                       FullName = c.User.FullName,
+        //                       Address = c.User.Address,
+        //                       PhoneNumber = c.User.PhoneNumber,
+        //                       Gender = c.User.Gender,
+        //                       Avatar = c.User.Avatar,
+        //                       UserStatus = c.User.Status
+        //                   })
+        //                   .ToListAsync();
+        //    return customers;
+        //}
     }
 }
