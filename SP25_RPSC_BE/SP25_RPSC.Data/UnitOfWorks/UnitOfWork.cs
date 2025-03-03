@@ -25,6 +25,7 @@ using SP25_RPSC.Data.Repositories.RoomServiceRepository;
 using SP25_RPSC.Data.Repositories.RoomStayCustomerRepository;
 using SP25_RPSC.Data.Repositories.RoomStayRepository;
 using SP25_RPSC.Data.Repositories.RoomTypeRepository;
+using SP25_RPSC.Data.Repositories.ServiceDetailRepository;
 using SP25_RPSC.Data.Repositories.ServicePackageRepository;
 using SP25_RPSC.Data.Repositories.UserRepository;
 using System;
@@ -62,6 +63,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomStayRepository _roomStayRepository;
         private IRoomTypeRepository _roomTypeRepository;
         private IServicePackageRepository _servicePackageRepository;
+        private IServiceDetailRepository _serviceDetailRepository;
         private IUserRepository _usersRepository;
         private IOTPRepository _otpRepository;
         private IRefreshTokenRepository _refreshTokenRepository;
@@ -251,6 +253,13 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _servicePackageRepository ??= new ServicePackageRepository(_context);
+            }
+        }
+        public IServiceDetailRepository ServiceDetailRepository
+        {
+            get
+            {
+                return _serviceDetailRepository ??= new ServiceDetailRepository(_context);
             }
         }
 

@@ -4,11 +4,14 @@ using MimeKit.Cryptography;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.PackageModel;
+using SP25_RPSC.Data.Models.PackageServiceModel;
+using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Utils.CustomException;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -62,24 +65,46 @@ namespace SP25_RPSC.Services.Service.PackageService
             await _unitOfWork.ServicePackageRepository.Add(package);
         }
 
-        public async Task<List<ServicePackage>> GetAllServicePackage()
+        public async Task<List<ServicePackageReponse>> GetAllServicePackage()
         {
-            var servicePackages = await _unitOfWork.ServicePackageRepository.GetAll();
-            if (servicePackages == null)
+            var servicePackages = await _unitOfWork.ServicePackageRepository.Get(orderBy: q => q.OrderBy(p => p.Duration));
+
+            if (servicePackages == null || !servicePackages.Any())
             {
-                throw new ApiException(HttpStatusCode.BadRequest, "ServicePackageEmty");
+                throw new ApiException(HttpStatusCode.BadRequest, "ServicePackageEmpty");
             }
-            return servicePackages;
+
+            return _mapper.Map<List<ServicePackageReponse>>(servicePackages);
         }
 
-        public async Task<ServicePackage> GetServicePackageById(string id)
+
+
+        public Task<List<ServiceDetailReponse>> GetServiceDetailsByPackageId(string packageId)
         {
-            var servicePackage = await _unitOfWork.ServicePackageRepository.GetServicePackageById(id);
-            if(servicePackage == null)
+            var servicePackages = _unitOfWork.ServiceDetailRepository
+                .Get(u => u.PackageId.Equals(packageId), orderBy: q => q.OrderBy(p => p.LimitPost), includeProperties: "PricePackages").Result 
+                .ToList();
+
+            if (!servicePackages.Any())
             {
-                throw new ApiException(HttpStatusCode.NotFound, "ServicePackageNotFound");
+                throw new ApiException(HttpStatusCode.NotFound, "No ServiceDetails found for the given PackageId");
             }
-            return servicePackage;
+
+            var responseList = servicePackages.Select(servicePackage => new ServiceDetailReponse
+            {
+                ServiceDetailId = servicePackage.ServiceDetailId,
+                Type = servicePackage.Type,
+                LimitPost = servicePackage.LimitPost,
+                Status = servicePackage.Status,
+                PackageId = servicePackage.PackageId,
+                Price = servicePackage.PricePackages?.FirstOrDefault()?.Price ?? 0,
+                ApplicableDate = servicePackage.PricePackages?.FirstOrDefault()?.ApplicableDate
+            }).ToList();
+
+            return Task.FromResult(responseList);
         }
+
+
+
     }
 }
