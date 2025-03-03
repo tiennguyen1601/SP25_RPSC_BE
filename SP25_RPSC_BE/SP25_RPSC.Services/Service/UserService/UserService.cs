@@ -25,24 +25,25 @@ namespace SP25_RPSC.Services.Service.UserService
 
         public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize)
         {
-            Expression<Func<User, bool>> searchFilter = u => string.IsNullOrEmpty(searchQuery) ||
-                                                               u.Email.Contains(searchQuery) ||
-                                                               u.PhoneNumber.Contains(searchQuery);
+            Expression<Func<Customer, bool>> searchFilter = c => string.IsNullOrEmpty(searchQuery) ||
+                                                                  c.User.Email.Contains(searchQuery) ||
+                                                                  c.User.PhoneNumber.Contains(searchQuery);
 
-            var users = await _unitOfWork.UserRepository.Get(includeProperties: "Customers",
+            var customers = await _unitOfWork.CustomerRepository.Get(
+                includeProperties: "User",
                 filter: searchFilter,
                 pageIndex: pageIndex,
                 pageSize: pageSize
             );
 
-            var totalUser = await _unitOfWork.UserRepository.CountAsync(searchFilter);
+            var totalUser = await _unitOfWork.CustomerRepository.CountAsync(searchFilter);
 
-            if (users == null || !users.Any())
+            if (customers == null || !customers.Any())
             {
                 return new GetAllUserResponseModel { Users = new List<ListCustomerRes>(), TotalUser = 0 };
             }
 
-            var userResponses = _mapper.Map<List<ListCustomerRes>>(users.ToList());
+            var userResponses = _mapper.Map<List<ListCustomerRes>>(customers.ToList());
 
             return new GetAllUserResponseModel
             {
@@ -50,6 +51,7 @@ namespace SP25_RPSC.Services.Service.UserService
                 TotalUser = totalUser
             };
         }
+
 
 
 
