@@ -44,11 +44,11 @@ builder.Services.AddScoped < IEmailService,  EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-    options.JsonSerializerOptions.WriteIndented = true;
-});
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//    options.JsonSerializerOptions.WriteIndented = true;
+//});
 //-----------------------------------------DB-----------------------------------------
 
 builder.Services.AddDbContext<RpscContext>(options =>

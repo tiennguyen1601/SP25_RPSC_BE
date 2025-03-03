@@ -7,9 +7,9 @@ public partial class PricePackage
 {
     public string PriceId { get; set; } = null!;
 
-    public DateTime? ApplicableDate { get; set; }
-
     public decimal? Price { get; set; }
+
+    public DateTime? ApplicableDate { get; set; }
 
     public string? ServiceDetailId { get; set; }
 

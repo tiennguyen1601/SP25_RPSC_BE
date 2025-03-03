@@ -2,6 +2,7 @@
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.UserModels.Request;
+using SP25_RPSC.Data.Models.UserModels.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,28 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
     {
         public MapperProfiles() 
         {
+            CreateMap<User, ListCustomerRes>()
+                .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().CustomerId))
+                .ForMember(dest => dest.Preferences, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().Preferences))
+                .ForMember(dest => dest.LifeStyle, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().LifeStyle))
+                .ForMember(dest => dest.BudgetRange, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().BudgetRange))
+                .ForMember(dest => dest.PreferredLocation, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().PreferredLocation))
+                .ForMember(dest => dest.Requirement, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().Requirement))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Customers.FirstOrDefault().Status))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Avatar))
+                .ForMember(dest => dest.UserStatus, opt => opt.MapFrom(src => src.Status))
+                .ReverseMap();
+
+
+
+
+
             CreateMap<User, UserRegisterReqModel>().ReverseMap();
             CreateMap<PackageCreateDetailReqestModel, ServiceDetail>()
       .ForMember(dest => dest.PricePackages, opt => opt.MapFrom(src =>
@@ -22,7 +45,6 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             new PricePackage
             {
                 PriceId =  src.PricePackageModel.PriceId.ToString() ,
-                Price = src.PricePackageModel.Price,
                 ApplicableDate = src.PricePackageModel.ApplicableDate
             }
           }

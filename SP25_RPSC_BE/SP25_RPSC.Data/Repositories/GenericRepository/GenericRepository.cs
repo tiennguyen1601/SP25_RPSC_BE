@@ -26,6 +26,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
         Task AddRange(List<T> entities);
         Task UpdateRange(List<T> entities);
         Task DeleteRange(List<T> entities);
+        Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
     }
 
     public class GenericRepository<T> : IGenericRepository<T> where T : class
@@ -203,6 +204,17 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             {
                 throw new Exception(ex.Message);
             }
+        }
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
+        {
+            IQueryable<T> query = _entities;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.CountAsync();
         }
     }
 }

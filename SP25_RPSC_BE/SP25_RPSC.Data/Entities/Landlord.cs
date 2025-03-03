@@ -25,6 +25,8 @@ public partial class Landlord
 
     public virtual ICollection<LandlordContract> LandlordContracts { get; set; } = new List<LandlordContract>();
 
+    public virtual ICollection<RoomAmenty> RoomAmenties { get; set; } = new List<RoomAmenty>();
+
     public virtual ICollection<RoomStayCustomer> RoomStayCustomers { get; set; } = new List<RoomStayCustomer>();
 
     public virtual ICollection<RoomStay> RoomStays { get; set; } = new List<RoomStay>();
