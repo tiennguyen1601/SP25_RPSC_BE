@@ -20,19 +20,20 @@ namespace SP25_RPSC.Controllers.Controllers
             _packageService = packageService;
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServicePackage>>> GetAllServicePackage()
+        public async Task<ActionResult> GetAllServicePackage()
         {
             var result = await _packageService.GetAllServicePackage();
             
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public IActionResult GetById([FromRoute] string id)
+        [HttpGet("get-service-details/{packageId}")]
+        public async Task<IActionResult> GetServiceDetailsByPackageId(string packageId)
         {
-            return Ok(_packageService.GetServicePackageById(id));
+            var result = await _packageService.GetServiceDetailsByPackageId(packageId);
+            return Ok(result); 
         }
+
 
         [HttpPost("Create-Service")]
         public async Task<IActionResult> CreateService(PackageCreateRequestModel model)

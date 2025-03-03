@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SP25_RPSC.Data.Entities;
 
-namespace SP25_RPSC.Data.Entities;
+namespace SP25_RPSC.Data.Repositories;
 
 public partial class RpscContext : DbContext
 {

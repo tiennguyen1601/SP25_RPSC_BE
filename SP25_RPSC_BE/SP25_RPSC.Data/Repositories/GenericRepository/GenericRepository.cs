@@ -17,6 +17,8 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             int? pageIndex = null,
             int? pageSize = null);
 
+        Task<T> GetByIDAsync(object id);
+
         Task<T?> Get(int id);
         Task<List<T>> GetAll(int? page, int? size);
         Task<List<T>> GetAll();
@@ -39,6 +41,10 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             this.context = context;
             _entities = context.Set<T>();
 
+        }
+        public virtual async Task<T> GetByIDAsync(object id)
+        {
+            return await _entities.FindAsync(id);
         }
         public async Task AddRange(List<T> entities)
         {
