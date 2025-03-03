@@ -63,25 +63,37 @@ CREATE TABLE Customer (
     LifeStyle NVARCHAR(255),
     BudgetRange NVARCHAR(50),
     PreferredLocation NVARCHAR(255),
-    Gender NVARCHAR(50),
     Requirement NVARCHAR(MAX),
     Status NVARCHAR(50),
     UserId NVARCHAR(36),
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 GO
-
+CREATE TABLE RoomType (
+    RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    RoomTypeName NVARCHAR(255),
+	Deposite DECIMAL(18,2),
+    Square DECIMAL(10,2),
+    Description NVARCHAR(MAX),
+    MaxOccupancy INT,
+	Status NVARCHAR(36),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+);
+GO
 --Bảng Rooms
 CREATE TABLE Rooms (
     RoomId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	RoomNumber NVARCHAR(50),
     Title NVARCHAR(255),
     Description NVARCHAR(MAX),
-    Deposite DECIMAL(18,2),
     Status NVARCHAR(50),
     Location NVARCHAR(255),
     UpdatedAt DATETIME,
     LandlordId NVARCHAR(36),
-    CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
+	RoomTypeId NVARCHAR(36),
+    CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId),
+	CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
 
@@ -231,7 +243,6 @@ CREATE TABLE ServiceDetail (
     ServiceDetailId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     [Type] NVARCHAR(50),
     LimitPost INT,
-    Price DECIMAL(18,2),
 	Status NVARCHAR(36),
 	PackageId  NVARCHAR(36),
     CONSTRAINT FK_ServicePackage FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
@@ -241,8 +252,8 @@ GO
 --Bảng PricePackage
 CREATE TABLE PricePackage (
     PriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	Price DECIMAL(18,2),
     ApplicableDate DATETIME,
-    Price DECIMAL(18,2),
     ServiceDetailId NVARCHAR(36),
     CONSTRAINT FK_ServiceDetail FOREIGN KEY (ServiceDetailId) REFERENCES ServiceDetail(ServiceDetailId)
 );
@@ -262,20 +273,6 @@ CREATE TABLE Address (
 );
 GO
 
---Bảng RoomType
-CREATE TABLE RoomType (
-    RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    RoomTypeName NVARCHAR(255),
-    Square DECIMAL(10,2),
-    Description NVARCHAR(MAX),
-    Amenities NVARCHAR(MAX),
-    MaxOccupancy INT,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    UpdatedAt DATETIME,
-    RoomId NVARCHAR(36),
-    CONSTRAINT FK_RoomType_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
-);
-GO
 
 --Bảng RoomImage
 CREATE TABLE RoomImage (
@@ -348,11 +345,20 @@ GO
 CREATE TABLE RoomAmenties (
     RoomAmentyId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255),
-    Description NVARCHAR(MAX),
     Compensation DECIMAL(18,2),
-    RoomTypeId NVARCHAR(36),
-	CONSTRAINT FK_RoomAmenities_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    LandlordId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmenities_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
+GO
+CREATE TABLE RoomAmentiesList (
+    RoomAmenitiesListId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Description NVARCHAR(MAX),
+    RoomId NVARCHAR(36),
+	RoomAmentyId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmentiesList_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
+	CONSTRAINT FK_RoomAmentiesList_RoomAmenties FOREIGN KEY (RoomAmentyId) REFERENCES RoomAmenties(RoomAmentyId)
+);
+GO
 --Bảng CustomerMoveOut
 CREATE TABLE CustomerMoveOut (
     CMOId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -393,3 +399,72 @@ VALUES
 (NEWID(), 'Customer'),
 (NEWID(), 'Landlord'),
 (NEWID(), 'Admin');
+
+INSERT INTO [RPSC].[dbo].[ServicePackage] ([Name], [Duration], [Description], [Status])
+VALUES
+    (N'1 tuần', 7, N'Gói dịch vụ 1 tuần', 1),
+    (N'1 tháng', 30, N'Gói dịch vụ 1 tháng', 1),
+    (N'3 tháng', 90, N'Gói dịch vụ 3 tháng', 1),
+    (N'6 tháng', 180, N'Gói dịch vụ 6 tháng', 1),
+    (N'1 năm', 365, N'Gói dịch vụ 1 năm', 1);
+
+
+	INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Type], [LimitPost], [Status], [PackageId])
+VALUES
+    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+
+    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+
+    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+
+    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+
+    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
+    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
+    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
+    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'));
+
+
+	INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId])
+VALUES
+    -- 1 tuần
+    (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
+    (19000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
+    (29000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
+    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
+
+    -- 1 tháng
+    (49000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
+    (59000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
+    (69000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
+    (80000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
+
+    -- 3 tháng
+    (99000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
+    (109000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
+    (119000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
+    (150000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
+
+    -- 6 tháng
+    (169000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
+    (199000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
+    (219000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
+    (250000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
+
+    -- 1 năm
+    (249000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'))),
+    (269000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'))),
+    (299000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'))),
+    (350000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')));

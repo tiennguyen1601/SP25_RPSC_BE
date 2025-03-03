@@ -17,6 +17,8 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             int? pageIndex = null,
             int? pageSize = null);
 
+        Task<T> GetByIDAsync(object id);
+
         Task<T?> Get(int id);
         Task<List<T>> GetAll(int? page, int? size);
         Task<List<T>> GetAll();
@@ -26,6 +28,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
         Task AddRange(List<T> entities);
         Task UpdateRange(List<T> entities);
         Task DeleteRange(List<T> entities);
+        Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
     }
 
     public class GenericRepository<T> : IGenericRepository<T> where T : class
@@ -38,6 +41,10 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             this.context = context;
             _entities = context.Set<T>();
 
+        }
+        public virtual async Task<T> GetByIDAsync(object id)
+        {
+            return await _entities.FindAsync(id);
         }
         public async Task AddRange(List<T> entities)
         {
@@ -203,6 +210,17 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             {
                 throw new Exception(ex.Message);
             }
+        }
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
+        {
+            IQueryable<T> query = _entities;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.CountAsync();
         }
     }
 }

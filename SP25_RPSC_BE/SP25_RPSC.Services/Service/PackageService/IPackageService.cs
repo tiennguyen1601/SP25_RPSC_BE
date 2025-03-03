@@ -1,5 +1,6 @@
 ﻿using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.PackageModel;
+using SP25_RPSC.Data.Models.PackageServiceModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,8 @@ namespace SP25_RPSC.Services.Service.PackageService
     {
         Task CreatePackage(PackageCreateRequestModel model);
 
-        Task<List<ServicePackage>> GetAllServicePackage();
+        Task<List<ServicePackageReponse>> GetAllServicePackage();
 
-        Task<ServicePackage> GetServicePackageById(string id);
+        Task<List<ServiceDetailReponse>> GetServiceDetailsByPackageId(string packageId);
     }
 }

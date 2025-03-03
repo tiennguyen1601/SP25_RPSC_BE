@@ -15,8 +15,6 @@ public partial class Customer
 
     public string? PreferredLocation { get; set; }
 
-    public string? Gender { get; set; }
-
     public string? Requirement { get; set; }
 
     public string? Status { get; set; }

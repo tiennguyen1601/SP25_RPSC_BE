@@ -23,6 +23,7 @@ using SP25_RPSC.Data.Repositories.RoomServiceRepository;
 using SP25_RPSC.Data.Repositories.RoomStayCustomerRepository;
 using SP25_RPSC.Data.Repositories.RoomStayRepository;
 using SP25_RPSC.Data.Repositories.RoomTypeRepository;
+using SP25_RPSC.Data.Repositories.ServiceDetailRepository;
 using SP25_RPSC.Data.Repositories.ServicePackageRepository;
 using SP25_RPSC.Data.Repositories.UserRepository;
 using System;
@@ -58,6 +59,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IRoomStayRepository RoomStayRepository { get; }
         IRoomTypeRepository RoomTypeRepository { get; }
         IServicePackageRepository ServicePackageRepository { get; }
+        IServiceDetailRepository ServiceDetailRepository { get; }
         IUserRepository UserRepository { get; }
         IRefreshTokenRepository RefreshTokenRepository { get; }
 
