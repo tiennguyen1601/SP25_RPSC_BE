@@ -57,5 +57,36 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
 
             return response;
         }
+
+        public async Task<bool> ApproveRoomType(string roomTypeId)
+        {
+            var roomType = await _unitOfWork.RoomTypeRepository.GetRoomTypeDetail(roomTypeId);
+
+            if (roomType == null)
+            {
+                return false;
+            }
+            if (roomType.Status != "Pending")
+            {
+                return false;
+            }
+            return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Active");
+        }
+
+        public async Task<bool> DenyRoomType(string roomTypeId)
+        {
+            var roomType = await _unitOfWork.RoomTypeRepository.GetRoomTypeDetail(roomTypeId);
+
+            if (roomType == null)
+            {
+                return false; 
+            }
+            if (roomType.Status != "Pending")
+            {
+                return false;
+            }
+            return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Inactive");
+        }
+
     }
 }

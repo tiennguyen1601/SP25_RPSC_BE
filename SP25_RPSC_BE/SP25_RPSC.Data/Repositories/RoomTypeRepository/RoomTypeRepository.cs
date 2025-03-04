@@ -14,6 +14,7 @@ namespace SP25_RPSC.Data.Repositories.RoomTypeRepository
     {
         Task<List<RoomType>> GetAllRoomTypesPending(int pageIndex, int pageSize);
         Task<RoomType> GetRoomTypeDetail(string roomTypeId);
+        Task<bool> UpdateRoomTypeStatus(string roomTypeId, string status);
     }
 
     public class RoomTypeRepository : GenericRepository<RoomType>, IRoomTypeRepository
@@ -49,5 +50,18 @@ namespace SP25_RPSC.Data.Repositories.RoomTypeRepository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<bool> UpdateRoomTypeStatus(string roomTypeId, string status)
+        {
+            var roomType = await _context.RoomTypes.FirstOrDefaultAsync(rt => rt.RoomTypeId == roomTypeId);
+
+            if (roomType == null)
+            {
+                return false;
+            }
+            roomType.Status = status;
+            _context.RoomTypes.Update(roomType);
+            await _context.SaveChangesAsync();
+            return true; 
+        }
     }
 }
