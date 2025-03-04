@@ -69,16 +69,57 @@ CREATE TABLE Customer (
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 GO
+
+--Bảng Address
+CREATE TABLE [Address] (
+    AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    City NVARCHAR(255),
+    District NVARCHAR(255),
+    Street NVARCHAR(255),
+    HouseNumber NVARCHAR(50),
+    [Long] FLOAT,  -- Lưu ý: "Long" có thể là từ khóa nên được đặt trong dấu []
+    Lat FLOAT,
+);
+GO
+
 CREATE TABLE RoomType (
     RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomTypeName NVARCHAR(255),
 	Deposite DECIMAL(18,2),
+	Area INT,
     Square DECIMAL(10,2),
     Description NVARCHAR(MAX),
     MaxOccupancy INT,
 	Status NVARCHAR(36),
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME,
+	LandlordId NVARCHAR(36),
+	AddressId NVARCHAR(36),
+	CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId),
+	CONSTRAINT FK_RoomType_Address FOREIGN KEY (AddressId) REFERENCES [Address](AddressId)
+);
+GO
+
+--Bảng RoomService
+CREATE TABLE RoomService (
+    RoomServiceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    RoomServiceName NVARCHAR(255),
+    Description NVARCHAR(MAX),
+    Status NVARCHAR(50),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+	RoomTypeId  NVARCHAR(36),
+	CONSTRAINT FK_RoomService_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+);
+GO
+
+--Bảng RoomServicePrice
+CREATE TABLE RoomServicePrice (
+    RoomServicePriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ApplicableDate DATETIME,
+    Price DECIMAL(18,2),
+    RoomServiceId NVARCHAR(36),
+    CONSTRAINT FK_RoomServicePrice_RoomService FOREIGN KEY (RoomServiceId) REFERENCES RoomService(RoomServiceId)
 );
 GO
 --Bảng Rooms
@@ -90,10 +131,8 @@ CREATE TABLE Rooms (
     Status NVARCHAR(50),
     Location NVARCHAR(255),
     UpdatedAt DATETIME,
-    LandlordId NVARCHAR(36),
 	RoomTypeId NVARCHAR(36),
     CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId),
-	CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
 
@@ -259,21 +298,6 @@ CREATE TABLE PricePackage (
 );
 GO
 
---Bảng Address
-CREATE TABLE Address (
-    AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    City NVARCHAR(255),
-    District NVARCHAR(255),
-    Street NVARCHAR(255),
-    HouseNumber NVARCHAR(50),
-    [Long] FLOAT,  -- Lưu ý: "Long" có thể là từ khóa nên được đặt trong dấu []
-    Lat FLOAT,
-    RoomId NVARCHAR(36),
-    CONSTRAINT FK_Address_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
-);
-GO
-
-
 --Bảng RoomImage
 CREATE TABLE RoomImage (
     ImageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -290,29 +314,6 @@ CREATE TABLE RoomPrice (
     Price DECIMAL(18,2),
     RoomTypeId NVARCHAR(36),
     CONSTRAINT FK_RoomPrice_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
-);
-GO
-
---Bảng RoomService
-CREATE TABLE RoomService (
-    RoomServiceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    RoomServiceName NVARCHAR(255),
-    Description NVARCHAR(MAX),
-    Status NVARCHAR(50),
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    UpdatedAt DATETIME,
-    RoomTypeId NVARCHAR(36),
-    CONSTRAINT FK_RoomService_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
-);
-GO
-
---Bảng RoomServicePrice
-CREATE TABLE RoomServicePrice (
-    RoomServicePriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    ApplicableDate DATETIME,
-    Price DECIMAL(18,2),
-    RoomServiceId NVARCHAR(36),
-    CONSTRAINT FK_RoomServicePrice_RoomService FOREIGN KEY (RoomServiceId) REFERENCES RoomService(RoomServiceId)
 );
 GO
 

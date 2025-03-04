@@ -15,6 +15,8 @@ using SP25_RPSC.Services.Service.OTPService;
 using SP25_RPSC.Services.Service.EmailService;
 using SP25_RPSC.Services.Service.UserService;
 using SP25_RPSC.Services.Service.PackageService;
+using SP25_RPSC.Services.Service.RoomTypeService;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,7 @@ builder.Services.AddScoped<IOTPService, OTPService>();
 builder.Services.AddScoped < IEmailService,  EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
 //{

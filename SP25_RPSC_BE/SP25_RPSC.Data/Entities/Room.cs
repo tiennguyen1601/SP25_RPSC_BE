@@ -19,19 +19,13 @@ public partial class Room
 
     public DateTime? UpdatedAt { get; set; }
 
-    public string? LandlordId { get; set; }
-
     public string? RoomTypeId { get; set; }
-
-    public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
 
     public virtual ICollection<CustomerContract> CustomerContracts { get; set; } = new List<CustomerContract>();
 
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
-
-    public virtual Landlord? Landlord { get; set; }
 
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 

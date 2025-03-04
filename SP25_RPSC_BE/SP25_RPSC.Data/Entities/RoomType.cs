@@ -11,6 +11,8 @@ public partial class RoomType
 
     public decimal? Deposite { get; set; }
 
+    public int? Area { get; set; }
+
     public decimal? Square { get; set; }
 
     public string? Description { get; set; }
@@ -22,6 +24,14 @@ public partial class RoomType
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public string? LandlordId { get; set; }
+
+    public string? AddressId { get; set; }
+
+    public virtual Address? Address { get; set; }
+
+    public virtual Landlord? Landlord { get; set; }
 
     public virtual ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
 

@@ -31,7 +31,7 @@ public partial class Landlord
 
     public virtual ICollection<RoomStay> RoomStays { get; set; } = new List<RoomStay>();
 
-    public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+    public virtual ICollection<RoomType> RoomTypes { get; set; } = new List<RoomType>();
 
     public virtual User? User { get; set; }
 }

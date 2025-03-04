@@ -74,7 +74,8 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
                         PhoneNumber = currentUser.PhoneNumber,
                         Email = currentUser.Email,
                         Role = currentUser.Role.RoleName,
-                        Token = token
+                        Token = token,
+                        RefreshToken = refreshToken,
                     };
 
                     return userLoginRes;

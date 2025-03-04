@@ -1,4 +1,6 @@
-﻿using SP25_RPSC.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,8 @@ namespace SP25_RPSC.Data.Repositories.RoomTypeRepository
 {
     public interface IRoomTypeRepository : IGenericRepository<RoomType>
     {
-
+        Task<List<RoomType>> GetAllRoomTypesPending(int pageIndex, int pageSize);
+        Task<RoomType> GetRoomTypeDetail(string roomTypeId);
     }
 
     public class RoomTypeRepository : GenericRepository<RoomType>, IRoomTypeRepository
@@ -21,5 +24,30 @@ namespace SP25_RPSC.Data.Repositories.RoomTypeRepository
         {
             _context = context;
         }
+
+        public async Task<List<RoomType>> GetAllRoomTypesPending(int pageIndex, int pageSize)
+        {
+            return await _context.RoomTypes
+                .Where(rt => rt.Status == "Pending")
+                .OrderByDescending(rt => rt.CreatedAt)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Include(rt => rt.Landlord)
+                .ToListAsync();
+        }
+
+        public async Task<RoomType> GetRoomTypeDetail(string roomTypeId)
+        {
+            return await _context.RoomTypes
+                .Where(rt => rt.RoomTypeId == roomTypeId)
+                .Include(rt => rt.Address)
+                .Include(rt => rt.RoomImages)
+                .Include(rt => rt.RoomPrices)
+                .Include(rt => rt.RoomServices) 
+                .ThenInclude(rs => rs.RoomServicePrices)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

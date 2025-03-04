@@ -2,6 +2,7 @@
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
+using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using System;
@@ -58,6 +59,38 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                   }
               ))
               .ReverseMap();
-                }
+
+            //-------------------------------------ROOMTYPE------------------------------------------
+            CreateMap<RoomType, RoomTypeResponseModel>()
+            .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.Landlord.CompanyName))
+            .ForMember(dest => dest.RoomTypeId, opt => opt.MapFrom(src => src.RoomTypeId))
+            .ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomTypeName))
+            .ForMember(dest => dest.Deposite, opt => opt.MapFrom(src => src.Deposite))
+            .ForMember(dest => dest.Square, opt => opt.MapFrom(src => src.Square))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+
+            CreateMap<RoomType, RoomTypeDetailResponseModel>()
+                .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.Landlord.CompanyName))
+                .ForMember(dest => dest.RoomTypeId, opt => opt.MapFrom(src => src.RoomTypeId))
+                .ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomTypeName))
+                .ForMember(dest => dest.Deposite, opt => opt.MapFrom(src => src.Deposite))
+                .ForMember(dest => dest.Square, opt => opt.MapFrom(src => src.Square))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src =>
+                    src.Address != null ? $"{src.Address.Street}, {src.Address.District}, {src.Address.City}" : ""))
+
+                .ForMember(dest => dest.RoomImageUrls, opt => opt.MapFrom(src => src.RoomImages.Select(ri => ri.ImageUrl).ToList()))
+                .ForMember(dest => dest.RoomPrices, opt => opt.MapFrom(src => src.RoomPrices.Select(rp => rp.Price).ToList()))
+                .ForMember(dest => dest.RoomServiceNames, opt => opt.MapFrom(src => src.RoomServices.Select(rs => rs.RoomServiceName).ToList()))
+                .ForMember(dest => dest.RoomServicePrices, opt => opt.MapFrom(src =>
+                    src.RoomServices
+                        .SelectMany(rs => rs.RoomServicePrices)
+                        .Select(rsp => rsp.Price)
+                        .ToList()));
+
+        }
     }
 }
