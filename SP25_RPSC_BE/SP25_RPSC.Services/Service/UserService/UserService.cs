@@ -23,11 +23,14 @@ namespace SP25_RPSC.Services.Service.UserService
             _mapper = mapper;
         }
 
-        public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize)
+        public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status)
         {
-            Expression<Func<Customer, bool>> searchFilter = c => string.IsNullOrEmpty(searchQuery) ||
-                                                                  c.User.Email.Contains(searchQuery) ||
-                                                                  c.User.PhoneNumber.Contains(searchQuery);
+            Expression<Func<Customer, bool>> searchFilter = c =>
+                (string.IsNullOrEmpty(searchQuery) ||
+                 c.User.Email.Contains(searchQuery) ||
+                 c.User.PhoneNumber.Contains(searchQuery)) 
+                &&
+                (string.IsNullOrEmpty(status) || c.Status == status);
 
             var customers = await _unitOfWork.CustomerRepository.Get(
                 includeProperties: "User",
