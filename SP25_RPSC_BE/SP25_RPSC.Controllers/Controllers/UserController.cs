@@ -41,7 +41,7 @@ namespace SP25_RPSC.Controllers.Controllers
             {
                 IsSuccess = true,
                 Code = (int)HttpStatusCode.OK,
-                Message = "Get Lanlord successfully",
+                Message = "Get Customer successfully",
                 Data = customers
             };
             return StatusCode(response.Code, response);
