@@ -11,6 +11,6 @@ namespace SP25_RPSC.Services.Service.UserService
     public interface IUserService
     {
         Task<IEnumerable<ListLandlordRes>> GetAllLandLord();
-        Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize);
+        Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status);
     }
 }
