@@ -12,7 +12,6 @@ namespace SP25_RPSC.Data.Models.UserModels.Response
         public string CompanyName { get; set; }
         public int NumberRoom { get; set; }
         public string LiscenseNumber { get; set; }
-        public string BusinessLiscense { get; set; }
         public string Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

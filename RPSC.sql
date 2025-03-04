@@ -46,13 +46,24 @@ CREATE TABLE Landlord (
     LandlordId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     CompanyName NVARCHAR(255),
     NumberRoom INT,
-    LiscenseNumber NVARCHAR(50),
-    BusinessLiscense NVARCHAR(50),
+    LicenseNumber NVARCHAR(50),
+	BankName NVARCHAR(255),
+	BankNumber NVARCHAR(255),
+	Template NVARCHAR(255),
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
     UserId NVARCHAR(36),
     CONSTRAINT FK_Landlord_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
+);
+GO
+CREATE TABLE BusinessImage (
+    BusinessImageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ImageURL NVARCHAR(255) NOT NULL,
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    Status NVARCHAR(50),
+	LandlordId NVARCHAR(36),
+    CONSTRAINT FK_BusinessImage_Landlord FOREIGN KEY (LandlordId) REFERENCES [Landlord](LandlordId)
 );
 GO
 
@@ -68,6 +79,8 @@ CREATE TABLE Customer (
     UserId NVARCHAR(36),
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
+
+
 GO
 
 --Bảng Address
@@ -403,39 +416,39 @@ VALUES
 
 INSERT INTO [RPSC].[dbo].[ServicePackage] ([Name], [Duration], [Description], [Status])
 VALUES
-    (N'1 tuần', 7, N'Gói dịch vụ 1 tuần', 1),
-    (N'1 tháng', 30, N'Gói dịch vụ 1 tháng', 1),
-    (N'3 tháng', 90, N'Gói dịch vụ 3 tháng', 1),
-    (N'6 tháng', 180, N'Gói dịch vụ 6 tháng', 1),
-    (N'1 năm', 365, N'Gói dịch vụ 1 năm', 1);
+    (N'1 tuần', 7, N'Gói dịch vụ 1 tuần', 'Active'),
+    (N'1 tháng', 30, N'Gói dịch vụ 1 tháng', 'Active'),
+    (N'3 tháng', 90, N'Gói dịch vụ 3 tháng', 'Active'),
+    (N'6 tháng', 180, N'Gói dịch vụ 6 tháng', 'Active'),
+    (N'1 năm', 365, N'Gói dịch vụ 1 năm', 'Active');
 
 
 	INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Type], [LimitPost], [Status], [PackageId])
 VALUES
-    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
 
-    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
 
-    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
-    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
-    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
-    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
 
-    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
-    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
-    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
-    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
 
-    (N'Loại 1', 15, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
-    (N'Loại 2', 20, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
-    (N'Loại 3', 30, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
-    (N'Không giới hạn', NULL, 1, (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'));
+    (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
+    (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
+    (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
+    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'));
 
 
 	INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId])

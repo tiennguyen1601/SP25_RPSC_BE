@@ -11,9 +11,13 @@ public partial class Landlord
 
     public int? NumberRoom { get; set; }
 
-    public string? LiscenseNumber { get; set; }
+    public string? LicenseNumber { get; set; }
 
-    public string? BusinessLiscense { get; set; }
+    public string? BankName { get; set; }
+
+    public string? BankNumber { get; set; }
+
+    public string? Template { get; set; }
 
     public string? Status { get; set; }
 
@@ -22,6 +26,8 @@ public partial class Landlord
     public DateTime? UpdatedDate { get; set; }
 
     public string? UserId { get; set; }
+
+    public virtual ICollection<BusinessImage> BusinessImages { get; set; } = new List<BusinessImage>();
 
     public virtual ICollection<LandlordContract> LandlordContracts { get; set; } = new List<LandlordContract>();
 
