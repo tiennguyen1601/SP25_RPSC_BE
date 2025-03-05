@@ -14,6 +14,6 @@ namespace SP25_RPSC.Services.Service.UserService
         Task<IEnumerable<ListLandlordRes>> GetAllLandLord();
         Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status);
 
-        Task RegisterLandlord(LandlordRegisterReqModel model);
+        Task RegisterLandlord(LandlordRegisterReqModel model, string email);
     }
 }

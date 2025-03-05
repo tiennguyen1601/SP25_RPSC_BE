@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Enums;
+using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.Repositories.UserRepository;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.Utils.CustomException;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,11 +20,13 @@ namespace SP25_RPSC.Services.Service.UserService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICloudinaryStorageService _cloudinaryStorageService;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cloudinaryStorageService = cloudinaryStorageService;
         }
 
         public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status)
@@ -55,17 +61,42 @@ namespace SP25_RPSC.Services.Service.UserService
             };
         }
 
-
-
-
-
         public async Task<IEnumerable<ListLandlordRes>> GetAllLandLord()
         {
             var res = await _unitOfWork.LandlordRepository.GetAllLanlord();
             return res;
         }
 
+        public async Task RegisterLandlord(LandlordRegisterReqModel model, string email)
+        {
+           var existingUser = await _unitOfWork.UserRepository.GetUserByEmail(email);
+            if (existingUser == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Not Found User");
+            }
+          
+            var newLanlord = _mapper.Map<Landlord>(model);
+            newLanlord.LandlordId = Guid.NewGuid().ToString();
+            newLanlord.Status = StatusEnums.Pending.ToString();
+            newLanlord.CreatedDate = DateTime.Now;
+            newLanlord.UpdatedDate = DateTime.Now;
+            newLanlord.User = existingUser;
 
+            var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.WorkshopImages);
+            foreach (var link in downloadUrl)
+            {
+                var Image = new BusinessImage
+                {
+                    BusinessImageId = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    ImageUrl = link,
+                    Status = StatusEnums.Active.ToString(),
+                };
 
+                newLanlord.BusinessImages.Add(Image);
+            }
+
+            await _unitOfWork.LandlordRepository.Add(newLanlord);
+        }
     }
 }

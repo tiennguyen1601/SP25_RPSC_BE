@@ -14,7 +14,7 @@ namespace SP25_RPSC.Services.Service
 {
     public interface ICloudinaryStorageService
     {
-        Task<string> UploadImageAsync(IFormFile file);
+        Task<List<string>> UploadImageAsync(List<IFormFile> file);
     }
     public class CloudinaryStorageService : ICloudinaryStorageService
     {
@@ -32,24 +32,37 @@ namespace SP25_RPSC.Services.Service
              _cloudinary = new Cloudinary(account);
         }
 
-        public async Task<string> UploadImageAsync(IFormFile file)
+
+        public async Task<List<string>> UploadImageAsync(List<IFormFile> files)
         {
-          
+            var uploadUrls = new List<string>();
 
-            if (file == null || file.Length == 0)
+            foreach (var file in files)
             {
-                throw new ArgumentException("Invalid file");
+                if (file == null || file.Length == 0)
+                {
+                    throw new ArgumentException("One of the files is invalid.");
+                }
+
+                try
+                {
+                    await using var stream = file.OpenReadStream();
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(file.FileName, stream),
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill")
+                    };
+
+                    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                    uploadUrls.Add(uploadResult.SecureUrl.AbsoluteUri); // Lấy URL ảnh đã tải lên
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to upload image {file.FileName}: " + ex.Message);
+                }
             }
-
-            await using var stream = file.OpenReadStream();
-            var uploadParams = new ImageUploadParams
-            {
-                File = new FileDescription(file.FileName, stream),
-                Transformation = new Transformation().Width(500).Height(500).Crop("fill")
-            };
-
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            return uploadResult.SecureUrl.AbsoluteUri;
+            return uploadUrls;
         }
+
     }
 }
