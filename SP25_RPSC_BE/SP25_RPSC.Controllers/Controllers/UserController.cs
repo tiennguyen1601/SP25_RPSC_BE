@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.ResultModel;
+using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Services.Service.UserService;
 using System.Net;
 
@@ -44,6 +45,21 @@ namespace SP25_RPSC.Controllers.Controllers
                 Message = "Get Customer successfully",
                 Data = customers
             };
+            return StatusCode(response.Code, response);
+        }
+
+        [HttpPost]
+        [Route("Register-Landlord")]
+        public async Task<IActionResult> RegisterLandlord([FromForm] LandlordRegisterReqModel createRequestModel, string email)
+        {
+            await _userService.RegisterLandlord(createRequestModel, email);
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Register successfully",
+            };
+
             return StatusCode(response.Code, response);
         }
     }

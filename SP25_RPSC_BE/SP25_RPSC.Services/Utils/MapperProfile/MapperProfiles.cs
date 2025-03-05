@@ -60,6 +60,8 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
               ))
               .ReverseMap();
 
+            CreateMap<Landlord, LandlordRegisterReqModel>().ReverseMap();
+
             //-------------------------------------ROOMTYPE------------------------------------------
             CreateMap<RoomType, RoomTypeResponseModel>()
             .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.Landlord.CompanyName))
