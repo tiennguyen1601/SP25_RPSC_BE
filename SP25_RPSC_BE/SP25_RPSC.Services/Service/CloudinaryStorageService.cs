@@ -16,6 +16,8 @@ namespace SP25_RPSC.Services.Service
     {
         Task<List<string>> UploadImageAsync(List<IFormFile> file);
     }
+
+
     public class CloudinaryStorageService : ICloudinaryStorageService
     {
         private readonly Cloudinary _cloudinary;
@@ -50,7 +52,7 @@ namespace SP25_RPSC.Services.Service
                     var uploadParams = new ImageUploadParams
                     {
                         File = new FileDescription(file.FileName, stream),
-                        Transformation = new Transformation().Width(500).Height(500).Crop("fill")
+                        Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
                     };
 
                     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
@@ -64,5 +66,15 @@ namespace SP25_RPSC.Services.Service
             return uploadUrls;
         }
 
+        public async Task<DeletionResult> DeleteFile(string publicId)
+        {
+            var deleteParams = new DeletionParams(publicId)
+            {
+                ResourceType = ResourceType.Video  // Specify that the resource type is video
+            };
+            var result = await _cloudinary.DestroyAsync(deleteParams);
+
+            return result;
+        }
     }
 }

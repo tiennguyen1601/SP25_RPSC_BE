@@ -7,6 +7,8 @@ public partial class LandlordContract
 {
     public string LcontractId { get; set; } = null!;
 
+    public DateTime? SignedDate { get; set; }
+
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
@@ -17,7 +19,9 @@ public partial class LandlordContract
 
     public DateTime? UpdatedDate { get; set; }
 
-    public string? Term { get; set; }
+    public string? LcontractUrl { get; set; }
+
+    public string? LandlordSignatureUrl { get; set; }
 
     public string? PackageId { get; set; }
 

@@ -233,12 +233,14 @@ GO
 --Bảng LandlordContracts
 CREATE TABLE LandlordContracts (
     LContractId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	SignedDate DATETIME,
     StartDate DATETIME,
     EndDate DATETIME,
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
-    Term NVARCHAR(50),
+    LContractUrl NVARCHAR(MAX),
+	LandlordSignatureUrl NVARCHAR(MAX),
     PackageId NVARCHAR(36),
     LandlordId NVARCHAR(36),
     CONSTRAINT FK_LandlordContracts_Package FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId),
