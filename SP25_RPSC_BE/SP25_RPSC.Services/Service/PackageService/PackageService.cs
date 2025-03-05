@@ -103,8 +103,37 @@ namespace SP25_RPSC.Services.Service.PackageService
 
             return Task.FromResult(responseList);
         }
+        public async Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord()
+        {
+            var servicePackages = await _unitOfWork.ServicePackageRepository
+                .Get(orderBy: q => q.OrderBy(p => p.Duration), includeProperties: "ServiceDetails.PricePackages");
 
+            if (servicePackages == null || !servicePackages.Any())
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "No Service Packages found for landlords");
+            }
 
+            var responseList = servicePackages.Select(package => new ServicePackageLandlordResponse
+            {
+                PackageId = package.PackageId,
+                Name = package.Name,
+                Duration = package.Duration,
+                Description = package.Description,
+                Status = package.Status,
+                ListServicePrice = package.ServiceDetails?.Select(serviceDetail => new ServicePriceResponse
+                {
+                    ServiceDetailId = serviceDetail.ServiceDetailId,
+                    Type = serviceDetail.Type,
+                    LimitPost = serviceDetail.LimitPost,
+                    PriceId = serviceDetail.PricePackages?.FirstOrDefault()?.PriceId ?? string.Empty,
+                    Price = serviceDetail.PricePackages?.FirstOrDefault()?.Price ?? 0
+                })
+                .OrderBy(servicePrice => servicePrice.Price)
+                .ToList() ?? new List<ServicePriceResponse>()
+            }).ToList();
+
+            return responseList;
+        }
 
     }
 }

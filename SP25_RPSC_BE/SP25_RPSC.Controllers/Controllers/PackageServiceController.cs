@@ -41,6 +41,12 @@ namespace SP25_RPSC.Controllers.Controllers
             await _packageService.CreatePackage(model);
             return Ok("Create Service successfully");
         }
+        [HttpGet("get-service-package-by-landlord")]
+        public async Task<ActionResult> GetServicePackageforLandlord()
+        {
+            var result = await _packageService.GetServicePackageForLanlord();
 
+            return Ok(result);
+        }
     }
 }
