@@ -1,4 +1,5 @@
 ﻿using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using System;
 using System.Collections.Generic;
@@ -12,5 +13,7 @@ namespace SP25_RPSC.Services.Service.UserService
     {
         Task<IEnumerable<ListLandlordRes>> GetAllLandLord();
         Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status);
+
+        Task RegisterLandlord(LandlordRegisterReqModel model);
     }
 }

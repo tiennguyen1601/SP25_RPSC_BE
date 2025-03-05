@@ -17,6 +17,7 @@ using SP25_RPSC.Services.Service.UserService;
 using SP25_RPSC.Services.Service.PackageService;
 using SP25_RPSC.Services.Service.RoomTypeService;
 using System.Text.Json.Serialization;
+using SP25_RPSC.Services.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,8 @@ builder.Services.AddScoped < IEmailService,  EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
+
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
 //{

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.OTPModel;
 using SP25_RPSC.Services.Service.OTPService;
 
-namespace EXE201_Workshopista.Controllers
+namespace SP25_RPSC.Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
