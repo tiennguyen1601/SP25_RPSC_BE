@@ -33,7 +33,7 @@ namespace SP25_RPSC.Data.Repositories.LandlordRepository
                             LandlordId = l.LandlordId,
                             CompanyName = l.CompanyName,
                             NumberRoom = (int)l.NumberRoom,
-                            LiscenseNumber = l.LicenseNumber,
+                            LicenseNumber = l.LicenseNumber,
                             Status = l.Status,
                             CreatedDate = (DateTime)l.CreatedDate,
                             UpdatedDate = l.UpdatedDate,
