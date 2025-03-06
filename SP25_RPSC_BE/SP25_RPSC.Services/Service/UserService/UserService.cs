@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CloudinaryDotNet.Actions;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.UserModels.Request;
@@ -61,10 +62,34 @@ namespace SP25_RPSC.Services.Service.UserService
             };
         }
 
-        public async Task<IEnumerable<ListLandlordRes>> GetAllLandLord()
+        public async Task<GetAllLandlordResponseModel> GetAllLandLord(string searchQuery, int pageIndex, int pageSize, string status)
         {
-            var res = await _unitOfWork.LandlordRepository.GetAllLanlord();
-            return res;
+            Expression<Func<Landlord, bool>> searchFilter = c =>
+             (string.IsNullOrEmpty(searchQuery) ||
+              c.User.Email.Contains(searchQuery) ||
+              c.User.PhoneNumber.Contains(searchQuery))
+             &&
+             (string.IsNullOrEmpty(status) || c.Status == status);
+
+            var res = await _unitOfWork.LandlordRepository.Get(includeProperties: "User",
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+
+            var totalLandlord = await _unitOfWork.LandlordRepository.CountAsync(searchFilter);
+
+            if (res == null || !res.Any())
+            {
+                return new GetAllLandlordResponseModel { Landlords = new List<ListLandlordRes>(), TotalUser = 0 };
+            }
+
+            var landlordRes = _mapper.Map<List<ListLandlordRes>>(res.ToList());
+
+            return new GetAllLandlordResponseModel
+            {
+                Landlords = landlordRes,
+                TotalUser = totalLandlord
+            };
         }
 
         public async Task RegisterLandlord(LandlordRegisterReqModel model, string email)

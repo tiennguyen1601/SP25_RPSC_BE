@@ -6,12 +6,18 @@ using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Models.UserModels.Response
 {
+    public class GetAllLandlordResponseModel
+    {
+        public int TotalUser { get; set; }
+
+        public List<ListLandlordRes> Landlords { get; set; }
+    }
     public class ListLandlordRes
     {
         public string LandlordId { get; set; }
         public string CompanyName { get; set; }
         public int NumberRoom { get; set; }
-        public string LiscenseNumber { get; set; }
+        public string LicenseNumber { get; set; }
         public string Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

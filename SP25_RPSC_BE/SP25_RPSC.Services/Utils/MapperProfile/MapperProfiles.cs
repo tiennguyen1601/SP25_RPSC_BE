@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using PdfSharpCore.Pdf.IO;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
@@ -34,6 +35,24 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar))
                 .ForMember(dest => dest.UserStatus, opt => opt.MapFrom(src => src.Status))
                 .ReverseMap();
+
+            CreateMap<Landlord, ListLandlordRes>()
+              .ForMember(dest => dest.LandlordId, opt => opt.MapFrom(src => src.LandlordId))
+              .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
+              .ForMember(dest => dest.NumberRoom, opt => opt.MapFrom(src => src.NumberRoom))
+              .ForMember(dest => dest.LicenseNumber, opt => opt.MapFrom(src => src.LicenseNumber))
+    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+    .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
+    .ForMember(dest => dest.UpdatedDate, opt => opt.MapFrom(src => src.UpdatedDate))
+    .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+    .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
+    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Address))
+    .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
+    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.User.Gender))
+    .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.User.Avatar))
+    .ForMember(dest => dest.UserStatus, opt => opt.MapFrom(src => src.Status))
+    .ReverseMap();
 
             CreateMap<ServicePackage, ServicePackageReponse>();
 
