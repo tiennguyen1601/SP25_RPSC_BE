@@ -5,19 +5,21 @@ namespace SP25_RPSC.Data.Entities;
 
 public partial class Transaction
 {
-    public int TransactionId { get; set; }
+    public string TransactionId { get; set; } = null!;
 
-    public decimal? Amount { get; set; }
+    public string TransactionNumber { get; set; } = null!;
 
-    public DateTime? StartDateContract { get; set; }
+    public string TransactionInfo { get; set; } = null!;
 
-    public DateTime? EndDateContract { get; set; }
+    public int Type { get; set; }
+
+    public double Amount { get; set; }
 
     public DateTime? PaymentDate { get; set; }
 
-    public string? PaymentId { get; set; }
-
     public string? PaymentMethod { get; set; }
+
+    public string Status { get; set; } = null!;
 
     public string? LcontractId { get; set; }
 

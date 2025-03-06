@@ -9,6 +9,7 @@ using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
 using SP25_RPSC.Data.Repositories.OTPRepository;
+using SP25_RPSC.Data.Repositories.PaymentRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
@@ -62,6 +63,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IServiceDetailRepository ServiceDetailRepository { get; }
         IUserRepository UserRepository { get; }
         IRefreshTokenRepository RefreshTokenRepository { get; }
+        ITransactionRepository TransactionRepository { get; }
 
         IOTPRepository OTPRepository { get; }
 

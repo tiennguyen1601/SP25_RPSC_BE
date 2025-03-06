@@ -67,6 +67,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IUserRepository _usersRepository;
         private IOTPRepository _otpRepository;
         private IRefreshTokenRepository _refreshTokenRepository;
+        private ITransactionRepository _transactionRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -286,6 +287,15 @@ namespace SP25_RPSC.Data.UnitOfWorks
                 return _refreshTokenRepository ??= new RefreshTokenRepository(_context);
             }
         }
+
+        public ITransactionRepository TransactionRepository
+        {
+            get
+            {
+                return _transactionRepository ??= new TransactionRepository(_context);
+            }
+        }
+
 
         public void Save()
         {

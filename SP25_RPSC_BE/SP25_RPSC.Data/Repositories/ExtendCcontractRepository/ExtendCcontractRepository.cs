@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Repositories.ExtendCcontractRepository
 {
-    public interface IExtendCcontractRepository : IGenericRepository<ExtendContract>
+    public interface IExtendCcontractRepository : IGenericRepository<ExtendCcontract>
     {
 
     }
 
-    public class ExtendCcontractRepository : GenericRepository<ExtendContract>, IExtendCcontractRepository
+    public class ExtendCcontractRepository : GenericRepository<ExtendCcontract>, IExtendCcontractRepository
     {
         private readonly RpscContext _context;
 

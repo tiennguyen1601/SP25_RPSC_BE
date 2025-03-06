@@ -250,13 +250,14 @@ GO
 
 -- Bảng Transaction
 CREATE TABLE [Transaction] (
-    TransactionId INT IDENTITY(1,1) PRIMARY KEY,
-    Amount DECIMAL(18,2),
-    StartDateContract DATETIME,
-    EndDateContract DATETIME,
+    [TransactionId] [nvarchar](36) NOT NULL PRIMARY KEY,
+	[TransactionNumber] [nvarchar](max) NOT NULL,
+	[TransactionInfo] [nvarchar](max) NOT NULL,
+	[Type] [int] NOT NULL,
+	[Amount] [float] NOT NULL,
     PaymentDate DATETIME,
-    PaymentId NVARCHAR(255),
     PaymentMethod NVARCHAR(50) CHECK (PaymentMethod IN ('Online', 'Cash')),
+	[Status] [nvarchar](20) NOT NULL,
     LContractId NVARCHAR(36),
     CONSTRAINT FK_Transaction_LandlordContracts FOREIGN KEY (LContractId) REFERENCES LandlordContracts(LContractId)
 );
