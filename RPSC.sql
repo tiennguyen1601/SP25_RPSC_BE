@@ -431,27 +431,27 @@ VALUES
     (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
     (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
     (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Loại 4', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
 
     (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
     (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
     (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Loại 4', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
 
     (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
     (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
     (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
-    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
+    (N'Loại 4', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng')),
 
     (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
     (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
     (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
-    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
+    (N'Loại 4', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng')),
 
     (N'Loại 1', 15, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
     (N'Loại 2', 20, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
     (N'Loại 3', 30, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')),
-    (N'Không giới hạn', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'));
+    (N'Loại 4', NULL, 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'));
 
 
 	INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId])
@@ -460,28 +460,28 @@ VALUES
     (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
     (19000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
     (29000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
-    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
+    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần'))),
 
     -- 1 tháng
     (49000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
     (59000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
     (69000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
-    (80000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
+    (80000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'))),
 
     -- 3 tháng
     (99000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
     (109000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
     (119000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
-    (150000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
+    (150000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'3 tháng'))),
 
     -- 6 tháng
     (169000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
     (199000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
     (219000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
-    (250000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
+    (250000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'6 tháng'))),
 
     -- 1 năm
     (249000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'))),
     (269000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'))),
     (299000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm'))),
-    (350000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Loại 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')));
+    (350000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Không giới hạn' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 năm')));

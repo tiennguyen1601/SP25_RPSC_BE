@@ -13,6 +13,7 @@ namespace SP25_RPSC.Data.Enums
         Rejected,
         Active,
         Inactive,
-        Banned
+        Banned,
+        Deactive
     }
 }

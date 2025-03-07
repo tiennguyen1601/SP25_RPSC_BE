@@ -123,5 +123,81 @@ namespace SP25_RPSC.Services.Service.UserService
 
             await _unitOfWork.LandlordRepository.Add(newLanlord);
         }
+
+        public async Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, int pageIndex, int pageSize)
+        {
+            Expression<Func<Landlord, bool>> searchFilter = c =>
+                c.Status == StatusEnums.Pending.ToString() &&
+                (string.IsNullOrEmpty(searchQuery) ||
+                 c.User.Email.Contains(searchQuery) ||
+                 c.User.PhoneNumber.Contains(searchQuery));
+
+
+            var res = await _unitOfWork.LandlordRepository.Get(orderBy: q => q.OrderBy(p => p.CreatedDate),
+                                                                    includeProperties: "User,BusinessImages", 
+                                                                    filter: searchFilter,
+                                                                    pageIndex: pageIndex,
+                                                                    pageSize: pageSize);
+
+
+            var totalLandlord = await _unitOfWork.LandlordRepository.CountAsync(searchFilter);
+
+            if (res == null || !res.Any())
+            {
+                return new GetAllLandlordRegisterResponseModel { Landlords = new List<ListLandlordResgiterResponse>(), TotalUser = 0 };
+            }
+
+            var landlordRes = _mapper.Map<List<ListLandlordResgiterResponse>>(res.ToList());
+
+            return new GetAllLandlordRegisterResponseModel
+            {
+                Landlords = landlordRes,
+                TotalUser = totalLandlord
+            };
+        }
+
+        public async Task<List<LanlordRegisByIdResponse>> GetRegisLandLordById(string landlordId)
+        {
+            var res = await _unitOfWork.LandlordRepository.Get(
+                includeProperties: "User,BusinessImages",
+                filter: c => c.LandlordId.Equals(landlordId)
+            );
+
+            var landlordRes = _mapper.Map<List<LanlordRegisByIdResponse>>(res.ToList());
+            return landlordRes;
+        }
+
+
+
+        public async Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved)
+        {
+            var landlords = await _unitOfWork.LandlordRepository.GetByIDAsync(landlordId);
+
+            if (landlords == null || landlords.Status == null)
+            {
+                return false; 
+            }
+
+            if (isApproved)
+            {
+                landlords.Status = StatusEnums.Active.ToString();
+                landlords.Status = StatusEnums.Active.ToString(); 
+            }
+            else
+            {
+                landlords.Status = StatusEnums.Deactive.ToString();
+                landlords.Status = StatusEnums.Deactive.ToString(); 
+            }
+
+            landlords.UpdatedDate = DateTime.UtcNow; 
+
+            await _unitOfWork.LandlordRepository.Update(landlords);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
+
+
     }
 }

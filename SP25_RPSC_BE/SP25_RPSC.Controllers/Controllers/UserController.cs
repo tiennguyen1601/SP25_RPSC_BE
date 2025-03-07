@@ -62,5 +62,73 @@ namespace SP25_RPSC.Controllers.Controllers
 
             return StatusCode(response.Code, response);
         }
+
+
+        [HttpGet]
+        [Route("Get-Landlord-Regis")]
+        public async Task<ActionResult> GetLanlordRegis(int pageIndex, int pageSize, string searchQuery = null)
+        {
+            var landlords = await _userService.GetRegisLandLord(searchQuery, pageIndex, pageSize);
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get Lanlord successfully",
+                Data = landlords
+            };
+            return StatusCode(response.Code, response);
+        }
+
+        [HttpGet]
+        [Route("Get-Landlord-By-Id")]
+        public async Task<ActionResult> GetLandlordById([FromQuery] string landlordId)
+        {
+            var landlord = await _userService.GetRegisLandLordById(landlordId);
+
+            if (landlord == null)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "Landlord not found."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get Landlord successfully.",
+                Data = landlord
+            });
+        }
+
+        [HttpPut]
+        [Route("Update-Landlord-Status")]
+        public async Task<IActionResult> UpdateLandlordStatus([FromQuery] string landlordId, [FromQuery] bool isApproved)
+        {
+            bool isUpdated = await _userService.UpdateLandlordStatus(landlordId, isApproved);
+
+            if (!isUpdated)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Failed to update landlord status."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Landlord status updated successfully."
+            });
+        }
+       
+
+
     }
 }
