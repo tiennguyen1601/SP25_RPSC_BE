@@ -25,7 +25,7 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
         {
         public string ServiceDetailId { get; set; }
         public string Type { get; set; }
-        public int? LimitPost { get; set; }
+        public string? LimitPost { get; set; }
         public string Status { get; set; }
 
         public DateTime? ApplicableDate { get; set; }

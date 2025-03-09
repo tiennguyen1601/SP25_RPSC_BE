@@ -100,7 +100,7 @@ namespace SP25_RPSC.Services.Service.PackageService
                 {
                     ServiceDetailId = detail.ServiceDetailId,
                     Type = detail.Type,
-                    LimitPost = detail.LimitPost,
+                    LimitPost = detail.HighLight,
                     Status = detail.Status,
                     Price = detail.PricePackages?.FirstOrDefault()?.Price ?? 0,
                     ApplicableDate = detail.PricePackages?.FirstOrDefault()?.ApplicableDate
@@ -132,7 +132,7 @@ namespace SP25_RPSC.Services.Service.PackageService
                 {
                     ServiceDetailId = serviceDetail.ServiceDetailId,
                     Type = serviceDetail.Type,
-                    LimitPost = serviceDetail.LimitPost,
+                    LimitPost = serviceDetail.HighLight,
                     PriceId = serviceDetail.PricePackages?.FirstOrDefault()?.PriceId ?? string.Empty,
                     Price = serviceDetail.PricePackages?.FirstOrDefault()?.Price ?? 0
                 })

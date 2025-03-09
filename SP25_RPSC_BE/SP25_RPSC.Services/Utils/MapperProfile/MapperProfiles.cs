@@ -93,7 +93,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             CreateMap<ServiceDetail, ServiceDetailReponse.ListDetailService>()
                 .ForMember(dest => dest.ServiceDetailId, opt => opt.MapFrom(src => src.ServiceDetailId))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
-                .ForMember(dest => dest.LimitPost, opt => opt.MapFrom(src => src.LimitPost))
+                .ForMember(dest => dest.LimitPost, opt => opt.MapFrom(src => src.HighLight))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
 

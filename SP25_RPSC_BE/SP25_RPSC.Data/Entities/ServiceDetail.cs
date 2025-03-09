@@ -9,7 +9,7 @@ public partial class ServiceDetail
 
     public string? Type { get; set; }
 
-    public int? LimitPost { get; set; }
+    public string? HighLight { get; set; }
 
     public string? Status { get; set; }
 

@@ -24,7 +24,7 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
 
         public string? Type { get; set; }
 
-        public int? LimitPost { get; set; }
+        public string? LimitPost { get; set; }
 
         public string PriceId { get; set; } = null!;
 
