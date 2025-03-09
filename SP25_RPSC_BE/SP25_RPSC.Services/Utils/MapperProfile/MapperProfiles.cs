@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SP25_RPSC.Data.Models.PackageServiceModel.ServiceDetailReponse;
 
 namespace SP25_RPSC.Services.Utils.MapperProfile
 {
@@ -89,12 +90,11 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
 
             CreateMap<ServicePackage, ServicePackageReponse>();
 
-            CreateMap<ServiceDetail, ServiceDetailReponse>()
+            CreateMap<ServiceDetail, ServiceDetailReponse.ListDetailService>()
                 .ForMember(dest => dest.ServiceDetailId, opt => opt.MapFrom(src => src.ServiceDetailId))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
                 .ForMember(dest => dest.LimitPost, opt => opt.MapFrom(src => src.LimitPost))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.PackageId, opt => opt.MapFrom(src => src.PackageId));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
 
 
 

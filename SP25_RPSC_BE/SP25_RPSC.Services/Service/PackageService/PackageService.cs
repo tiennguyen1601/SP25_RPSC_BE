@@ -79,30 +79,38 @@ namespace SP25_RPSC.Services.Service.PackageService
 
 
 
-        public Task<List<ServiceDetailReponse>> GetServiceDetailsByPackageId(string packageId)
+        public async Task<ServiceDetailReponse?> GetServiceDetailsByPackageId(string packageId)
         {
-            var servicePackages = _unitOfWork.ServiceDetailRepository
-                .Get(u => u.PackageId.Equals(packageId), orderBy: q => q.OrderBy(p => p.LimitPost), includeProperties: "PricePackages").Result 
-                .ToList();
+            // Lấy gói dịch vụ theo PackageId
+            var servicePackage = (await _unitOfWork.ServicePackageRepository
+                .Get(sp => sp.PackageId == packageId, includeProperties: "ServiceDetails.PricePackages")).FirstOrDefault();
 
-            if (!servicePackages.Any())
+            if (servicePackage == null)
             {
                 throw new ApiException(HttpStatusCode.NotFound, "No ServiceDetails found for the given PackageId");
             }
-
-            var responseList = servicePackages.Select(servicePackage => new ServiceDetailReponse
+            var response = new ServiceDetailReponse
             {
-                ServiceDetailId = servicePackage.ServiceDetailId,
-                Type = servicePackage.Type,
-                LimitPost = servicePackage.LimitPost,
-                Status = servicePackage.Status,
                 PackageId = servicePackage.PackageId,
-                Price = servicePackage.PricePackages?.FirstOrDefault()?.Price ?? 0,
-                ApplicableDate = servicePackage.PricePackages?.FirstOrDefault()?.ApplicableDate
-            }).ToList();
+                Name = servicePackage.Name, 
+                Duration = servicePackage.Duration,
+                Description = servicePackage.Description,
+                serviceStatus = servicePackage.Status,
+                ListDetails = servicePackage.ServiceDetails.Select(detail => new ServiceDetailReponse.ListDetailService
+                {
+                    ServiceDetailId = detail.ServiceDetailId,
+                    Type = detail.Type,
+                    LimitPost = detail.LimitPost,
+                    Status = detail.Status,
+                    Price = detail.PricePackages?.FirstOrDefault()?.Price ?? 0,
+                    ApplicableDate = detail.PricePackages?.FirstOrDefault()?.ApplicableDate
+                }).OrderBy(x => x.Price).ToList()
+            };
 
-            return Task.FromResult(responseList);
+            return response;
         }
+
+
         public async Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord()
         {
             var servicePackages = await _unitOfWork.ServicePackageRepository
@@ -134,6 +142,33 @@ namespace SP25_RPSC.Services.Service.PackageService
 
             return responseList;
         }
+
+
+        public async Task UpdatePrice(string PriceId, decimal newPrice, DateTime applicableDate)
+        {
+            var pricePackage = await _unitOfWork.PricePackageRepository.GetByIDAsync(PriceId);
+
+            if (pricePackage == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "No pricePackage found for the given PriceId");
+            }
+
+            pricePackage.ApplicableDate = DateTime.UtcNow;
+            _unitOfWork.PricePackageRepository.Update(pricePackage);
+
+            var newPricePackage = new PricePackage
+            {
+                PriceId = Guid.NewGuid().ToString(),
+                Price = newPrice,
+                ApplicableDate = applicableDate,
+                ServiceDetailId = pricePackage.ServiceDetailId
+            };
+
+            await _unitOfWork.PricePackageRepository.Add(newPricePackage);
+            await _unitOfWork.SaveAsync();
+        }
+
+
 
     }
 }
