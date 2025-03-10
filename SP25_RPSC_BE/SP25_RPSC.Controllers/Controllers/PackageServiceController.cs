@@ -2,6 +2,7 @@
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.OTPModel;
 using SP25_RPSC.Data.Models.PackageModel;
+using SP25_RPSC.Data.Models.PackageServiceModel;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Services.Service.OTPService;
 using SP25_RPSC.Services.Service.PackageService;
@@ -48,5 +49,29 @@ namespace SP25_RPSC.Controllers.Controllers
 
             return Ok(result);
         }
+        [HttpPut("update-price/{priceId}")]
+        public async Task<IActionResult> UpdatePrice(string priceId, [FromBody] UpdatePriceRequest request)
+        {
+            if (request == null || request.NewPrice <= 0)
+            {
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Invalid price value."
+                });
+            }
+
+            await _packageService.UpdatePrice(priceId, request.NewPrice);
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Price package updated successfully."
+            });
+        }
+
+
     }
 }

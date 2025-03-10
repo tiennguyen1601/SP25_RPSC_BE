@@ -94,12 +94,26 @@ namespace SP25_RPSC.Services.Service.UserService
 
         public async Task RegisterLandlord(LandlordRegisterReqModel model, string email)
         {
-           var existingUser = await _unitOfWork.UserRepository.GetUserByEmail(email);
+            var existingUser = await _unitOfWork.UserRepository.GetUserByEmail(email);
             if (existingUser == null)
             {
                 throw new ApiException(HttpStatusCode.NotFound, "Not Found User");
             }
-          
+
+            var existingLicense = (await _unitOfWork.LandlordRepository
+                .Get(l => l.LicenseNumber == model.LicenseNumber)).FirstOrDefault();
+            if (existingLicense != null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "License number already exists!");
+            }
+
+            var existingBank = (await _unitOfWork.LandlordRepository
+                .Get(l => l.BankNumber == model.BankNumber)).FirstOrDefault();
+            if (existingBank != null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Bank number already exists!");
+            }
+
             var newLanlord = _mapper.Map<Landlord>(model);
             newLanlord.LandlordId = Guid.NewGuid().ToString();
             newLanlord.Status = StatusEnums.Pending.ToString();
@@ -122,7 +136,9 @@ namespace SP25_RPSC.Services.Service.UserService
             }
 
             await _unitOfWork.LandlordRepository.Add(newLanlord);
+            await _unitOfWork.SaveAsync();
         }
+
 
         public async Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, int pageIndex, int pageSize)
         {

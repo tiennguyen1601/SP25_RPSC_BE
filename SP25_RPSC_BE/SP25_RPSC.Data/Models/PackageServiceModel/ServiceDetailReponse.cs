@@ -27,7 +27,7 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
         public string Type { get; set; }
         public string? LimitPost { get; set; }
         public string Status { get; set; }
-
+        public string PriceId { get; set; }
         public DateTime? ApplicableDate { get; set; }
         public decimal? Price { get; set; }
         }

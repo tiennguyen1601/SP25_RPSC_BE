@@ -81,7 +81,6 @@ namespace SP25_RPSC.Services.Service.PackageService
 
         public async Task<ServiceDetailReponse?> GetServiceDetailsByPackageId(string packageId)
         {
-            // Lấy gói dịch vụ theo PackageId
             var servicePackage = (await _unitOfWork.ServicePackageRepository
                 .Get(sp => sp.PackageId == packageId, includeProperties: "ServiceDetails.PricePackages")).FirstOrDefault();
 
@@ -102,9 +101,12 @@ namespace SP25_RPSC.Services.Service.PackageService
                     Type = detail.Type,
                     LimitPost = detail.HighLight,
                     Status = detail.Status,
-                    Price = detail.PricePackages?.FirstOrDefault()?.Price ?? 0,
-                    ApplicableDate = detail.PricePackages?.FirstOrDefault()?.ApplicableDate
-                }).OrderBy(x => x.Price).ToList()
+                    PriceId = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.PriceId,
+                    Price = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
+                    ApplicableDate = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate
+                })
+                
+                .OrderBy(x => x.Price).ToList()
             };
 
             return response;
@@ -144,7 +146,7 @@ namespace SP25_RPSC.Services.Service.PackageService
         }
 
 
-        public async Task UpdatePrice(string PriceId, decimal newPrice, DateTime applicableDate)
+        public async Task UpdatePrice(string PriceId, decimal newPrice)
         {
             var pricePackage = await _unitOfWork.PricePackageRepository.GetByIDAsync(PriceId);
 
@@ -153,20 +155,23 @@ namespace SP25_RPSC.Services.Service.PackageService
                 throw new ApiException(HttpStatusCode.NotFound, "No pricePackage found for the given PriceId");
             }
 
-            pricePackage.ApplicableDate = DateTime.UtcNow;
-            _unitOfWork.PricePackageRepository.Update(pricePackage);
+            pricePackage.Status = StatusEnums.Inactive.ToString();
+            await _unitOfWork.PricePackageRepository.Update(pricePackage);
+
 
             var newPricePackage = new PricePackage
             {
-                PriceId = Guid.NewGuid().ToString(),
+                PriceId = Guid.NewGuid().ToString(), 
                 Price = newPrice,
-                ApplicableDate = applicableDate,
+                Status = StatusEnums.Active.ToString(),
+                ApplicableDate = DateTime.UtcNow, 
                 ServiceDetailId = pricePackage.ServiceDetailId
             };
 
             await _unitOfWork.PricePackageRepository.Add(newPricePackage);
             await _unitOfWork.SaveAsync();
         }
+
 
 
 
