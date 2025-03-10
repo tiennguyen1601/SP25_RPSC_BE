@@ -10,15 +10,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Services.JWTService
+namespace SP25_RPSC.Services.Service.JWTService
 {
-    public interface IJWTService
-    {
-        string GenerateJWT(User user);
-        string GenerateRefreshToken();
-        string decodeToken(string jwtToken, string nameClaim);
-    }
-
     public class JWTService : IJWTService
     {
         private readonly IConfiguration _config;

@@ -6,18 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SP25_RPSC.Data.Repositories.PaymentRepository
+namespace SP25_RPSC.Data.Repositories.ServiceDetailRepository
 {
-    public interface IPaymentRepository : IGenericRepository<Payment>
+    public interface IServiceDetailRepository : IGenericRepository<ServiceDetail>
     {
 
     }
 
-    public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
+    public class ServiceDetailRepository : GenericRepository<ServiceDetail>, IServiceDetailRepository
     {
         private readonly RpscContext _context;
 
-        public PaymentRepository(RpscContext context) : base(context)
+        public ServiceDetailRepository(RpscContext context) : base(context)
         {
             _context = context;
         }

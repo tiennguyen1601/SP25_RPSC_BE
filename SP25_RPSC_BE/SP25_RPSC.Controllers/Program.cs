@@ -5,12 +5,19 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SP25_RPSC.Controllers.Controllers.Middleware;
 using SP25_RPSC.Data.Repositories;
-using SP25_RPSC.Services.JWTService;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Services.Utils.MapperProfile;
-using SP25_RPSC.Services.AuthenticationService;
 using System.Text;
 using SP25_RPSC.Controllers.Extensions;
+using SP25_RPSC.Services.Service.AuthenticationService;
+using SP25_RPSC.Services.Service.JWTService;
+using SP25_RPSC.Services.Service.OTPService;
+using SP25_RPSC.Services.Service.EmailService;
+using SP25_RPSC.Services.Service.UserService;
+using SP25_RPSC.Services.Service.PackageService;
+using SP25_RPSC.Services.Service.RoomTypeService;
+using System.Text.Json.Serialization;
+using SP25_RPSC.Services.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +42,19 @@ builder.Services.AddSingleton<GlobalExceptionMiddleware>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IDecodeTokenHandler, DecodeTokenHandler>();
 builder.Services.AddScoped<IJWTService, JWTService>();
+builder.Services.AddScoped<IOTPService, OTPService>();
+builder.Services.AddScoped < IEmailService,  EmailService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
+
+
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//    options.JsonSerializerOptions.WriteIndented = true;
+//});
 //-----------------------------------------DB-----------------------------------------
 
 builder.Services.AddDbContext<RpscContext>(options =>

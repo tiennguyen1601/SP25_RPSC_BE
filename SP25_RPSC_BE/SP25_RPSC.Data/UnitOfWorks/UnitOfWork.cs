@@ -9,9 +9,11 @@ using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
+using SP25_RPSC.Data.Repositories.OTPRepository;
 using SP25_RPSC.Data.Repositories.PaymentRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
+using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
@@ -23,6 +25,7 @@ using SP25_RPSC.Data.Repositories.RoomServiceRepository;
 using SP25_RPSC.Data.Repositories.RoomStayCustomerRepository;
 using SP25_RPSC.Data.Repositories.RoomStayRepository;
 using SP25_RPSC.Data.Repositories.RoomTypeRepository;
+using SP25_RPSC.Data.Repositories.ServiceDetailRepository;
 using SP25_RPSC.Data.Repositories.ServicePackageRepository;
 using SP25_RPSC.Data.Repositories.UserRepository;
 using System;
@@ -60,8 +63,11 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomStayRepository _roomStayRepository;
         private IRoomTypeRepository _roomTypeRepository;
         private IServicePackageRepository _servicePackageRepository;
+        private IServiceDetailRepository _serviceDetailRepository;
         private IUserRepository _usersRepository;
-
+        private IOTPRepository _otpRepository;
+        private IRefreshTokenRepository _refreshTokenRepository;
+        private ITransactionRepository _transactionRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -250,6 +256,13 @@ namespace SP25_RPSC.Data.UnitOfWorks
                 return _servicePackageRepository ??= new ServicePackageRepository(_context);
             }
         }
+        public IServiceDetailRepository ServiceDetailRepository
+        {
+            get
+            {
+                return _serviceDetailRepository ??= new ServiceDetailRepository(_context);
+            }
+        }
 
         public IUserRepository UserRepository
         {
@@ -258,6 +271,31 @@ namespace SP25_RPSC.Data.UnitOfWorks
                 return _usersRepository ??= new UserRepository(_context);
             }
         }
+
+        public IOTPRepository OTPRepository
+        {
+            get
+            {
+                return _otpRepository ??= new OTPRepository(_context);
+            }
+        }
+
+        public IRefreshTokenRepository RefreshTokenRepository
+        {
+            get
+            {
+                return _refreshTokenRepository ??= new RefreshTokenRepository(_context);
+            }
+        }
+
+        public ITransactionRepository TransactionRepository
+        {
+            get
+            {
+                return _transactionRepository ??= new TransactionRepository(_context);
+            }
+        }
+
 
         public void Save()
         {

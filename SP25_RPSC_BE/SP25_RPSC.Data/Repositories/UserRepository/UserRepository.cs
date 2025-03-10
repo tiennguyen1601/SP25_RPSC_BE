@@ -11,7 +11,9 @@ namespace SP25_RPSC.Data.Repositories.UserRepository
 {
     public interface IUserRepository : IGenericRepository<User>
     {
-        Task <User> GetUserByPhoneNumber(string phoneNumber);
+        Task<User> GetUserByPhoneNumber(string phoneNumber);
+        Task<User> GetUserByEmail(string email);
+
     }
 
     public class UserRepository : GenericRepository<User>, IUserRepository
@@ -27,7 +29,14 @@ namespace SP25_RPSC.Data.Repositories.UserRepository
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.PhoneNumber.Equals(phoneNumber));
+                .FirstOrDefaultAsync(u => u.PhoneNumber.Equals(phoneNumber) ||
+            (u.Email == phoneNumber));
+
+        }
+
+        public async Task<User> GetUserByEmail(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
         }
     }
 }

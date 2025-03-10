@@ -16,7 +16,7 @@ GO
 CREATE TABLE ServicePackage (
     PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255) NOT NULL,
-    Duration INT,  -- ví dụ: số ngày hoặc số tháng
+    Duration INT,
     Description NVARCHAR(MAX),
     Status NVARCHAR(50)
 );
@@ -46,13 +46,24 @@ CREATE TABLE Landlord (
     LandlordId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     CompanyName NVARCHAR(255),
     NumberRoom INT,
-    LiscenseNumber NVARCHAR(50),
-    BusinessLiscense NVARCHAR(50),
+    LicenseNumber NVARCHAR(50),
+	BankName NVARCHAR(255),
+	BankNumber NVARCHAR(255),
+	Template NVARCHAR(255),
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
     UserId NVARCHAR(36),
     CONSTRAINT FK_Landlord_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
+);
+GO
+CREATE TABLE BusinessImage (
+    BusinessImageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ImageURL NVARCHAR(255) NOT NULL,
+    CreatedDate DATETIME DEFAULT GETDATE(),
+    Status NVARCHAR(50),
+	LandlordId NVARCHAR(36),
+    CONSTRAINT FK_BusinessImage_Landlord FOREIGN KEY (LandlordId) REFERENCES [Landlord](LandlordId)
 );
 GO
 
@@ -63,25 +74,78 @@ CREATE TABLE Customer (
     LifeStyle NVARCHAR(255),
     BudgetRange NVARCHAR(50),
     PreferredLocation NVARCHAR(255),
-    Gender NVARCHAR(50),
     Requirement NVARCHAR(MAX),
     Status NVARCHAR(50),
     UserId NVARCHAR(36),
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
+
+
 GO
 
+--Bảng Address
+CREATE TABLE [Address] (
+    AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    City NVARCHAR(255),
+    District NVARCHAR(255),
+    Street NVARCHAR(255),
+    HouseNumber NVARCHAR(50),
+    [Long] FLOAT,  -- Lưu ý: "Long" có thể là từ khóa nên được đặt trong dấu []
+    Lat FLOAT,
+);
+GO
+
+CREATE TABLE RoomType (
+    RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    RoomTypeName NVARCHAR(255),
+	Deposite DECIMAL(18,2),
+	Area INT,
+    Square DECIMAL(10,2),
+    Description NVARCHAR(MAX),
+    MaxOccupancy INT,
+	Status NVARCHAR(36),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+	LandlordId NVARCHAR(36),
+	AddressId NVARCHAR(36),
+	CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId),
+	CONSTRAINT FK_RoomType_Address FOREIGN KEY (AddressId) REFERENCES [Address](AddressId)
+);
+GO
+
+--Bảng RoomService
+CREATE TABLE RoomService (
+    RoomServiceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    RoomServiceName NVARCHAR(255),
+    Description NVARCHAR(MAX),
+    Status NVARCHAR(50),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+	RoomTypeId  NVARCHAR(36),
+	CONSTRAINT FK_RoomService_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+);
+GO
+
+--Bảng RoomServicePrice
+CREATE TABLE RoomServicePrice (
+    RoomServicePriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ApplicableDate DATETIME,
+    Price DECIMAL(18,2),
+    RoomServiceId NVARCHAR(36),
+    CONSTRAINT FK_RoomServicePrice_RoomService FOREIGN KEY (RoomServiceId) REFERENCES RoomService(RoomServiceId)
+);
+GO
 --Bảng Rooms
 CREATE TABLE Rooms (
     RoomId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	RoomNumber NVARCHAR(50),
     Title NVARCHAR(255),
     Description NVARCHAR(MAX),
-    Deposite DECIMAL(18,2),
     Status NVARCHAR(50),
     Location NVARCHAR(255),
     UpdatedAt DATETIME,
-    LandlordId NVARCHAR(36),
-    CONSTRAINT FK_Rooms_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
+	RoomTypeId NVARCHAR(36),
+    CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId),
 );
 GO
 
@@ -169,12 +233,14 @@ GO
 --Bảng LandlordContracts
 CREATE TABLE LandlordContracts (
     LContractId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	SignedDate DATETIME,
     StartDate DATETIME,
     EndDate DATETIME,
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
-    Term NVARCHAR(50),
+    LContractUrl NVARCHAR(MAX),
+	LandlordSignatureUrl NVARCHAR(MAX),
     PackageId NVARCHAR(36),
     LandlordId NVARCHAR(36),
     CONSTRAINT FK_LandlordContracts_Package FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId),
@@ -184,13 +250,14 @@ GO
 
 -- Bảng Transaction
 CREATE TABLE [Transaction] (
-    TransactionId INT IDENTITY(1,1) PRIMARY KEY,
-    Amount DECIMAL(18,2),
-    StartDateContract DATETIME,
-    EndDateContract DATETIME,
+    [TransactionId] [nvarchar](36) NOT NULL PRIMARY KEY,
+	[TransactionNumber] [nvarchar](max) NOT NULL,
+	[TransactionInfo] [nvarchar](max) NOT NULL,
+	[Type] [int] NOT NULL,
+	[Amount] [float] NOT NULL,
     PaymentDate DATETIME,
-    PaymentId NVARCHAR(255),
     PaymentMethod NVARCHAR(50) CHECK (PaymentMethod IN ('Online', 'Cash')),
+	[Status] [nvarchar](20) NOT NULL,
     LContractId NVARCHAR(36),
     CONSTRAINT FK_Transaction_LandlordContracts FOREIGN KEY (LContractId) REFERENCES LandlordContracts(LContractId)
 );
@@ -226,42 +293,26 @@ CREATE TABLE Favorite (
 );
 GO
 
+--Bảng ServiceDetail
+CREATE TABLE ServiceDetail (
+    ServiceDetailId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    [Type] NVARCHAR(50),
+    HighLight NVARCHAR(255),
+	Status NVARCHAR(36),
+	PackageId  NVARCHAR(36),
+    CONSTRAINT FK_ServicePackage FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
+);
+GO
+
+
 --Bảng PricePackage
 CREATE TABLE PricePackage (
     PriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	Price DECIMAL(18,2),
     ApplicableDate DATETIME,
-    Price DECIMAL(18,2),
-    PackageId NVARCHAR(36),
-    CONSTRAINT FK_PricePackage_Package FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
-);
-GO
-
---Bảng Address
-CREATE TABLE Address (
-    AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    City NVARCHAR(255),
-    District NVARCHAR(255),
-    Street NVARCHAR(255),
-    HouseNumber NVARCHAR(50),
-    [Long] FLOAT,  -- Lưu ý: "Long" có thể là từ khóa nên được đặt trong dấu []
-    Lat FLOAT,
-    RoomId NVARCHAR(36),
-    CONSTRAINT FK_Address_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
-);
-GO
-
---Bảng RoomType
-CREATE TABLE RoomType (
-    RoomTypeId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    RoomTypeName NVARCHAR(255),
-    Square DECIMAL(10,2),
-    Description NVARCHAR(MAX),
-    Amenities NVARCHAR(MAX),
-    MaxOccupancy INT,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    UpdatedAt DATETIME,
-    RoomId NVARCHAR(36),
-    CONSTRAINT FK_RoomType_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
+	Status NVARCHAR(36),
+    ServiceDetailId NVARCHAR(36),
+    CONSTRAINT FK_ServiceDetail FOREIGN KEY (ServiceDetailId) REFERENCES ServiceDetail(ServiceDetailId)
 );
 GO
 
@@ -281,29 +332,6 @@ CREATE TABLE RoomPrice (
     Price DECIMAL(18,2),
     RoomTypeId NVARCHAR(36),
     CONSTRAINT FK_RoomPrice_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
-);
-GO
-
---Bảng RoomService
-CREATE TABLE RoomService (
-    RoomServiceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    RoomServiceName NVARCHAR(255),
-    Description NVARCHAR(MAX),
-    Status NVARCHAR(50),
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    UpdatedAt DATETIME,
-    RoomTypeId NVARCHAR(36),
-    CONSTRAINT FK_RoomService_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
-);
-GO
-
---Bảng RoomServicePrice
-CREATE TABLE RoomServicePrice (
-    RoomServicePriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    ApplicableDate DATETIME,
-    Price DECIMAL(18,2),
-    RoomServiceId NVARCHAR(36),
-    CONSTRAINT FK_RoomServicePrice_RoomService FOREIGN KEY (RoomServiceId) REFERENCES RoomService(RoomServiceId)
 );
 GO
 
@@ -336,11 +364,20 @@ GO
 CREATE TABLE RoomAmenties (
     RoomAmentyId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255),
-    Description NVARCHAR(MAX),
     Compensation DECIMAL(18,2),
-    RoomTypeId NVARCHAR(36),
-	CONSTRAINT FK_RoomAmenities_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    LandlordId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmenities_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
+GO
+CREATE TABLE RoomAmentiesList (
+    RoomAmenitiesListId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Description NVARCHAR(MAX),
+    RoomId NVARCHAR(36),
+	RoomAmentyId NVARCHAR(36),
+	CONSTRAINT FK_RoomAmentiesList_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
+	CONSTRAINT FK_RoomAmentiesList_RoomAmenties FOREIGN KEY (RoomAmentyId) REFERENCES RoomAmenties(RoomAmentyId)
+);
+GO
 --Bảng CustomerMoveOut
 CREATE TABLE CustomerMoveOut (
     CMOId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -350,7 +387,7 @@ CREATE TABLE CustomerMoveOut (
     DateRequest DATETIME,
     Status INT
 );
-
+--Bảng OTP
 CREATE TABLE Otp (
     Id NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL , 
     Code NVARCHAR(MAX) NULL, 
@@ -359,3 +396,81 @@ CREATE TABLE Otp (
     CreatedBy NVARCHAR(36) NULL,
 	CONSTRAINT FK_Otp_CreatedByNavigation FOREIGN KEY (CreatedBy) REFERENCES [User](UserId)
 );
+--Bảng RefreshToken
+CREATE TABLE RefreshToken (
+   RefreshTokenID NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL ,
+   ExpiredAt Datetime NOT NULL,
+   Token VARCHAR (255) NOT NULL,
+   UserId NVARCHAR(36),
+   CONSTRAINT FK_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
+);
+--Bảng ExtendCContracts
+CREATE TABLE ExtendCContracts (
+   ExtendCContractID NVARCHAR(36) PRIMARY KEY DEFAULT NEWID() NOT NULL ,
+   StartDateContract Datetime NOT NULL,
+   EndDateContract Datetime  NOT NULL,
+   ExtendCount INT,
+   ContractID  NVARCHAR(36),
+   CONSTRAINT FK_CustomerContracts FOREIGN KEY (ContractID) REFERENCES [CustomerContracts](ContractID)
+);
+INSERT INTO Role (RoleId, RoleName)
+VALUES 
+(NEWID(), 'Customer'),
+(NEWID(), 'Landlord'),
+(NEWID(), 'Admin');
+
+INSERT INTO [RPSC].[dbo].[ServicePackage] ([Name], [Duration], [Description], [Status])
+VALUES
+    (N'1 ngày', 1, N'Gói dịch vụ 1 ngày', 'Active'),
+    (N'1 tuần', 7, N'Gói dịch vụ 1 tuần', 'Active'),
+    (N'1 tháng', 30, N'Gói dịch vụ 1 tháng', 'Active');
+
+	
+
+	INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Type], [HighLight], [Status], [PackageId])
+VALUES
+    (N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+
+	(N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+    
+
+    (N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
+	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'));
+    
+
+
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    -- 1 ngày
+    (2000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+    (4000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+    (8000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+    (11000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+    (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+
+    -- 1 tuần
+    (49000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+    (59000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+    (69000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+    (79000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+    (89000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+
+    -- 1 tháng
+    (100000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
+    (200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
+    (300000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
+    (600000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
+    (1200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active');
+
+  

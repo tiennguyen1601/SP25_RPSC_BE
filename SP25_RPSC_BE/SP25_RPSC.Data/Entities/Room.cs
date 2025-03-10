@@ -7,11 +7,11 @@ public partial class Room
 {
     public string RoomId { get; set; } = null!;
 
+    public string? RoomNumber { get; set; }
+
     public string? Title { get; set; }
 
     public string? Description { get; set; }
-
-    public decimal? Deposite { get; set; }
 
     public string? Status { get; set; }
 
@@ -19,9 +19,7 @@ public partial class Room
 
     public DateTime? UpdatedAt { get; set; }
 
-    public string? LandlordId { get; set; }
-
-    public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
+    public string? RoomTypeId { get; set; }
 
     public virtual ICollection<CustomerContract> CustomerContracts { get; set; } = new List<CustomerContract>();
 
@@ -29,13 +27,13 @@ public partial class Room
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
-    public virtual Landlord? Landlord { get; set; }
-
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 
     public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
 
+    public virtual ICollection<RoomAmentiesList> RoomAmentiesLists { get; set; } = new List<RoomAmentiesList>();
+
     public virtual ICollection<RoomStay> RoomStays { get; set; } = new List<RoomStay>();
 
-    public virtual ICollection<RoomType> RoomTypes { get; set; } = new List<RoomType>();
+    public virtual RoomType? RoomType { get; set; }
 }

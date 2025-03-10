@@ -8,8 +8,11 @@ using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
+using SP25_RPSC.Data.Repositories.OTPRepository;
+using SP25_RPSC.Data.Repositories.PaymentRepository;
 using SP25_RPSC.Data.Repositories.PostRepository;
 using SP25_RPSC.Data.Repositories.PricePackageRepository;
+using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
@@ -21,6 +24,7 @@ using SP25_RPSC.Data.Repositories.RoomServiceRepository;
 using SP25_RPSC.Data.Repositories.RoomStayCustomerRepository;
 using SP25_RPSC.Data.Repositories.RoomStayRepository;
 using SP25_RPSC.Data.Repositories.RoomTypeRepository;
+using SP25_RPSC.Data.Repositories.ServiceDetailRepository;
 using SP25_RPSC.Data.Repositories.ServicePackageRepository;
 using SP25_RPSC.Data.Repositories.UserRepository;
 using System;
@@ -56,7 +60,12 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IRoomStayRepository RoomStayRepository { get; }
         IRoomTypeRepository RoomTypeRepository { get; }
         IServicePackageRepository ServicePackageRepository { get; }
+        IServiceDetailRepository ServiceDetailRepository { get; }
         IUserRepository UserRepository { get; }
+        IRefreshTokenRepository RefreshTokenRepository { get; }
+        ITransactionRepository TransactionRepository { get; }
+
+        IOTPRepository OTPRepository { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync();
 

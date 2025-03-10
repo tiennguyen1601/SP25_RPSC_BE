@@ -9,11 +9,11 @@ public partial class RoomAmenty
 
     public string? Name { get; set; }
 
-    public string? Description { get; set; }
-
     public decimal? Compensation { get; set; }
 
-    public string? RoomTypeId { get; set; }
+    public string? LandlordId { get; set; }
 
-    public virtual RoomType? RoomType { get; set; }
+    public virtual Landlord? Landlord { get; set; }
+
+    public virtual ICollection<RoomAmentiesList> RoomAmentiesLists { get; set; } = new List<RoomAmentiesList>();
 }

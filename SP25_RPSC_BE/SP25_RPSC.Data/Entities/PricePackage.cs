@@ -7,11 +7,13 @@ public partial class PricePackage
 {
     public string PriceId { get; set; } = null!;
 
-    public DateTime? ApplicableDate { get; set; }
-
     public decimal? Price { get; set; }
 
-    public string? PackageId { get; set; }
+    public DateTime? ApplicableDate { get; set; }
 
-    public virtual ServicePackage? Package { get; set; }
+    public string? Status { get; set; }
+
+    public string? ServiceDetailId { get; set; }
+
+    public virtual ServiceDetail? ServiceDetail { get; set; }
 }

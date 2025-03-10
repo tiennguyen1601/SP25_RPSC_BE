@@ -19,7 +19,5 @@ public partial class Address
 
     public double? Lat { get; set; }
 
-    public string? RoomId { get; set; }
-
-    public virtual Room? Room { get; set; }
+    public virtual ICollection<RoomType> RoomTypes { get; set; } = new List<RoomType>();
 }
