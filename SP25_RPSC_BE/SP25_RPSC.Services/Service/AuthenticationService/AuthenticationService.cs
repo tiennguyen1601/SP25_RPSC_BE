@@ -68,6 +68,16 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
 
                     await _unitOfWork.RefreshTokenRepository.Add(newRefreshToken);
 
+                    string? roleUserId = null;
+                    if (currentUser.Role.RoleName == "Landlord" && currentUser.Landlords.Any())
+                    {
+                        roleUserId = currentUser.Landlords.FirstOrDefault()?.LandlordId;
+                    }
+                    else if (currentUser.Role.RoleName == "Customer" && currentUser.Customers.Any())
+                    {
+                        roleUserId = currentUser.Customers.FirstOrDefault()?.CustomerId;
+                    }
+
                     var userLoginRes = new UserLoginResModel
                     {
                         UserId = currentUser.UserId,
@@ -76,6 +86,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
                         Role = currentUser.Role.RoleName,
                         Token = token,
                         RefreshToken = refreshToken,
+                        RoleUserId = roleUserId
                     };
 
                     return userLoginRes;

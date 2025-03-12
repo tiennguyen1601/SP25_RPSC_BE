@@ -29,6 +29,8 @@ namespace SP25_RPSC.Data.Repositories.UserRepository
         {
             return await _context.Users
                 .Include(u => u.Role)
+                .Include(u => u.Landlords) 
+                .Include(u => u.Customers)
                 .FirstOrDefaultAsync(u => u.PhoneNumber.Equals(phoneNumber) ||
             (u.Email == phoneNumber));
 
