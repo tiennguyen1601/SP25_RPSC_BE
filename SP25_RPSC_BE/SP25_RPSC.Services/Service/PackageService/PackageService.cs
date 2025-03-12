@@ -135,8 +135,9 @@ namespace SP25_RPSC.Services.Service.PackageService
                     ServiceDetailId = serviceDetail.ServiceDetailId,
                     Type = serviceDetail.Type,
                     LimitPost = serviceDetail.HighLight,
-                    PriceId = serviceDetail.PricePackages?.FirstOrDefault()?.PriceId ?? string.Empty,
-                    Price = serviceDetail.PricePackages?.FirstOrDefault()?.Price ?? 0
+                    PriceId = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.PriceId,
+                    Price = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
+                    ApplicableDate = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate
                 })
                 .OrderBy(servicePrice => servicePrice.Price)
                 .ToList() ?? new List<ServicePriceResponse>()
