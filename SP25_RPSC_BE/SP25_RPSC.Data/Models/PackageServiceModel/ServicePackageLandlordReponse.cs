@@ -29,5 +29,6 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
         public string PriceId { get; set; } = null!;
 
         public decimal? Price { get; set; }
+        public DateTime? ApplicableDate { get; set; }
     }
 }

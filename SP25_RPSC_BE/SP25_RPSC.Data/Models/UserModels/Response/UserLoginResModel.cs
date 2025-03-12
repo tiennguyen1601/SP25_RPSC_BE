@@ -19,5 +19,7 @@ namespace SP25_RPSC.Data.Models.UserModels.Response
         public string Token { get; set; }
 
         public string RefreshToken { get; set; }
+
+        public string? RoleUserId { get; set; }
     }
 }
