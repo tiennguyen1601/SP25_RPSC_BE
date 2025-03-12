@@ -7,6 +7,7 @@ using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.Service.LandlordContractService;
 using SP25_RPSC.Services.Utils.CustomException;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SP25_RPSC.Services.Service.PackageService
 {
@@ -22,11 +24,16 @@ namespace SP25_RPSC.Services.Service.PackageService
     {
         private IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        private ILandlordContractService _landlordContractService;
 
-        public PackageService(IUnitOfWork unitOfWork, IMapper mapper)
+        public PackageService(
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            ILandlordContractService landlordContractService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _landlordContractService = landlordContractService;
         }
 
         public async Task CreatePackage(PackageCreateRequestModel model)
@@ -46,7 +53,7 @@ namespace SP25_RPSC.Services.Service.PackageService
             if (!pricePackages.Any())
             {
                 throw new ApiException(HttpStatusCode.BadRequest, "PricePackageEmty");
-            }     
+            }
 
             var package = new ServicePackage
             {
@@ -92,7 +99,7 @@ namespace SP25_RPSC.Services.Service.PackageService
             var response = new ServiceDetailReponse
             {
                 PackageId = servicePackage.PackageId,
-                Name = servicePackage.Name, 
+                Name = servicePackage.Name,
                 Duration = servicePackage.Duration,
                 Description = servicePackage.Description,
                 serviceStatus = servicePackage.Status,
@@ -169,6 +176,59 @@ namespace SP25_RPSC.Services.Service.PackageService
         }
 
 
+        public async Task CheckPackageRequest(string landlordId, string packageId)
+        {
+            var package = await _unitOfWork.ServicePackageRepository.GetPackageById(packageId);
 
+            var currLContracts = await _landlordContractService.GetCurrentContracts(landlordId);
+
+            if (package == null)
+            {
+                throw new Exception("Package not found");
+            }
+            else if (package.Status.Equals(StatusEnums.Inactive))
+            {
+                throw new Exception("Package inactive");
+            }
+            else if (!package.ServiceDetails.Any(sd => sd.PricePackages.Any(pk => pk.ApplicableDate <= DateTime.Now)))
+            {
+                throw new Exception("Package not applicable");
+            }
+            // Landlord used to buy package before
+            else if (currLContracts.Any())
+            {
+                // CASE: currently using 1 package and have any other package
+                if (currLContracts.Count() == 1)
+                {
+                    // get current package
+                    var curContract = currLContracts.FirstOrDefault(c => c.StartDate <= DateTime.Now);
+
+                    // extend current package
+                    if (curContract!.PackageId == packageId)
+                    {
+                        if (curContract.EndDate >= DateTime.Now.AddDays(30))
+                        {
+                            throw new Exception("package payment not due");
+                        }
+                    }
+                    // buy a new one
+                    else
+                    {
+                        if (curContract != null && curContract.EndDate <= DateTime.Now)
+                        {
+                            throw new Exception("package payment not due");
+                        }
+                    }
+                }else
+                {
+                    throw new Exception("");
+                }
+            }
+        }
+
+        public async Task<ServicePackage?> GetById(string packageId)
+        {
+            return await _unitOfWork.ServicePackageRepository.GetPackageById(packageId);
+        }
     }
 }

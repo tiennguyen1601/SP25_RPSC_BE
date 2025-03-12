@@ -11,7 +11,7 @@ public partial class Transaction
 
     public string TransactionInfo { get; set; } = null!;
 
-    public int Type { get; set; }
+    public string Type { get; set; } = null!;
 
     public double Amount { get; set; }
 

@@ -253,7 +253,7 @@ CREATE TABLE [Transaction] (
     [TransactionId] [nvarchar](36) NOT NULL PRIMARY KEY,
 	[TransactionNumber] [nvarchar](max) NOT NULL,
 	[TransactionInfo] [nvarchar](max) NOT NULL,
-	[Type] [int] NOT NULL,
+	[Type] [nvarchar](36) NOT NULL,
 	[Amount] [float] NOT NULL,
     PaymentDate DATETIME,
     PaymentMethod NVARCHAR(50) CHECK (PaymentMethod IN ('Online', 'Cash')),
@@ -472,5 +472,3 @@ VALUES
     (300000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
     (600000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
     (1200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active');
-
-  

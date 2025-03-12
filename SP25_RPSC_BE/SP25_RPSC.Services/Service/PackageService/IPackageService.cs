@@ -17,5 +17,7 @@ namespace SP25_RPSC.Services.Service.PackageService
 
         Task<ServiceDetailReponse?> GetServiceDetailsByPackageId(string packageId);
         Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord();
+        Task CheckPackageRequest(string landlordId, string packageId);
+        Task<ServicePackage?> GetById(string packageId);
     }
 }
