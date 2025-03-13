@@ -18,6 +18,11 @@ using SP25_RPSC.Services.Service.PackageService;
 using SP25_RPSC.Services.Service.RoomTypeService;
 using System.Text.Json.Serialization;
 using SP25_RPSC.Services.Service;
+using SP25_RPSC.Services.Service.PaymentService;
+using SP25_RPSC.Services.Service.TransactionService;
+using SP25_RPSC.Services.Service.LandlordContractService;
+using SP25_RPSC.Services.Service.LandlordService;
+using SP25_RPSC.Services.Service.PayOSService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,10 +48,15 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IDecodeTokenHandler, DecodeTokenHandler>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IOTPService, OTPService>();
-builder.Services.AddScoped < IEmailService,  EmailService>();
+builder.Services.AddScoped<IEmailService,  EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IPayOSService, PayOSService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<ILandlordContractService, LandlordContractService>();
+builder.Services.AddScoped<ILandlordService, LandlordService>();
 builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
 
 
