@@ -1,19 +1,14 @@
-﻿using AutoMapper;
-using CloudinaryDotNet.Actions;
+﻿using System.Linq.Expressions;
+using System.Net;
+using AutoMapper;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
-using SP25_RPSC.Data.Repositories.UserRepository;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Utils.CustomException;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using SP25_RPSC.Services.Utils.Email;
+using SP25_RPSC.Services.Service.EmailService;
 
 namespace SP25_RPSC.Services.Service.UserService
 {
@@ -22,12 +17,14 @@ namespace SP25_RPSC.Services.Service.UserService
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICloudinaryStorageService _cloudinaryStorageService;
+        private readonly IEmailService _emailService;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cloudinaryStorageService = cloudinaryStorageService;
+            _emailService = emailService;
         }
 
         public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status)
@@ -187,31 +184,39 @@ namespace SP25_RPSC.Services.Service.UserService
 
         public async Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved)
         {
-            var landlords = await _unitOfWork.LandlordRepository.GetByIDAsync(landlordId);
+            var landlord = (await _unitOfWork.LandlordRepository.Get(
+                includeProperties: "User,BusinessImages"
+                , filter:c => c.LandlordId == landlordId)).FirstOrDefault();
 
-            if (landlords == null || landlords.Status == null)
+            if (landlord == null || landlord.Status == null)
             {
-                return false; 
+                return false;
             }
 
+            string subject, htmlContent;
             if (isApproved)
             {
-                landlords.Status = StatusEnums.Active.ToString();
-                landlords.Status = StatusEnums.Active.ToString(); 
+                landlord.Status = StatusEnums.Active.ToString();
+                subject = "Chúc mừng! Bạn đã được phê duyệt";
+                htmlContent = EmailTemplate.LandlordApproval(landlord.User.FullName);
             }
             else
             {
-                landlords.Status = StatusEnums.Deactive.ToString();
-                landlords.Status = StatusEnums.Deactive.ToString(); 
+                landlord.Status = StatusEnums.Deactive.ToString();
+                subject = "Thông báo từ chối yêu cầu đăng ký";
+                htmlContent = EmailTemplate.LandlordRejection(landlord.User.FullName);
             }
 
-            landlords.UpdatedDate = DateTime.UtcNow; 
+            landlord.UpdatedDate = DateTime.UtcNow;
 
-            await _unitOfWork.LandlordRepository.Update(landlords);
+            await _unitOfWork.LandlordRepository.Update(landlord);
             await _unitOfWork.SaveAsync();
 
+
+            await _emailService.SendEmail(landlord.User.Email, subject, htmlContent);
             return true;
         }
+
 
 
 
