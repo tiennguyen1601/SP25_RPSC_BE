@@ -136,8 +136,8 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src =>
                     src.Address != null ? $"{src.Address.HouseNumber}, {src.Address.Street}, {src.Address.District}, {src.Address.City}" : ""))
 
-                .ForMember(dest => dest.RoomImageUrls, opt => opt.MapFrom(src => src.RoomImages.Select(ri => ri.ImageUrl).ToList()))
-                .ForMember(dest => dest.RoomPrices, opt => opt.MapFrom(src => src.RoomPrices.Select(rp => rp.Price).ToList()))
+                //.ForMember(dest => dest.RoomImageUrls, opt => opt.MapFrom(src => src.RoomImages.Select(ri => ri.ImageUrl).ToList()))
+                //.ForMember(dest => dest.RoomPrices, opt => opt.MapFrom(src => src.RoomPrices.Select(rp => rp.Price).ToList()))
                 .ForMember(dest => dest.RoomServiceNames, opt => opt.MapFrom(src => src.RoomServices.Select(rs => rs.RoomServiceName).ToList()))
                 .ForMember(dest => dest.RoomServicePrices, opt => opt.MapFrom(src =>
                     src.RoomServices
