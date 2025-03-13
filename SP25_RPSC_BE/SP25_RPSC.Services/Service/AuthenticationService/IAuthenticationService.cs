@@ -15,5 +15,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
         Task Register(UserRegisterReqModel userRegisterReqModel);
 
         Task Logout(string refreshToken);
+        Task ForgotPassword(string email);
+        Task ResetPassword(ResetPasswordRequest model);
     }
 }

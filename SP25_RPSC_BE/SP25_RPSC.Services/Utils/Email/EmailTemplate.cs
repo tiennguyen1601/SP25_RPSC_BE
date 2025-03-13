@@ -67,5 +67,35 @@ namespace SP25_RPSC.Services.Utils.Email
         </div>";
         }
 
+        public static string OTPForForgotPassword(string fullname, string OTP)
+        {
+            var html = $@"<div style='font-family: Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f9f9f9; padding: 30px;'>
+     <div style='background: #ffffff; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); padding: 25px; max-width: 600px; margin: auto;'>
+         <h2 style='color: #333; text-align: center; margin-bottom: 10px;'>Password Reset Request</h2>
+         <hr style='border: none; border-bottom: 2px solid #eee; margin: 20px 0;'/>
+         <p style='font-size: 16px;'>Dear <strong>{fullname}</strong>,</p>
+         <p style='font-size: 14px;'>
+            We received a request to reset your password.<br/>
+            Your OTP (One-Time Password) for password reset is:<br/>
+            <span style='display: inline-block; background: #007bff; color: #fff; padding: 10px 20px; font-size: 20px; font-weight: bold; border-radius: 5px; letter-spacing: 2px;'>{OTP}</span>
+         </p>
+         <p style='font-size: 14px;'>
+            Please enter this code to proceed with resetting your password.<br/>
+            This OTP is valid for a limited time.
+         </p>
+         <p style='font-size: 14px;'>
+            If you did not request a password reset, please ignore this email or 
+            <a href='' style='color: #0066cc; text-decoration: none; font-weight: bold;'>contact support</a> immediately.
+         </p>
+         <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>
+         <p style='font-size: 14px;'>This is an automated email, please do not reply.</p>
+         <p style='font-size: 14px;'>Best regards,<br/><strong>Workshopista</strong></p>
+     </div>
+</div>";
+
+            return html;
+        }
+
+
     }
 }
