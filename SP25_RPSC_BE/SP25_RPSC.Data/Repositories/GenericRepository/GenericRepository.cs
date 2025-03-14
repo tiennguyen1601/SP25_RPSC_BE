@@ -24,6 +24,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
         Task<List<T>> GetAll();
         Task Add(T entity);
         Task Update(T entity);
+        Task<bool> Delete(object id);
         Task Remove(T entity);
         Task AddRange(List<T> entities);
         Task UpdateRange(List<T> entities);
@@ -134,6 +135,14 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public virtual async Task<bool> Delete(object id)
+        {
+            T? entityToDelete = await GetByIDAsync(id);
+            if (entityToDelete == null) return false;
+            await Remove(entityToDelete);
+            return true;
         }
 
         public async Task Update(T entity)

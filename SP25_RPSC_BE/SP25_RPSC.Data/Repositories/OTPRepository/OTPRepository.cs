@@ -12,6 +12,7 @@ namespace SP25_RPSC.Data.Repositories.OTPRepository
     public interface IOTPRepository : IGenericRepository<Otp>
     {
         Task<Otp?> GetLatestOTP(string userId);
+        Task<Otp?> GetLatestOTPPassword(string userId);
     }
 
     public class OTPRepository : GenericRepository<Otp>, IOTPRepository
@@ -22,11 +23,20 @@ namespace SP25_RPSC.Data.Repositories.OTPRepository
         {
             _context = context;
         }
-
         public async Task<Otp?> GetLatestOTP(string userId)
         {
             var latestOTPList = await _context.Otps.Where(o => o.CreatedBy == userId).FirstOrDefaultAsync();
             return latestOTPList;
         }
+
+        public async Task<Otp?> GetLatestOTPPassword(string userId)
+        {
+            return await _context.Otps
+                .Where(o => o.CreatedBy == userId.ToString() && o.IsUsed == false)
+                .OrderByDescending(o => o.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
+
+
     }
 }

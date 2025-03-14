@@ -165,5 +165,54 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
             await _unitOfWork.UserRepository.Add(newUser);
             await _unitOfWork.OTPRepository.Add(newOTPCode);
         }
+
+        public async Task ForgotPassword(string email)
+        {
+            var user = await _unitOfWork.UserRepository.GetUserByEmail(email);
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Email is not existed");
+            }
+
+            var otpCode = OTPGeneration.CreateNewOTPCode();
+
+            var emailBody = EmailTemplate.OTPForForgotPassword(email, otpCode);
+            bool sendEmailSuccess = await _emailService.SendEmail(email, "Confirm reset password", emailBody);
+
+            if (!sendEmailSuccess)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Fail to send email");
+            }
+
+            Otp newOtp = new Otp
+            {
+                Id = Guid.NewGuid().ToString(),
+                Code = otpCode,
+                CreatedBy = user.UserId,
+                CreatedAt = DateTime.Now,
+                IsUsed = false
+            };
+            await _unitOfWork.OTPRepository.Add(newOtp);
+        }
+
+        public async Task ResetPassword(ResetPasswordRequest model)
+        {
+            var user = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Email is not existed");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.NewPassword) || model.NewPassword.Length < 6)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Password must be at least 6 characters long.");
+            }
+
+            user.Password = PasswordHasher.HashPassword(model.NewPassword);
+            await _unitOfWork.UserRepository.Update(user);
+        }
+
+
+
     }
 }

@@ -23,6 +23,8 @@ public partial class Customer
 
     public virtual ICollection<CustomerContract> CustomerContracts { get; set; } = new List<CustomerContract>();
 
+    public virtual ICollection<CustomerRentRoomDetailRequest> CustomerRentRoomDetailRequests { get; set; } = new List<CustomerRentRoomDetailRequest>();
+
     public virtual ICollection<CustomerRequest> CustomerRequests { get; set; } = new List<CustomerRequest>();
 
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

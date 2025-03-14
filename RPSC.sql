@@ -253,7 +253,7 @@ CREATE TABLE [Transaction] (
     [TransactionId] [nvarchar](36) NOT NULL PRIMARY KEY,
 	[TransactionNumber] [nvarchar](max) NOT NULL,
 	[TransactionInfo] [nvarchar](max) NOT NULL,
-	[Type] [int] NOT NULL,
+	[Type] [nvarchar](36) NOT NULL,
 	[Amount] [float] NOT NULL,
     PaymentDate DATETIME,
     PaymentMethod NVARCHAR(50) CHECK (PaymentMethod IN ('Online', 'Cash')),
@@ -320,8 +320,8 @@ GO
 CREATE TABLE RoomImage (
     ImageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ImageUrl NVARCHAR(255),
-    RoomTypeId NVARCHAR(36),
-    CONSTRAINT FK_RoomImage_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_RoomImage_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
 );
 GO
 
@@ -330,8 +330,8 @@ CREATE TABLE RoomPrice (
     RoomPriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
     Price DECIMAL(18,2),
-    RoomTypeId NVARCHAR(36),
-    CONSTRAINT FK_RoomPrice_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_RoomPrice_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
 );
 GO
 
@@ -413,11 +413,34 @@ CREATE TABLE ExtendCContracts (
    ContractID  NVARCHAR(36),
    CONSTRAINT FK_CustomerContracts FOREIGN KEY (ContractID) REFERENCES [CustomerContracts](ContractID)
 );
+
+CREATE TABLE RoomRentRequests (
+    RoomRentRequestsId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Message NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    Status NVARCHAR(50), -- Ví dụ: Pending, Accepted, Rejected
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_RoomRentRequests_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
+);
+GO
+
+--Bảng CustomerRentRoomDetailRequest
+CREATE TABLE CustomerRentRoomDetailRequest (
+    CustomerRentRoomDetailRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Status NVARCHAR(50),
+    RoomRentRequestsId NVARCHAR(36),
+    CustomerId NVARCHAR(36),
+    CONSTRAINT FK_CustomerRequest_RoomRentRequests FOREIGN KEY (RoomRentRequestsId) REFERENCES RoomRentRequests(RoomRentRequestsId),
+    CONSTRAINT FK_CustomerRentRoomDetailRequest_Customer FOREIGN KEY (CustomerId) REFERENCES Customer(CustomerId)
+);
+GO
+
+
 INSERT INTO Role (RoleId, RoleName)
 VALUES 
-(NEWID(), 'Customer'),
-(NEWID(), 'Landlord'),
-(NEWID(), 'Admin');
+(1, 'Customer'),
+(2, 'Landlord'),
+(3, 'Admin');
 
 INSERT INTO [RPSC].[dbo].[ServicePackage] ([Name], [Duration], [Description], [Status])
 VALUES
@@ -473,4 +496,39 @@ VALUES
     (600000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
     (1200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active');
 
-  
+	--passowrd Tien@123
+
+	INSERT INTO [User] (Email, FullName, Dob, Address, PhoneNumber, Gender, Avatar, Password, Status, CreateAt, UpdateAt, RoleId)
+VALUES 
+('landlord1@example.com', 'John Doe', '1985-06-15', '123 Main St, District 1', '0123456789', 'Male', 'https://example.com/avatar1.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
+('landlord2@example.com', 'Jane Smith', '1990-08-22', '456 Le Loi St, District 3', '0987654321', 'Female', 'https://example.com/avatar2.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
+('landlord3@example.com', 'Robert Johnson', '1988-01-10', '789 Nguyen Hue, Thu Duc City', '0778899001', 'Male', 'https://example.com/avatar3.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Pending', GETDATE(), NULL, 2),
+('landlord4@example.com', 'Emily Brown', '1992-12-05', '102 Vo Van Kiet, Binh Thanh', '0998877665', 'Female', 'https://example.com/avatar4.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Inactive', GETDATE(), NULL, 2),
+('landlord5@example.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '0665544332', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
+('admin@gmail.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '123123', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2)
+;
+
+INSERT INTO Landlord (CompanyName, NumberRoom, LicenseNumber, BankName, BankNumber, Template, Status, CreatedDate, UpdatedDate, UserId)
+VALUES 
+('Green Home Rental', 10, 'LN123456', 'Vietcombank', '123456789', 'Standard', 'Active', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord1@example.com')),
+('City Living', 15, 'LN654321', 'Techcombank', '987654321', 'Premium', 'Active', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord2@example.com')),
+('Sunshine Apartments', 8, 'LN987654', 'BIDV', '456123789', 'Basic', 'Pending', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord3@example.com')),
+('Blue Ocean Housing', 12, 'LN321654', 'Agribank', '321654987', 'Deluxe', 'Inactive', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord4@example.com')),
+('Urban Stays', 20, 'LN852963', 'MB Bank', '852963741', 'Standard', 'Active', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord5@example.com'));
+
+INSERT INTO BusinessImage (ImageURL, CreatedDate, Status, LandlordId)
+VALUES
+('https://example.com/image1.jpg', GETDATE(), 'Active', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image2.jpg', GETDATE(), 'Active', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image3.jpg', GETDATE(), 'Inactive', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image4.jpg', GETDATE(), 'Pending', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image5.jpg', GETDATE(), 'Active', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID()));
+
+INSERT INTO Customer (Preferences, LifeStyle, BudgetRange, PreferredLocation, Requirement, Status, UserId)
+VALUES
+('Near university, pet-friendly', 'Quiet', '200-300$', 'District 1', 'No smoking', 'Active', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Gym nearby, furnished room', 'Social', '300-400$', 'Thu Duc City', 'Must have air conditioning', 'Active', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Low-cost, shared room', 'Minimalist', '150-250$', 'Binh Thanh District', 'No pets allowed', 'Pending', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Single room, high security', 'Independent', '400-500$', 'District 3', 'Must have fast internet', 'Inactive', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Close to metro, modern design', 'Workaholic', '500-600$', 'District 2', 'No preference', 'Active', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID()));
+
