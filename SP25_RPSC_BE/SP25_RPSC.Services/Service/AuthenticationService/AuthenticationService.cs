@@ -83,6 +83,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
                         UserId = currentUser.UserId,
                         PhoneNumber = currentUser.PhoneNumber,
                         Email = currentUser.Email,
+                        FullName = currentUser.FullName,
                         Role = currentUser.Role.RoleName,
                         Token = token,
                         RefreshToken = refreshToken,

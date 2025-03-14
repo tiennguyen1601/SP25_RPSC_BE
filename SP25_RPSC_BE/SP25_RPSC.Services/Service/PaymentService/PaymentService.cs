@@ -163,7 +163,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             {
                 CancleUrl = "https://localhost:7159/swagger/index.html",
                 RedirectUrl = "https://localhost:7159/swagger/index.html",
-                PackageName = package!.Name + package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Type,
+                PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Type + package!.Name,
                 Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             });
 
@@ -173,7 +173,6 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 Message = "Tạo thành công",
                 Data = response
             };
-
         }
     }
 }
