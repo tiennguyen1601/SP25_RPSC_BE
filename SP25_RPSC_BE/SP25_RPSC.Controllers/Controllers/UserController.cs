@@ -127,7 +127,54 @@ namespace SP25_RPSC.Controllers.Controllers
                 Message = "Landlord status updated successfully."
             });
         }
-       
+        [HttpGet]
+        [Route("Get-profile-Landlord-By-Id")]
+        public async Task<ActionResult> GetLandlordProdfileById([FromQuery] string landlordId)
+        {
+            var landlord = await _userService.GetProfileLordById(landlordId);
+
+            if (landlord == null)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "Landlord not found."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get Landlord successfully.",
+                Data = landlord
+            });
+        }
+                [HttpPut]
+        [Route("Update-Landlord-Profile")]
+        public async Task<IActionResult> UpdateLandlordProfile([FromForm] UpdateLandlordProfileRequest updateRequestModel, [FromQuery] string landlordId)
+        {
+            bool isUpdated = await _userService.UpdateLandlordProfile(landlordId, updateRequestModel);
+
+            if (!isUpdated)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Failed to update landlord profile."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Landlord profile updated successfully."
+            });
+        } 
+
 
 
     }

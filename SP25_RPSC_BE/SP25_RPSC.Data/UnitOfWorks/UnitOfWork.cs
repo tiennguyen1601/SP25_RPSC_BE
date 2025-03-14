@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
+using SP25_RPSC.Data.Repositories.BussinessImageRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
@@ -68,6 +69,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IOTPRepository _otpRepository;
         private IRefreshTokenRepository _refreshTokenRepository;
         private ITransactionRepository _transactionRepository;
+        private IBussinessImageRepository _bussinessImageRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -293,6 +295,13 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _transactionRepository ??= new TransactionRepository(_context);
+            }
+        }
+        public IBussinessImageRepository BussinessImageRepository
+        {
+            get
+            {
+                return _bussinessImageRepository ??= new BussinessImageRepository(_context);
             }
         }
 

@@ -32,5 +32,7 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
             await _unitOfWork.LandlordContractRepository.Add(contract);
         }
 
+
+
     }
 }
