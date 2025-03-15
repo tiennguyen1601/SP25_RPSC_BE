@@ -35,7 +35,9 @@ namespace SP25_RPSC.Services.Service.UserService
                  c.User.Email.Contains(searchQuery) ||
                  c.User.PhoneNumber.Contains(searchQuery)) 
                 &&
-                (string.IsNullOrEmpty(status) || c.Status == status);
+                (string.IsNullOrEmpty(status) || c.Status == status)
+                &&
+                 c.Status != "Pending";
 
             var customers = await _unitOfWork.CustomerRepository.Get(
                 includeProperties: "User",
@@ -67,7 +69,9 @@ namespace SP25_RPSC.Services.Service.UserService
               c.User.Email.Contains(searchQuery) ||
               c.User.PhoneNumber.Contains(searchQuery))
              &&
-             (string.IsNullOrEmpty(status) || c.Status == status);
+             (string.IsNullOrEmpty(status) || c.Status == status)
+             &&
+             c.Status != "Pending";
 
             var res = await _unitOfWork.LandlordRepository.Get(includeProperties: "User",
                 filter: searchFilter,
