@@ -12,11 +12,12 @@ namespace SP25_RPSC.Data.Models.PackageModel
     {
         [JsonIgnore]
         public Guid PackageId { get; set; } = Guid.NewGuid();
-        public string Name { get; set; }
+        public string Type { get; set; }
 
-        public string Description { get; set; }
+        public string HighLight { get; set; }
 
-        public int Duration { get; set; }
+        public string? Size { get; set; }
+
 
         public ICollection<PackageCreateDetailReqestModel> PackageDetails { get; set; }
     }

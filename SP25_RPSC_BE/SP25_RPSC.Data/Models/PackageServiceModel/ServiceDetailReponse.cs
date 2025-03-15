@@ -11,12 +11,13 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
     {
         public string PackageId { get; set; } = null!;
 
-        public string Name { get; set; } = null!;
+        public string Type { get; set; } = null!;
 
-        public int? Duration { get; set; }
+        public string HighLight { get; set; } = null!;
 
-        public string? Description { get; set; }
-        public string? serviceStatus { get; set; }
+        public string? Size { get; set; }
+
+        public string? Status { get; set; }
 
 
         public List<ListDetailService> ListDetails { get; set; }
@@ -24,15 +25,21 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
         public class ListDetailService
         {
         public string ServiceDetailId { get; set; }
-        public string Type { get; set; }
-        public string? LimitPost { get; set; }
-        public string Status { get; set; }
-        public string PriceId { get; set; }
         public DateTime? ApplicableDate { get; set; }
         public decimal? Price { get; set; }
+            public string? Name { get; set; }
+
+            public string? Duration { get; set; }
+
+            public string? Description { get; set; }
+
+
+            public string? PackageId { get; set; }
+            public string PriceId { get; set; }
+
         }
 
-        
 
-}
+
+    }
 }

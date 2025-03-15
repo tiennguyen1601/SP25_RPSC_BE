@@ -101,12 +101,13 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 LandlordPhone = Landlord.User.PhoneNumber,
                 LandlordName = Landlord.User.FullName,
                 LandlordSignatureUrl = cusSignUrl,
-                PackageName = package!.Name,
-                ServiceName = package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).Type,
+                PackageName = package!.Type,
+                ServiceName = package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).Name,
                 StartDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddDays(1) : DateTime.Now : DateTime.Now,
                 PaymentDate = DateTime.Now,
                 SignedDate = signedDate,
-                Duration = (int)package!.Duration,
+                Duration = int.Parse(package!.ServiceDetails
+            .FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId)?.Duration ?? "0"),
                 Price = (double)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             };
 
@@ -129,7 +130,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 LandlordId = paymentInfo.LandlordId,
                 PackageId = package!.PackageId,
                 StartDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddDays(1) : DateTime.Now : DateTime.Now,
-                EndDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddMonths(currContract.Transactions.Count() * (int)package.Duration) : DateTime.Now : DateTime.Now.AddDays((double)package!.Duration),
+                EndDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddMonths(currContract.Transactions.Count() * int.Parse(package.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId)?.Duration ?? "0")) : DateTime.Now : DateTime.Now.AddDays(double.Parse(package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId)?.Duration ?? "0")),
                 LcontractUrl = contractUrl,
                 SignedDate = signedDate,
                 LandlordSignatureUrl = cusSignUrl
@@ -163,7 +164,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             {
                 CancleUrl = "https://localhost:7159/swagger/index.html",
                 RedirectUrl = "https://localhost:7159/swagger/index.html",
-                PackageName = package!.Name + package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Type,
+                PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Name + package!.Type,
                 Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             });
 
@@ -173,7 +174,6 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 Message = "Tạo thành công",
                 Data = response
             };
-
         }
     }
 }

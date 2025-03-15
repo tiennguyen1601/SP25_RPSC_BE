@@ -15,9 +15,9 @@ GO
 --Bảng ServicePackage
 CREATE TABLE ServicePackage (
     PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Name NVARCHAR(255) NOT NULL,
-    Duration INT,
-    Description NVARCHAR(MAX),
+    Type NVARCHAR(255) NOT NULL,
+    HighLight NVARCHAR(255) NOT NULL,
+    Size NVARCHAR(MAX),
     Status NVARCHAR(50)
 );
 GO
@@ -153,7 +153,7 @@ GO
 CREATE TABLE Post (
     PostId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Title NVARCHAR(255),
-    Descripton NVARCHAR(MAX),
+    Description NVARCHAR(MAX),
     Price DECIMAL(18,2),
     Status NVARCHAR(50),
     CreatedAt DATETIME DEFAULT GETDATE(),
@@ -296,8 +296,9 @@ GO
 --Bảng ServiceDetail
 CREATE TABLE ServiceDetail (
     ServiceDetailId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    [Type] NVARCHAR(50),
-    HighLight NVARCHAR(255),
+    Name NVARCHAR(50),
+    Duration NVARCHAR(255),
+	Description NVARCHAR(MAX),
 	Status NVARCHAR(36),
 	PackageId  NVARCHAR(36),
     CONSTRAINT FK_ServicePackage FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
@@ -442,59 +443,77 @@ VALUES
 (2, 'Landlord'),
 (3, 'Admin');
 
-INSERT INTO [RPSC].[dbo].[ServicePackage] ([Name], [Duration], [Description], [Status])
+INSERT INTO [RPSC].[dbo].[ServicePackage] ([Type], [HighLight], [Size], [Status])
 VALUES
-    (N'1 ngày', 1, N'Gói dịch vụ 1 ngày', 'Active'),
-    (N'1 tuần', 7, N'Gói dịch vụ 1 tuần', 'Active'),
-    (N'1 tháng', 30, N'Gói dịch vụ 1 tháng', 'Active');
+    (N'Tin thường', N'Màu mặc định, viết thường', N'Nhỏ', 'Active'),
+    (N'Tin Vip 1', N'MÀU XANH, IN HOA', N'Vừa', 'Active'),
+    (N'Tin Vip 2', N'MÀU CAM, IN HOA', N'Vừa', 'Active'),
+	(N'Tin Vip 3',N'MÀU HỒNG, IN HOA', N'Lớn', 'Active'),
+	(N'Tin Vip 4',  N'MÀU ĐỎ, IN HOA', N'Rất Lớn', 'Active');
 
 	
-
-	INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Type], [HighLight], [Status], [PackageId])
+INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Name], [Duration], [Description],[Status], [PackageId])
 VALUES
-    (N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+    (N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin thường')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin thường')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin thường')),
+	
 
-	(N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+	(N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 1')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 1')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 1')),
     
 
-    (N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'));
+    (N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 2')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 2')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 2')),
+
+	(N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 3')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 3')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 3')),
+
+	(N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 4')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 4')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 4'));
     
 
 
 INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
 VALUES
-    -- 1 ngày
-    (2000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (4000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (8000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (11000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+    -- Tin thường
+    (2000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin thường')), 'Active'),
+    (4000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin thường')), 'Active'),
+    (8000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin thường')), 'Active');
 
-    -- 1 tuần
-    (49000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (59000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (69000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (79000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (89000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+-- Tin Vip 1
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (5000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 1')), 'Active'),
+    (10000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 1')), 'Active'),
+    (20000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 1')), 'Active');
 
-    -- 1 tháng
-    (100000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (300000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (600000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (1200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active');
+-- Tin Vip 2
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (10000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 2')), 'Active'),
+    (20000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 2')), 'Active'),
+    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 2')), 'Active');
+
+-- Tin Vip 3
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 3')), 'Active'),
+    (30000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 3')), 'Active'),
+    (60000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 3')), 'Active');
+
+-- Tin Vip 4
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (20000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 4')), 'Active'),
+    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 4')), 'Active'),
+    (80000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Tin Vip 4')), 'Active');
+
+   
 
 	--passowrd Tien@123
 
@@ -505,8 +524,7 @@ VALUES
 ('landlord3@example.com', 'Robert Johnson', '1988-01-10', '789 Nguyen Hue, Thu Duc City', '0778899001', 'Male', 'https://example.com/avatar3.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Pending', GETDATE(), NULL, 2),
 ('landlord4@example.com', 'Emily Brown', '1992-12-05', '102 Vo Van Kiet, Binh Thanh', '0998877665', 'Female', 'https://example.com/avatar4.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Inactive', GETDATE(), NULL, 2),
 ('landlord5@example.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '0665544332', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
-('admin@gmail.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '123123', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2)
-;
+('admin@gmail.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '123123', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 3);
 
 INSERT INTO Landlord (CompanyName, NumberRoom, LicenseNumber, BankName, BankNumber, Template, Status, CreatedDate, UpdatedDate, UserId)
 VALUES 

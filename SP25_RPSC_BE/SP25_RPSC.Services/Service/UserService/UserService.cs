@@ -9,6 +9,7 @@ using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.Email;
 using SP25_RPSC.Services.Service.EmailService;
+using Microsoft.AspNetCore.Http;
 
 namespace SP25_RPSC.Services.Service.UserService
 {
@@ -217,6 +218,125 @@ namespace SP25_RPSC.Services.Service.UserService
             return true;
         }
 
+        public async Task<List<LanlordRegisByIdResponse>> GetProfileLordById(string landlordId)
+        {
+            var res = await _unitOfWork.LandlordRepository.Get(
+                includeProperties: "User,BusinessImages",
+                filter: c => c.LandlordId.Equals(landlordId)
+            );
+
+            var landlordRes = _mapper.Map<List<LanlordRegisByIdResponse>>(res.ToList());
+            return landlordRes;
+        }
+
+
+        public async Task<bool> UpdateLandlordProfile(string landlordId, UpdateLandlordProfileRequest model)
+        {
+            var landlord = (await _unitOfWork.LandlordRepository.Get(
+                includeProperties: "User,BusinessImages",
+                filter: c => c.LandlordId == landlordId)).FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found.");
+            }
+
+            var user = landlord.User;
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            if (!string.IsNullOrEmpty(model.CompanyName))
+                landlord.CompanyName = model.CompanyName;
+
+            //if (model.NumberRoom.HasValue)
+            //    landlord.NumberRoom = model.NumberRoom.Value;
+
+            if (!string.IsNullOrEmpty(model.LicenseNumber))
+            {
+                var existingLicense = (await _unitOfWork.LandlordRepository.Get(l => l.LicenseNumber == model.LicenseNumber && l.LandlordId != landlordId)).FirstOrDefault();
+                if (existingLicense != null)
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "License number already exists!");
+                }
+                landlord.LicenseNumber = model.LicenseNumber;
+            }
+
+            if (!string.IsNullOrEmpty(model.BankName))
+                landlord.BankName = model.BankName;
+
+            if (!string.IsNullOrEmpty(model.BankNumber))
+            {
+                var existingBank = (await _unitOfWork.LandlordRepository.Get(l => l.BankNumber == model.BankNumber && l.LandlordId != landlordId)).FirstOrDefault();
+                if (existingBank != null)
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "Bank number already exists!");
+                }
+                landlord.BankNumber = model.BankNumber;
+            }
+
+            if (!string.IsNullOrEmpty(model.Address))
+                user.Address = model.Address;
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+            {
+                var existingUser = await _unitOfWork.UserRepository.GetUserByPhoneNumber(model.PhoneNumber);
+                if (existingUser != null && existingUser.UserId != user.UserId)
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "Phone number is already in use!");
+                }
+                user.PhoneNumber = model.PhoneNumber;
+            }
+
+            if (!string.IsNullOrEmpty(model.FullName))
+                user.FullName = model.FullName;
+
+            if (model.Dob.HasValue)
+                user.Dob = model.Dob;
+
+            if (!string.IsNullOrEmpty(model.Gender))
+                user.Gender = model.Gender;
+
+            if (model.Avatar != null)
+            {
+                var avatarList = new List<IFormFile> { model.Avatar }; 
+                var uploadedUrls = await _cloudinaryStorageService.UploadImageAsync(avatarList);
+                user.Avatar = uploadedUrls.FirstOrDefault();
+            }
+
+
+            if (landlord.BusinessImages != null && landlord.BusinessImages.Any())
+            {
+                foreach (var oldImage in landlord.BusinessImages)
+                {
+                    await _unitOfWork.BussinessImageRepository.Delete(oldImage);
+                }
+            }
+
+            if (model.BusinessImages != null && model.BusinessImages.Count > 0)
+            {
+                var downloadUrls = await _cloudinaryStorageService.UploadImageAsync(model.BusinessImages);
+                foreach (var link in downloadUrls)
+                {
+                    var newImage = new BusinessImage
+                    {
+                        BusinessImageId = Guid.NewGuid().ToString(),
+                        CreatedDate = DateTime.UtcNow,
+                        ImageUrl = link,
+                        Status = StatusEnums.Active.ToString(),
+                        LandlordId = landlordId
+                    };
+                    await _unitOfWork.BussinessImageRepository.Add(newImage);
+                }
+            }
+
+            await _unitOfWork.LandlordRepository.Update(landlord);
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
 
 
 
