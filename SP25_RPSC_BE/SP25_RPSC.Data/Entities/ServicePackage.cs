@@ -7,11 +7,11 @@ public partial class ServicePackage
 {
     public string PackageId { get; set; } = null!;
 
-    public string Name { get; set; } = null!;
+    public string Type { get; set; } = null!;
 
-    public int? Duration { get; set; }
+    public string HighLight { get; set; } = null!;
 
-    public string? Description { get; set; }
+    public string? Size { get; set; }
 
     public string? Status { get; set; }
 

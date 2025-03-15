@@ -57,9 +57,9 @@ namespace SP25_RPSC.Services.Service.PackageService
 
             var package = new ServicePackage
             {
-                Name = model.Name,
-                Description = model.Description,
-                Duration = model.Duration,
+                Type = model.Type,
+                HighLight = model.HighLight,
+                Size = model.Size,
                 ServiceDetails = packageDetails,
                 Status = StatusEnums.Active.ToString(),
             };
@@ -74,7 +74,7 @@ namespace SP25_RPSC.Services.Service.PackageService
 
         public async Task<List<ServicePackageReponse>> GetAllServicePackage()
         {
-            var servicePackages = await _unitOfWork.ServicePackageRepository.Get(orderBy: q => q.OrderBy(p => p.Duration));
+            var servicePackages = await _unitOfWork.ServicePackageRepository.Get();
 
             if (servicePackages == null || !servicePackages.Any())
             {
@@ -98,16 +98,17 @@ namespace SP25_RPSC.Services.Service.PackageService
             var response = new ServiceDetailReponse
             {
                 PackageId = servicePackage.PackageId,
-                Name = servicePackage.Name,
-                Duration = servicePackage.Duration,
-                Description = servicePackage.Description,
-                serviceStatus = servicePackage.Status,
+                Type = servicePackage.Type,
+                HighLight = servicePackage.HighLight,
+                Size = servicePackage.Size,
+                Status = servicePackage.Status,
                 ListDetails = servicePackage.ServiceDetails.Select(detail => new ServiceDetailReponse.ListDetailService
                 {
                     ServiceDetailId = detail.ServiceDetailId,
-                    Type = detail.Type,
-                    LimitPost = detail.HighLight,
-                    Status = detail.Status,
+                    Name = detail.Name,
+                    Duration = detail.Duration,
+                    Description = detail.Description,
+                    PackageId = detail.PackageId,
                     PriceId = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.PriceId,
                     Price = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
                     ApplicableDate = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate
@@ -123,7 +124,8 @@ namespace SP25_RPSC.Services.Service.PackageService
         public async Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord()
         {
             var servicePackages = await _unitOfWork.ServicePackageRepository
-                .Get(orderBy: q => q.OrderBy(p => p.Duration), includeProperties: "ServiceDetails.PricePackages");
+                .Get(includeProperties: "ServiceDetails.PricePackages");
+        //orderBy: q => q.OrderBy(), 
 
             if (servicePackages == null || !servicePackages.Any())
             {
@@ -133,15 +135,17 @@ namespace SP25_RPSC.Services.Service.PackageService
             var responseList = servicePackages.Select(package => new ServicePackageLandlordResponse
             {
                 PackageId = package.PackageId,
-                Name = package.Name,
-                Duration = package.Duration,
-                Description = package.Description,
+                Type = package.Type,
+                HighLight = package.HighLight,
+                Size = package.Size,
                 Status = package.Status,
                 ListServicePrice = package.ServiceDetails?.Select(serviceDetail => new ServicePriceResponse
                 {
                     ServiceDetailId = serviceDetail.ServiceDetailId,
-                    Type = serviceDetail.Type,
-                    LimitPost = serviceDetail.HighLight,
+                    Name = serviceDetail.Name,
+                    Duration = serviceDetail.Duration,
+                    Description = serviceDetail.Description,
+                    PackageId = serviceDetail.PackageId,
                     PriceId = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.PriceId,
                     Price = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
                     ApplicableDate = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate

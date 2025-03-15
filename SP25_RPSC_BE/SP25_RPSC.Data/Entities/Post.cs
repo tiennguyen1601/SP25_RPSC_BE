@@ -9,7 +9,7 @@ public partial class Post
 
     public string? Title { get; set; }
 
-    public string? Descripton { get; set; }
+    public string? Description { get; set; }
 
     public decimal? Price { get; set; }
 

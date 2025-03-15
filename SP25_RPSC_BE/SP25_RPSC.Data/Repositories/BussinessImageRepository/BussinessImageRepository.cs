@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
-using SP25_RPSC.Data.Repositories;
 
 namespace SP25_RPSC.Data.Repositories.BussinessImageRepository
 {
