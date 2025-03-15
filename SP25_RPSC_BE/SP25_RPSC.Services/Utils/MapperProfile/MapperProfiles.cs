@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PdfSharpCore.Pdf.IO;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.LContractModel.Response;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
@@ -17,7 +18,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
 {
     public class MapperProfiles : Profile
     {
-        public MapperProfiles() 
+        public MapperProfiles()
         {
             CreateMap<Customer, ListCustomerRes>()
                 .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))
@@ -65,7 +66,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                           .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName))
                           .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.PhoneNumber))
                           .ForMember(dest => dest.UserStatus, opt => opt.MapFrom(src => src.Status))
-                          
+
                           .ReverseMap();
             CreateMap<Landlord, LanlordRegisByIdResponse>()
                          .ForMember(dest => dest.LandlordId, opt => opt.MapFrom(src => src.LandlordId))
@@ -145,6 +146,18 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                         .Select(rsp => rsp.Price)
                         .ToList()));
 
+            //----------------------------LandlordContract-------------------------------
+            CreateMap<LandlordContract, ListLandlordContractRes>()
+                .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().PricePackages.FirstOrDefault().Price))
+                .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.Landlord.User.FullName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Landlord.User.PhoneNumber))
+                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().Duration))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl))
+                .ReverseMap();
         }
     }
 }
