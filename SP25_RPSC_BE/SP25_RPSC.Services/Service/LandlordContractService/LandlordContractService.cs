@@ -1,9 +1,13 @@
-﻿using SP25_RPSC.Data.Entities;
+﻿using AutoMapper;
+using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.LContractModel.Response;
+using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,9 +16,12 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
     public class LandlordContractService : ILandlordContractService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public LandlordContractService(IUnitOfWork unitOfWork) 
+        private readonly IMapper _mapper;
+        public LandlordContractService(IUnitOfWork unitOfWork,
+            IMapper mapper) 
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<LandlordContract>> GetCurrentContracts(string LandlordId)
@@ -32,7 +39,39 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
             await _unitOfWork.LandlordContractRepository.Add(contract);
         }
 
+        public async Task<ViewLandlordContractResDTO> GetAllLandlordContract(string searchQuery, int pageIndex, int pageSize, string status)
+        {
+            Expression<Func<LandlordContract, bool>> searchFilter = lc =>
+                (string.IsNullOrEmpty(searchQuery) ||
+                 lc.Package.Type.Contains(searchQuery))
+                &&
+                (string.IsNullOrEmpty(status) || lc.Status == status); 
 
+            var landlordContracts = await _unitOfWork.LandlordContractRepository.Get(
+                includeProperties: "Landlord,Package,Package.ServiceDetails,Package.ServiceDetails.PricePackages,Landlord.User",
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            var totalContracts = await _unitOfWork.LandlordContractRepository.CountAsync(searchFilter);
+
+            if (landlordContracts == null || !landlordContracts.Any())
+            {
+                return new ViewLandlordContractResDTO 
+                { 
+                    Contracts = new List<ListLandlordContractRes>(), TotalContract = 0 
+                };
+            }
+
+            var contractResponses = _mapper.Map<List<ListLandlordContractRes>>(landlordContracts.ToList());
+
+            return new ViewLandlordContractResDTO
+            {
+                Contracts = contractResponses,
+                TotalContract = totalContracts
+            };
+        }
 
     }
 }
