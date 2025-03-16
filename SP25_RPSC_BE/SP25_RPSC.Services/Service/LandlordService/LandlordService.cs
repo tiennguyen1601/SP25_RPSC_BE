@@ -22,5 +22,6 @@ namespace SP25_RPSC.Services.Service.LandlordService
         {
             return await _unitOfWork.LandlordRepository.GetAsync(id);
         }
+
     }
 }
