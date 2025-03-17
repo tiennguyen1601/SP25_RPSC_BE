@@ -106,9 +106,12 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpPut]
         [Route("Update-Landlord-Status")]
-        public async Task<IActionResult> UpdateLandlordStatus([FromQuery] string landlordId, [FromQuery] bool isApproved)
+        public async Task<IActionResult> UpdateLandlordStatus(
+                                                                [FromQuery] string landlordId,
+                                                                [FromQuery] bool isApproved,
+                                                                [FromQuery] string rejectionReason = "")
         {
-            bool isUpdated = await _userService.UpdateLandlordStatus(landlordId, isApproved);
+            bool isUpdated = await _userService.UpdateLandlordStatus(landlordId, isApproved, rejectionReason);
 
             if (!isUpdated)
             {
@@ -127,6 +130,7 @@ namespace SP25_RPSC.Controllers.Controllers
                 Message = "Landlord status updated successfully."
             });
         }
+
         [HttpGet]
         [Route("Get-profile-Landlord-By-Id")]
         public async Task<ActionResult> GetLandlordProdfileById([FromQuery] string landlordId)
@@ -173,7 +177,29 @@ namespace SP25_RPSC.Controllers.Controllers
                 Code = (int)HttpStatusCode.OK,
                 Message = "Landlord profile updated successfully."
             });
-        } 
+        }
+
+        [HttpGet]
+        [Route("Get-Total-Users")]
+        public async Task<ActionResult> GetTotalUsers()
+        {
+            var (totalCustomers, totalLandlords) = await _userService.GetTotalUserCounts();
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get total users successfully",
+                Data = new
+                {
+                    TotalCustomers = totalCustomers,
+                    TotalLandlords = totalLandlords
+                }
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
 
 
 

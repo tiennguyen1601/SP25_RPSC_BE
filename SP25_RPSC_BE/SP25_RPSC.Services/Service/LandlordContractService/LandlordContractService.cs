@@ -29,9 +29,9 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
             return await _unitOfWork.LandlordContractRepository.GetContractByLandlordId(LandlordId);
         }
 
-        public void DeleteContract(string packageId)
+        public async Task DeleteContract(string packageId)
         {
-            _unitOfWork.LandlordContractRepository.Delete(packageId);
+            await _unitOfWork.LandlordContractRepository.Delete(packageId);
         }
 
         public async Task InsertContract(LandlordContract contract)

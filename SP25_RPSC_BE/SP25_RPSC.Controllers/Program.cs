@@ -23,6 +23,7 @@ using SP25_RPSC.Services.Service.TransactionService;
 using SP25_RPSC.Services.Service.LandlordContractService;
 using SP25_RPSC.Services.Service.LandlordService;
 using SP25_RPSC.Services.Service.PayOSService;
+using SP25_RPSC.Services.Service.NotificationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ILandlordContractService, LandlordContractService>();
 builder.Services.AddScoped<ILandlordService, LandlordService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
 
 
