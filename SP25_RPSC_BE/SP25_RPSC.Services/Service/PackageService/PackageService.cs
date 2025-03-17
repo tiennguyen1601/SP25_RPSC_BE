@@ -74,7 +74,9 @@ namespace SP25_RPSC.Services.Service.PackageService
 
         public async Task<List<ServicePackageReponse>> GetAllServicePackage()
         {
-            var servicePackages = await _unitOfWork.ServicePackageRepository.Get();
+            var servicePackages = await _unitOfWork.ServicePackageRepository.Get(
+                orderBy: c => c.OrderBy(package => package.Type)
+                );
 
             if (servicePackages == null || !servicePackages.Any())
             {
@@ -89,7 +91,9 @@ namespace SP25_RPSC.Services.Service.PackageService
         public async Task<ServiceDetailReponse?> GetServiceDetailsByPackageId(string packageId)
         {
             var servicePackage = (await _unitOfWork.ServicePackageRepository
-                .Get(sp => sp.PackageId == packageId, includeProperties: "ServiceDetails.PricePackages")).FirstOrDefault();
+                .Get(sp => sp.PackageId == packageId, includeProperties: "ServiceDetails.PricePackages"
+                , orderBy: c => c.OrderBy(package => package.Type)
+                )).FirstOrDefault();
 
             if (servicePackage == null)
             {
@@ -113,8 +117,9 @@ namespace SP25_RPSC.Services.Service.PackageService
                     Price = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
                     ApplicableDate = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate
                 })
-                
-                .OrderBy(x => x.Price).ToList()
+                .OrderBy(x => x.Duration)
+                .OrderBy(x => x.Price)
+                .ToList()
             };
 
             return response;
@@ -124,7 +129,8 @@ namespace SP25_RPSC.Services.Service.PackageService
         public async Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord()
         {
             var servicePackages = await _unitOfWork.ServicePackageRepository
-                .Get(includeProperties: "ServiceDetails.PricePackages");
+                .Get(includeProperties: "ServiceDetails.PricePackages"
+                , orderBy: c => c.OrderBy(package => package.Type));
         //orderBy: q => q.OrderBy(), 
 
             if (servicePackages == null || !servicePackages.Any())
