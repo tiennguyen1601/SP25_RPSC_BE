@@ -20,5 +20,6 @@ namespace SP25_RPSC.Services.Service.UserService
         Task<List<LanlordRegisByIdResponse>> GetRegisLandLordById(string landlordId);
         Task<List<LanlordRegisByIdResponse>> GetProfileLordById(string landlordId);
         Task<bool> UpdateLandlordProfile(string landlordId, UpdateLandlordProfileRequest model);
+        Task UpdateUser(User user);
     }
 }

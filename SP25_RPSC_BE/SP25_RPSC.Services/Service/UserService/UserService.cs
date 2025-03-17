@@ -338,7 +338,10 @@ namespace SP25_RPSC.Services.Service.UserService
             return true;
         }
 
-
+        public async Task UpdateUser(User user)
+        {
+            await _unitOfWork.UserRepository.Update(user);
+        }
 
     }
 }
