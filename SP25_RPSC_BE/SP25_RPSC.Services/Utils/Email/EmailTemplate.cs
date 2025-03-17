@@ -53,20 +53,22 @@ namespace SP25_RPSC.Services.Utils.Email
         </div>";
         }
 
-        public static string LandlordRejection(string fullname)
+        public static string LandlordRejection(string fullname, string reason)
         {
             return $@"
-        <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
-            <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
-                <h2 style='color: #dc3545; text-align: center;'>Xin lỗi, {fullname}!</h2>
-                <p style='font-size: 16px;'>Yêu cầu đăng ký của bạn đã bị từ chối.</p>
-                <p>Vui lòng kiểm tra lại thông tin đăng ký hoặc liên hệ hỗ trợ để biết thêm chi tiết.</p>
-                <a href='mailto:easyroomie.rpsc@gmail.com' style='display: inline-block; padding: 10px 20px; background: #dc3545; color: #fff; text-decoration: none; border-radius: 5px;'>Liên hệ hỗ trợ</a>
-                <p>Cảm ơn bạn đã quan tâm đến dịch vụ của chúng tôi.</p>
-                <p><strong>EasyRoomie</strong></p>
-            </div>
-        </div>";
+                <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+                    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+                        <h2 style='color: #dc3545; text-align: center;'>Xin lỗi, {fullname}!</h2>
+                        <p style='font-size: 16px;'>Yêu cầu đăng ký của bạn đã bị từ chối.</p>
+                        <p><strong>Lý do từ chối:</strong> {reason}</p>
+                        <p>Vui lòng kiểm tra lại thông tin đăng ký hoặc liên hệ hỗ trợ để biết thêm chi tiết.</p>
+                        <a href='mailto:easyroomie.rpsc@gmail.com' style='display: inline-block; padding: 10px 20px; background: #dc3545; color: #fff; text-decoration: none; border-radius: 5px;'>Liên hệ hỗ trợ</a>
+                        <p>Cảm ơn bạn đã quan tâm đến dịch vụ của chúng tôi.</p>
+                        <p><strong>EasyRoomie</strong></p>
+                    </div>
+                </div>";
         }
+
 
         public static string OTPForForgotPassword(string fullname, string OTP)
         {

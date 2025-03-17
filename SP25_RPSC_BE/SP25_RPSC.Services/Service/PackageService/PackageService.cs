@@ -38,39 +38,69 @@ namespace SP25_RPSC.Services.Service.PackageService
 
         public async Task CreatePackage(PackageCreateRequestModel model)
         {
-            if (model.PackageDetails == null || !model.PackageDetails.Any())
-            {
-                throw new ApiException(HttpStatusCode.BadRequest, "PackageDetailsEmpty");
-            }
-
-            var packageDetails = _mapper.Map<List<ServiceDetail>>(model.PackageDetails);
-
-            var pricePackages = model.PackageDetails
-                .Select(d => d.PricePackageModel)
-                .Where(p => p != null)
-                .ToList();
-
-            if (!pricePackages.Any())
-            {
-                throw new ApiException(HttpStatusCode.BadRequest, "PricePackageEmty");
-            }
 
             var package = new ServicePackage
             {
                 Type = model.Type,
                 HighLight = model.HighLight,
                 Size = model.Size,
-                ServiceDetails = packageDetails,
                 Status = StatusEnums.Active.ToString(),
             };
 
-            //foreach (var serviceDetail in package.ServiceDetails)
-            //{
-            //    serviceDetail.PricePackages = (ICollection<PricePackage>)pricePackages;
-            //}
-
             await _unitOfWork.ServicePackageRepository.Add(package);
         }
+
+
+        public async Task CreateServiceDetail(ServiceDetailCreateRequestModel model)
+        {
+            if (model == null)
+            {
+                throw new ArgumentException("Dữ liệu không hợp lệ.");
+            }
+
+            if (!decimal.TryParse(model.Price.ToString(), out decimal validPrice) || validPrice <= 0)
+            {
+                throw new ArgumentException("Price phải là số hợp lệ lớn hơn 0.");
+            }
+            if (!int.TryParse(model.Duration, out int validDuration) || validDuration <= 0)
+            {
+                throw new ArgumentException("Duration phải là số nguyên lớn hơn 0.");
+            }
+
+            var package = await _unitOfWork.ServicePackageRepository.GetByIDAsync(model.PackageId);
+            if (package == null)
+            {
+                throw new Exception("Package không tồn tại.");
+            }
+
+            var serviceDetail = new ServiceDetail
+            {
+                ServiceDetailId = Guid.NewGuid().ToString(),
+                Name = model.Name,
+                Duration = validDuration.ToString(),
+                Description = model.Description,
+                Status = StatusEnums.Active.ToString(),
+                PackageId = model.PackageId
+            };
+
+            var pricePackage = new PricePackage
+            {
+                PriceId = Guid.NewGuid().ToString(),
+                Price = validPrice,
+                ApplicableDate = DateTime.UtcNow,
+                Status = StatusEnums.Active.ToString(),
+                ServiceDetailId = serviceDetail.ServiceDetailId
+            };
+
+            serviceDetail.PricePackages.Add(pricePackage);
+
+            await _unitOfWork.ServiceDetailRepository.Add(serviceDetail);
+            await _unitOfWork.SaveAsync();
+        }
+
+
+
+
 
         public async Task<List<ServicePackageReponse>> GetAllServicePackage()
         {
@@ -164,31 +194,44 @@ namespace SP25_RPSC.Services.Service.PackageService
         }
 
 
-        public async Task UpdatePrice(string PriceId, decimal newPrice)
+        public async Task UpdatePriceAndServiceDetail(string priceId, decimal newPrice, string newName, string newDuration, string newDescription)
         {
-            var pricePackage = await _unitOfWork.PricePackageRepository.GetByIDAsync(PriceId);
+            var pricePackage = await _unitOfWork.PricePackageRepository.GetByIDAsync(priceId);
 
             if (pricePackage == null)
             {
-                throw new ApiException(HttpStatusCode.NotFound, "No pricePackage found for the given PriceId");
+                throw new ApiException(HttpStatusCode.NotFound, "No price package found for the given PriceId.");
             }
+
+            var serviceDetail = await _unitOfWork.ServiceDetailRepository.GetByIDAsync(pricePackage.ServiceDetailId);
+
+            if (serviceDetail == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "No ServiceDetail found for the given PriceId.");
+            }
+
+            serviceDetail.Name = newName;
+            serviceDetail.Duration = newDuration;
+            serviceDetail.Description = newDescription;
+            await _unitOfWork.ServiceDetailRepository.Update(serviceDetail);
 
             pricePackage.Status = StatusEnums.Inactive.ToString();
             await _unitOfWork.PricePackageRepository.Update(pricePackage);
 
-
             var newPricePackage = new PricePackage
             {
-                PriceId = Guid.NewGuid().ToString(), 
+                PriceId = Guid.NewGuid().ToString(),
                 Price = newPrice,
                 Status = StatusEnums.Active.ToString(),
-                ApplicableDate = DateTime.UtcNow, 
-                ServiceDetailId = pricePackage.ServiceDetailId
+                ApplicableDate = DateTime.UtcNow,
+                ServiceDetailId = serviceDetail.ServiceDetailId
             };
 
             await _unitOfWork.PricePackageRepository.Add(newPricePackage);
             await _unitOfWork.SaveAsync();
         }
+
+
 
 
         public async Task CheckPackageRequest(string landlordId, string packageId)
