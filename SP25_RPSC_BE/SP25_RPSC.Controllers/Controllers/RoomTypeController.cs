@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.ResultModel;
+using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Services.Service.RoomTypeService;
 using System.Net;
+using System.Security.Claims;
 
 namespace SP25_RPSC.Controllers.Controllers
 {
@@ -97,5 +100,26 @@ namespace SP25_RPSC.Controllers.Controllers
             return BadRequest(new { Message = "Room type cannot be denied, status is not 'Pending'" });
         }
 
+        [HttpPost]
+        [Authorize]
+        [Route("Create-RoomType")]
+
+        public async Task<ActionResult> CreateRoomType(RoomTypeCreateRequestModel model, string phonenum)
+        {
+            //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
+            var result = await _roomTypeService.CreateRoomType(model, phonenum);
+
+            if (result)
+            {
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Room type denied successfully"
+                });
+            }
+
+            return BadRequest(new { Message = "Room type cannot be denied, status is not 'Pending'" });
+        }
     }
 }

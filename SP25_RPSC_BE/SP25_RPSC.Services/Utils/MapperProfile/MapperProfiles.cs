@@ -4,6 +4,7 @@ using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.LContractModel.Response;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
+using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
@@ -100,6 +101,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
 
 
             CreateMap<User, UserRegisterReqModel>().ReverseMap();
+
             CreateMap<PackageCreateDetailReqestModel, ServiceDetail>()
               .ForMember(dest => dest.PricePackages, opt => opt.MapFrom(src =>
                   new List<PricePackage>
@@ -145,6 +147,19 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                         .SelectMany(rs => rs.RoomServicePrices)
                         .Select(rsp => rsp.Price)
                         .ToList()));
+
+
+            CreateMap<RoomServiceRequestCreate, RoomService>()
+                .ForMember(dest => dest.RoomServicePrices, opt => opt.MapFrom(src =>
+                    new List<RoomServicePrice>
+                    {
+                        new RoomServicePrice
+                        {
+                            RoomServicePriceId = src.Price.RoomServicePriceId.ToString(),
+                            ApplicableDate = src.Price.ApplicableDate,
+                        }
+                    }
+                )).ReverseMap();
 
             //----------------------------LandlordContract-------------------------------
             CreateMap<LandlordContract, ListLandlordContractRes>()
