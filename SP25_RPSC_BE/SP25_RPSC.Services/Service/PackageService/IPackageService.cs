@@ -17,8 +17,9 @@ namespace SP25_RPSC.Services.Service.PackageService
 
         Task<ServiceDetailReponse?> GetServiceDetailsByPackageId(string packageId);
         Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord();
-        Task UpdatePrice(string PriceId, decimal newPrice);
+        Task UpdatePriceAndServiceDetail(string PriceId, decimal newPrice, string newName, string newDuration, string newDescription);
         Task CheckPackageRequest(string landlordId, string packageId);
         Task<ServicePackage?> GetById(string packageId);
+        Task CreateServiceDetail(ServiceDetailCreateRequestModel model);
     }
 }

@@ -14,6 +14,8 @@ namespace SP25_RPSC.Data.Repositories.LandlordRepository
     {
         Task<IEnumerable<ListLandlordRes>> GetAllLanlord();
         Task<Landlord?> GetAsync(string LandlordId);
+
+        Task<Landlord?> GetLandlordByPhoneNumber(string phoneNumber);
     }
 
     public class LandlordRepository : GenericRepository<Landlord>, ILandlordRepository
@@ -58,6 +60,11 @@ namespace SP25_RPSC.Data.Repositories.LandlordRepository
                 .ThenInclude(p => p.PricePackages)
                 .Include(u => u.User).ThenInclude(n => n.Notifications)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<Landlord?> GetLandlordByPhoneNumber(string phoneNumber)
+        {
+            return await _context.Landlords.Where(x => x.User.PhoneNumber.Equals(phoneNumber)).FirstOrDefaultAsync(); ;
         }
     }
 }

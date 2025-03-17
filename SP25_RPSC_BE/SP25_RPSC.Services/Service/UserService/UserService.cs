@@ -94,6 +94,16 @@ namespace SP25_RPSC.Services.Service.UserService
             };
         }
 
+        public async Task<(int TotalCustomers, int TotalLandlords)> GetTotalUserCounts()
+        {
+            int totalCustomers = await _unitOfWork.CustomerRepository.CountAsync(c => c.Status == StatusEnums.Active.ToString());
+            int totalLandlords = await _unitOfWork.LandlordRepository.CountAsync(l => l.Status == StatusEnums.Active.ToString());
+
+            return (totalCustomers, totalLandlords);
+        }
+
+
+
         public async Task RegisterLandlord(LandlordRegisterReqModel model, string email)
         {
             var existingUser = await _unitOfWork.UserRepository.GetUserByEmail(email);
@@ -187,11 +197,11 @@ namespace SP25_RPSC.Services.Service.UserService
 
 
 
-        public async Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved)
+        public async Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved, string rejectionReason = "")
         {
             var landlord = (await _unitOfWork.LandlordRepository.Get(
-                includeProperties: "User,BusinessImages"
-                , filter:c => c.LandlordId == landlordId)).FirstOrDefault();
+                includeProperties: "User,BusinessImages",
+                filter: c => c.LandlordId == landlordId)).FirstOrDefault();
 
             if (landlord == null || landlord.Status == null)
             {
@@ -209,14 +219,13 @@ namespace SP25_RPSC.Services.Service.UserService
             {
                 landlord.Status = StatusEnums.Deactive.ToString();
                 subject = "Thông báo từ chối yêu cầu đăng ký";
-                htmlContent = EmailTemplate.LandlordRejection(landlord.User.FullName);
+                htmlContent = EmailTemplate.LandlordRejection(landlord.User.FullName, rejectionReason);
             }
 
             landlord.UpdatedDate = DateTime.UtcNow;
 
             await _unitOfWork.LandlordRepository.Update(landlord);
             await _unitOfWork.SaveAsync();
-
 
             await _emailService.SendEmail(landlord.User.Email, subject, htmlContent);
             return true;
@@ -342,7 +351,10 @@ namespace SP25_RPSC.Services.Service.UserService
             return true;
         }
 
-
+        public async Task UpdateUser(User user)
+        {
+            await _unitOfWork.UserRepository.Update(user);
+        }
 
     }
 }

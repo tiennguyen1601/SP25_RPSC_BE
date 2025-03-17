@@ -1,13 +1,19 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Enums;
+using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.Utils.CustomException;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static QRCoder.PayloadGenerator;
 
 namespace SP25_RPSC.Services.Service.RoomTypeService
 {
@@ -88,5 +94,38 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Inactive");
         }
 
+        public async Task<bool> CreateRoomType(RoomTypeCreateRequestModel model, string phonenum)
+        {
+
+            var existingUser = await _unitOfWork.LandlordRepository.GetLandlordByPhoneNumber(phonenum);
+            if (string.IsNullOrEmpty(model.RoomTypeName))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "RoomTypeName is required");
+            }
+
+            if (model.Deposite < 0 || model.Square < 0 || model.Area < 0)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Invalid numeric values");
+            }
+
+            var roomTypeServices = _mapper.Map<List<RoomService>>(model.ListRoomServices);
+
+            var roomType = new RoomType
+            {
+                RoomTypeName = model.RoomTypeName,
+                Deposite = model.Deposite,
+                Area = model.Area,
+                Square = model.Square,
+                Description = model.Description,
+                MaxOccupancy = model.MaxOccupancy,
+                Status = StatusEnums.Pending.ToString(),
+                RoomServices = roomTypeServices,
+                UpdatedAt = DateTime.UtcNow,
+                Landlord = existingUser,
+            };
+
+            await _unitOfWork.RoomTypeRepository.Add(roomType);
+            return true;
+        }
     }
 }

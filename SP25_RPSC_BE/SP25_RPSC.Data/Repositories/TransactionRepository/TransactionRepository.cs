@@ -27,7 +27,7 @@ namespace SP25_RPSC.Data.Repositories.PaymentRepository
 
         public async Task<Transaction?> GetUnPaidTransactionOfLandlord(string landlordId)
         {
-            return await _context.Transactions.Where(t => t.Lcontract.LandlordId == landlordId && t.Status.Equals(StatusEnums.Processing))
+            return await _context.Transactions.Where(t => t.Lcontract.LandlordId == landlordId && t.Status.Equals(StatusEnums.Processing.ToString()))
                                               .Include(c => c.Lcontract)
                                               .FirstOrDefaultAsync();
         }

@@ -13,7 +13,7 @@ namespace SP25_RPSC.Data.Repositories.LandlordContractRepository
 {
     public interface ILandlordContractRepository : IGenericRepository<LandlordContract>
     {
-        void RevokeExpirePackages(string LandlordId);
+        Task RevokeExpirePackages(string LandlordId);
         Task<List<LandlordContract>> GetContractByLandlordId(string LandlordId);
     }
 
@@ -26,18 +26,18 @@ namespace SP25_RPSC.Data.Repositories.LandlordContractRepository
             _context = context;
         }
 
-        public void RevokeExpirePackages(string LandlordId)
+        public async Task RevokeExpirePackages(string LandlordId)
         {
-            var uniExpiredPacks = _context.LandlordContracts
+            var uniExpiredPacks = await _context.LandlordContracts
                                     .Where(up => up.LandlordId == LandlordId
                                             && up.EndDate < DateTime.Now
-                                            && up.Status.Equals(StatusEnums.Active.ToString()));
+                                            && up.Status.Equals(StatusEnums.Active.ToString())).ToListAsync();
 
             // revoke 
             foreach (var uni in uniExpiredPacks)
             {
                 uni.Status = StatusEnums.Expired.ToString();
-                _context.LandlordContracts.Update(uni);
+                 _context.LandlordContracts.Update(uni);
             }
         }
 

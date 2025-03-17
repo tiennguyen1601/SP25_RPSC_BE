@@ -9,5 +9,9 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
     public class UpdatePriceRequest
     {
         public decimal NewPrice { get; set; }
+        public string NewName { get; set; }
+        public string NewDuration { get; set; }
+        public string NewDescription { get; set; }
     }
+
 }
