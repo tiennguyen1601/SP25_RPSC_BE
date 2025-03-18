@@ -177,8 +177,8 @@ namespace SP25_RPSC.Services.Service.PaymentService
 
             object response = await _payOSService.CreatePaymentUrl(new PayOSReqModel
             {
-                CancleUrl = "https://localhost:7159/swagger/index.html",
-                RedirectUrl = "https://localhost:7159/swagger/index.html",
+                CancleUrl = "http://localhost:5173/landlord/confirmpayment",
+                RedirectUrl = "http://localhost:5173/landlord/confirmpayment",
                 PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Name + package!.Type,
                 Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             });
