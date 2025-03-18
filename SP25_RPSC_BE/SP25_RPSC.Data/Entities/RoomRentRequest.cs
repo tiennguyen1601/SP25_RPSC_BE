@@ -7,8 +7,6 @@ public partial class RoomRentRequest
 {
     public string RoomRentRequestsId { get; set; } = null!;
 
-    public string? Message { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public string? Status { get; set; }

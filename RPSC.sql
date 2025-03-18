@@ -166,7 +166,6 @@ GO
 --Bảng RoommateRequests
 CREATE TABLE RoommateRequests (
     RequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Message NVARCHAR(MAX),
     CreatedAt DATETIME DEFAULT GETDATE(),
     Status NVARCHAR(50), -- Ví dụ: Pending, Accepted, Rejected
     PostId NVARCHAR(36),
@@ -177,6 +176,7 @@ GO
 --Bảng CustomerRequest
 CREATE TABLE CustomerRequest (
     CustomerRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	 Message NVARCHAR(MAX),
     Status NVARCHAR(50),
     RequestId NVARCHAR(36),
     CustomerId NVARCHAR(36),
@@ -417,9 +417,8 @@ CREATE TABLE ExtendCContracts (
 
 CREATE TABLE RoomRentRequests (
     RoomRentRequestsId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Message NVARCHAR(MAX),
     CreatedAt DATETIME DEFAULT GETDATE(),
-    Status NVARCHAR(50), -- Ví dụ: Pending, Accepted, Rejected
+    Status NVARCHAR(50),
     RoomId NVARCHAR(36),
     CONSTRAINT FK_RoomRentRequests_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
 );
@@ -429,6 +428,7 @@ GO
 CREATE TABLE CustomerRentRoomDetailRequest (
     CustomerRentRoomDetailRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Status NVARCHAR(50),
+    Message NVARCHAR(MAX),
     RoomRentRequestsId NVARCHAR(36),
     CustomerId NVARCHAR(36),
     CONSTRAINT FK_CustomerRequest_RoomRentRequests FOREIGN KEY (RoomRentRequestsId) REFERENCES RoomRentRequests(RoomRentRequestsId),
