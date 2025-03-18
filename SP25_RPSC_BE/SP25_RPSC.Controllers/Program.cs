@@ -24,6 +24,8 @@ using SP25_RPSC.Services.Service.LandlordContractService;
 using SP25_RPSC.Services.Service.LandlordService;
 using SP25_RPSC.Services.Service.PayOSService;
 using SP25_RPSC.Services.Service.NotificationService;
+using SP25_RPSC.Services.Service.RoomServices;
+using SP25_RPSC.Services.Service.RoomRentRequestService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +55,8 @@ builder.Services.AddScoped<IEmailService,  EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IRoomServices, RoomServices>();
+builder.Services.AddScoped<IRoomRentRequestService, RoomRentRequestService>();
 builder.Services.AddScoped<IPayOSService, PayOSService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();

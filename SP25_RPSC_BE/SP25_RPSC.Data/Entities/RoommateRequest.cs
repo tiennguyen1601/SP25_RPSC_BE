@@ -7,8 +7,6 @@ public partial class RoommateRequest
 {
     public string RequestId { get; set; } = null!;
 
-    public string? Message { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public string? Status { get; set; }

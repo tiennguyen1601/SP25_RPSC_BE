@@ -13,6 +13,8 @@ public partial class CustomerRequest
 
     public string? CustomerId { get; set; }
 
+    public string? Message { get; set; }
+
     public virtual Customer? Customer { get; set; }
 
     public virtual RoommateRequest? Request { get; set; }
