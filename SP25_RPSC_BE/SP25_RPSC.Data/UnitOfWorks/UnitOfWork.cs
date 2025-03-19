@@ -3,6 +3,7 @@ using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
+using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
@@ -20,6 +21,7 @@ using SP25_RPSC.Data.Repositories.RoleRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomPriceRepository;
+using SP25_RPSC.Data.Repositories.RoomRentRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomRepository;
 using SP25_RPSC.Data.Repositories.RoomServicePriceRepository;
 using SP25_RPSC.Data.Repositories.RoomServiceRepository;
@@ -70,6 +72,10 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRefreshTokenRepository _refreshTokenRepository;
         private ITransactionRepository _transactionRepository;
         private IBussinessImageRepository _bussinessImageRepository;
+        private ICustomerRentRoomDetailRequestRepositories _customerRentRoomDetailRequestRepositories;
+        private IRoomRentRequestRepository _roomRentRequestRepository;
+
+
 
         public UnitOfWork(RpscContext context)
         {
@@ -305,6 +311,21 @@ namespace SP25_RPSC.Data.UnitOfWorks
             }
         }
 
+        public ICustomerRentRoomDetailRequestRepositories CustomerRentRoomDetailRequestRepositories
+        {
+            get
+            {
+                return _customerRentRoomDetailRequestRepositories ??= new CustomerRentRoomDetailRequestRepositories(_context);
+            }
+        }
+
+        public IRoomRentRequestRepository RoomRentRequestRepository
+        {
+            get
+            {
+                return _roomRentRequestRepository ??= new RoomRentRequestRepository(_context);
+            }
+        }
 
         public void Save()
         {

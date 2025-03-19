@@ -9,6 +9,8 @@ public partial class CustomerRentRoomDetailRequest
 
     public string? Status { get; set; }
 
+    public string? Message { get; set; }
+
     public string? RoomRentRequestsId { get; set; }
 
     public string? CustomerId { get; set; }

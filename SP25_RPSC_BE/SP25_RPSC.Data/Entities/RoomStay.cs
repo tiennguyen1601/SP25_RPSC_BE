@@ -11,6 +11,10 @@ public partial class RoomStay
 
     public string? LandlordId { get; set; }
 
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
     public string? Status { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

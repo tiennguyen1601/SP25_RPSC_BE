@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
+using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
@@ -19,6 +21,7 @@ using SP25_RPSC.Data.Repositories.RoleRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomPriceRepository;
+using SP25_RPSC.Data.Repositories.RoomRentRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomRepository;
 using SP25_RPSC.Data.Repositories.RoomServicePriceRepository;
 using SP25_RPSC.Data.Repositories.RoomServiceRepository;
@@ -69,6 +72,9 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IOTPRepository OTPRepository { get; }
 
         IBussinessImageRepository BussinessImageRepository { get; }
+        ICustomerRentRoomDetailRequestRepositories CustomerRentRoomDetailRequestRepositories { get; }
+        IRoomRentRequestRepository RoomRentRequestRepository { get; }
+
 
         Task<IDbContextTransaction> BeginTransactionAsync();
 

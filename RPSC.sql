@@ -166,7 +166,6 @@ GO
 --Bảng RoommateRequests
 CREATE TABLE RoommateRequests (
     RequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Message NVARCHAR(MAX),
     CreatedAt DATETIME DEFAULT GETDATE(),
     Status NVARCHAR(50), -- Ví dụ: Pending, Accepted, Rejected
     PostId NVARCHAR(36),
@@ -177,6 +176,7 @@ GO
 --Bảng CustomerRequest
 CREATE TABLE CustomerRequest (
     CustomerRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	 Message NVARCHAR(MAX),
     Status NVARCHAR(50),
     RequestId NVARCHAR(36),
     CustomerId NVARCHAR(36),
@@ -219,6 +219,8 @@ CREATE TABLE Report (
     CONSTRAINT FK_Report_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
 );
 GO
+
+
 
 --Bảng Notification
 CREATE TABLE Notification (
@@ -280,6 +282,17 @@ CREATE TABLE Feedback (
     CONSTRAINT FK_Feedback_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
 );
 GO
+--Bảng ImageRF
+CREATE TABLE ImageRF (
+    ImageRFId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ImageRFUrl NVARCHAR(255),
+    FeedbackId NVARCHAR(36),
+	ReportId NVARCHAR(36),
+    CONSTRAINT FK_ImageRF_Feedback FOREIGN KEY (FeedbackId) REFERENCES Feedback(FeedbackId),
+    CONSTRAINT FK_ImageRF_Report FOREIGN KEY (ReportId) REFERENCES Report(ReportId)
+);
+GO
+
 
 --Bảng Favorite
 CREATE TABLE Favorite (
@@ -341,6 +354,8 @@ CREATE TABLE RoomStay (
     RoomStayId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomId NVARCHAR(36),
     LandlordId NVARCHAR(36),
+	StartDate DATETIME,
+	EndDate DATETIME,
     Status NVARCHAR(50),
     UpdatedAt DATETIME,
     CONSTRAINT FK_RoomStay_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
@@ -351,6 +366,8 @@ GO
 --Bảng RoomStayCustomer
 CREATE TABLE RoomStayCustomer (
     RoomStayCustomerId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	Type NVARCHAR(50),
+	Status NVARCHAR(50),
     RoomStayId NVARCHAR(36),
     CustomerId NVARCHAR(36),
     UpdatedAt DATETIME,
@@ -360,6 +377,8 @@ CREATE TABLE RoomStayCustomer (
     CONSTRAINT FK_RoomStayCustomer_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
+
+
 
 --Bảng RoomAmenties
 CREATE TABLE RoomAmenties (
@@ -417,9 +436,8 @@ CREATE TABLE ExtendCContracts (
 
 CREATE TABLE RoomRentRequests (
     RoomRentRequestsId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Message NVARCHAR(MAX),
     CreatedAt DATETIME DEFAULT GETDATE(),
-    Status NVARCHAR(50), -- Ví dụ: Pending, Accepted, Rejected
+    Status NVARCHAR(50),
     RoomId NVARCHAR(36),
     CONSTRAINT FK_RoomRentRequests_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
 );
@@ -429,6 +447,7 @@ GO
 CREATE TABLE CustomerRentRoomDetailRequest (
     CustomerRentRoomDetailRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Status NVARCHAR(50),
+    Message NVARCHAR(MAX),
     RoomRentRequestsId NVARCHAR(36),
     CustomerId NVARCHAR(36),
     CONSTRAINT FK_CustomerRequest_RoomRentRequests FOREIGN KEY (RoomRentRequestsId) REFERENCES RoomRentRequests(RoomRentRequestsId),
