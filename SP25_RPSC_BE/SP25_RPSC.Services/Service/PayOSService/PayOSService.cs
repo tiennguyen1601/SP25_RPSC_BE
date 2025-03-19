@@ -51,7 +51,13 @@ namespace SP25_RPSC.Services.Service.PayOSService
 
         public async Task<PaymentLinkInformation> CancelPaymentLink(long orderCode)
         {
-            PaymentLinkInformation cancelledPaymentLinkInfo = await _payOS.cancelPaymentLink(orderCode);
+            PayOS payOS = new PayOS(
+              _config["PayOS:ClientID"],
+              _config["PayOS:ApiKey"],
+              _config["PayOS:ChecksumKey"]
+          );
+
+            PaymentLinkInformation cancelledPaymentLinkInfo = await payOS.cancelPaymentLink(orderCode);
 
             return cancelledPaymentLinkInfo;
         }

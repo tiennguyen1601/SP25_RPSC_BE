@@ -25,6 +25,8 @@ public partial class Feedback
 
     public string? RentalRoomId { get; set; }
 
+    public virtual ICollection<ImageRf> ImageRves { get; set; } = new List<ImageRf>();
+
     public virtual Room? RentalRoom { get; set; }
 
     public virtual User? Reviewee { get; set; }
