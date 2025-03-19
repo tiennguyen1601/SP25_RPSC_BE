@@ -7,13 +7,13 @@ public partial class CustomerRequest
 {
     public string CustomerRequestId { get; set; } = null!;
 
+    public string? Message { get; set; }
+
     public string? Status { get; set; }
 
     public string? RequestId { get; set; }
 
     public string? CustomerId { get; set; }
-
-    public string? Message { get; set; }
 
     public virtual Customer? Customer { get; set; }
 

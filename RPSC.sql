@@ -220,6 +220,8 @@ CREATE TABLE Report (
 );
 GO
 
+
+
 --Bảng Notification
 CREATE TABLE Notification (
     NotificationId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -280,6 +282,17 @@ CREATE TABLE Feedback (
     CONSTRAINT FK_Feedback_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
 );
 GO
+--Bảng ImageRF
+CREATE TABLE ImageRF (
+    ImageRFId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ImageRFUrl NVARCHAR(255),
+    FeedbackId NVARCHAR(36),
+	ReportId NVARCHAR(36),
+    CONSTRAINT FK_ImageRF_Feedback FOREIGN KEY (FeedbackId) REFERENCES Feedback(FeedbackId),
+    CONSTRAINT FK_ImageRF_Report FOREIGN KEY (ReportId) REFERENCES Report(ReportId)
+);
+GO
+
 
 --Bảng Favorite
 CREATE TABLE Favorite (
@@ -341,6 +354,8 @@ CREATE TABLE RoomStay (
     RoomStayId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomId NVARCHAR(36),
     LandlordId NVARCHAR(36),
+	StartDate DATETIME,
+	EndDate DATETIME,
     Status NVARCHAR(50),
     UpdatedAt DATETIME,
     CONSTRAINT FK_RoomStay_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
@@ -351,6 +366,8 @@ GO
 --Bảng RoomStayCustomer
 CREATE TABLE RoomStayCustomer (
     RoomStayCustomerId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	Type NVARCHAR(50),
+	Status NVARCHAR(50),
     RoomStayId NVARCHAR(36),
     CustomerId NVARCHAR(36),
     UpdatedAt DATETIME,
@@ -360,6 +377,8 @@ CREATE TABLE RoomStayCustomer (
     CONSTRAINT FK_RoomStayCustomer_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
+
+
 
 --Bảng RoomAmenties
 CREATE TABLE RoomAmenties (

@@ -7,6 +7,10 @@ public partial class RoomStayCustomer
 {
     public string RoomStayCustomerId { get; set; } = null!;
 
+    public string? Type { get; set; }
+
+    public string? Status { get; set; }
+
     public string? RoomStayId { get; set; }
 
     public string? CustomerId { get; set; }
