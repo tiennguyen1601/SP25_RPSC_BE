@@ -455,6 +455,9 @@ CREATE TABLE CustomerRentRoomDetailRequest (
 );
 GO
 
+ALTER TABLE CustomerRentRoomDetailRequest
+ADD MonthWantRent INT;
+
 
 INSERT INTO Role (RoleId, RoleName)
 VALUES 

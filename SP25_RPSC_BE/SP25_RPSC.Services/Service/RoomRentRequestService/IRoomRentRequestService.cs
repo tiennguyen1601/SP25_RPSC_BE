@@ -10,6 +10,6 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
     public interface IRoomRentRequestService
     {
         Task<List<CustomerRequestRes>> GetCustomersByRoomRentRequestsId(string roomRentRequestsId);
-        Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId, DateTime startDate, DateTime endDate);
+        Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId);
     }
 }

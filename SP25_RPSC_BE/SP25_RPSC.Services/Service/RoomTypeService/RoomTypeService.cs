@@ -5,7 +5,9 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.Service.JWTService;
 using SP25_RPSC.Services.Utils.CustomException;
+using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +23,13 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IDecodeTokenHandler _decodeTokenHandler;
 
-        public RoomTypeService(IUnitOfWork unitOfWork, IMapper mapper)
+        public RoomTypeService(IUnitOfWork unitOfWork, IMapper mapper, IDecodeTokenHandler decodeTokenHandler)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _decodeTokenHandler = decodeTokenHandler;
         }
 
         public async Task<List<RoomTypeResponseModel>> GetAllRoomTypesPending(int pageIndex, int pageSize)
@@ -94,10 +98,10 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Inactive");
         }
 
-        public async Task<bool> CreateRoomType(RoomTypeCreateRequestModel model, string phonenum)
+        public async Task<bool> CreateRoomType(RoomTypeCreateRequestModel model, string token)
         {
-
-            var existingUser = await _unitOfWork.LandlordRepository.GetLandlordByPhoneNumber(phonenum);
+            var phoneNum = _decodeTokenHandler.decode(token).phoneNumber;
+            var existingUser = await _unitOfWork.LandlordRepository.GetLandlordByPhoneNumber(phoneNum);
             if (string.IsNullOrEmpty(model.RoomTypeName))
             {
                 throw new ApiException(HttpStatusCode.BadRequest, "RoomTypeName is required");

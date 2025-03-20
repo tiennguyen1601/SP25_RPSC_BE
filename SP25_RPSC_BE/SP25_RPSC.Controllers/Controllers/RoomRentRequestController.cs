@@ -46,13 +46,11 @@ namespace SP25_RPSC.Controllers.Controllers
             [Route("Accept-Customer-And-Reject-Others")]
             public async Task<ActionResult> AcceptCustomerAndRejectOthers(
                 [FromQuery] string roomRentRequestsId,
-                [FromQuery] string selectedCustomerId,
-                [FromQuery] DateTime startDate,
-                [FromQuery] DateTime endDate)
+                [FromQuery] string selectedCustomerId)
             {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             var result = await _roomRentRequestService.AcceptCustomerAndRejectOthers(
-                    token, roomRentRequestsId, selectedCustomerId, startDate, endDate);
+                    token, roomRentRequestsId, selectedCustomerId);
 
                 if (!result)
                 {

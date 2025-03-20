@@ -55,14 +55,15 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 Email = c.Customer?.User?.Email ?? "N/A",
                 PhoneNumber = c.Customer?.User?.PhoneNumber ?? "N/A",
                 Avatar = c.Customer?.User?.Avatar ?? "N/A",
+                Message = c.Message ?? "",
 
-                Message = c.Message ?? "N/A" 
+                MonthWantRent = c.MonthWantRent ?? 6
             }).ToList();
 
             return customers;
         }
 
-        public async Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId, DateTime startDate, DateTime endDate)
+        public async Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
@@ -81,6 +82,16 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
             {
                 return false;
             }
+
+            DateTime today = DateTime.UtcNow;
+            DateTime startDate = new DateTime(today.Year, today.Month, 1).AddMonths(1);
+
+            var selectedCustomerRequest = request.CustomerRentRoomDetailRequests
+                .FirstOrDefault(c => c.CustomerId == selectedCustomerId);
+            int monthWantRent = selectedCustomerRequest?.MonthWantRent ?? 6;
+
+            DateTime endDate = startDate.AddMonths(monthWantRent);
+
 
             var roomAddress = request.Room?.Location ?? "Không xác định";
             var existingRoomStay = await _unitOfWork.RoomStayRepository.Get(
@@ -129,17 +140,21 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             await _unitOfWork.SaveAsync();
 
+           
+
             var newRoomStay = new RoomStay
             {
                 RoomStayId = Guid.NewGuid().ToString(),
                 RoomId = request.RoomId,
                 LandlordId = landlordId,
-                StartDate = startDate,
-                EndDate = endDate,
+                StartDate = startDate,  
+                EndDate = endDate,      
                 Status = "Active",
                 UpdatedAt = DateTime.UtcNow
             };
             await _unitOfWork.RoomStayRepository.Add(newRoomStay);
+            await _unitOfWork.SaveAsync();
+
             await _unitOfWork.SaveAsync();
 
             var newRoomStayCustomer = new RoomStayCustomer
@@ -157,11 +172,6 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             return true;
         }
-
-
-
-
-
 
     }
 }
