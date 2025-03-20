@@ -21,10 +21,10 @@ namespace SP25_RPSC.Controllers.Controllers
         [HttpGet]
         [Route("Get-Requires-Room-Rental")]
         public async Task<ActionResult> GetRequiresRoomRentalByLandlord(
-            int pageIndex, int pageSize,
-            string landlordId, string searchQuery = null)
+            int pageIndex, int pageSize, string searchQuery = null)
         {
-            var rooms = await _roomService.GetRequiresRoomRentalByLandlordId(landlordId, searchQuery, pageIndex, pageSize);
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var rooms = await _roomService.GetRequiresRoomRentalByLandlordId(token, searchQuery, pageIndex, pageSize);
 
             ResultModel response = new ResultModel
             {

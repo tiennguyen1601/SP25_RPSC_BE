@@ -189,5 +189,41 @@ namespace SP25_RPSC.Services.Utils.Email
 
             return htmlTemplate;
         }
+
+
+        public static string BookingSuccess(string fullname, string roomAddress, string landlordName, string startDate)
+        {
+            return $@"
+                <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+                    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+                        <h2 style='color: #28a745; text-align: center;'>Chúc mừng, {fullname}!</h2>
+                        <p style='font-size: 16px;'>Bạn đã được chấp nhận thuê phòng tại <strong>{roomAddress}</strong>.</p>
+                        <p><strong>Chủ nhà:</strong> {landlordName}</p>
+                        <p><strong>Ngày bắt đầu hợp đồng:</strong> {startDate}</p>
+                        <p>Chúng tôi sẽ gửi hợp đồng thuê phòng để bạn ký trong thời gian sớm nhất.</p>
+                        <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Chúc bạn có một trải nghiệm tốt!</p>
+                        <p><strong>EasyRoomie</strong></p>
+                    </div>
+                </div>";
+        }
+
+
+        public static string BookingFailure(string fullname, string roomAddress, string landlordName, string reason)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <h2 style='color: #dc3545; text-align: center;'>Xin lỗi, {fullname}!</h2>
+            <p style='font-size: 16px;'>Yêu cầu thuê phòng của bạn tại <strong>{roomAddress}</strong> đã bị từ chối.</p>
+            <p><strong>Chủ nhà:</strong> {landlordName}</p>
+            <p><strong>Lý do từ chối:</strong> {reason}</p>
+            <p>Chúng tôi rất tiếc về điều này. Bạn có thể tìm các phòng khác phù hợp hơn trên nền tảng của chúng tôi.</p>
+            <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.</p>
+            <p><strong>EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+
     }
 }
