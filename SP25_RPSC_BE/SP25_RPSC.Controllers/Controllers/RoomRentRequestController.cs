@@ -42,6 +42,35 @@ namespace SP25_RPSC.Controllers.Controllers
                 Data = customers
             });
         }
+            [HttpPost]
+            [Route("Accept-Customer-And-Reject-Others")]
+            public async Task<ActionResult> AcceptCustomerAndRejectOthers(
+                [FromQuery] string roomRentRequestsId,
+                [FromQuery] string selectedCustomerId,
+                [FromQuery] DateTime startDate,
+                [FromQuery] DateTime endDate)
+            {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _roomRentRequestService.AcceptCustomerAndRejectOthers(
+                    token, roomRentRequestsId, selectedCustomerId, startDate, endDate);
+
+                if (!result)
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Failed to process the room rent request."
+                    });
+                }
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Customer accepted and others rejected successfully."
+                });
+            }
 
     }
 }
