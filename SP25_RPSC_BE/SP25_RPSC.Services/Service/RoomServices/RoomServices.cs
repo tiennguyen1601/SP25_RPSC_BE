@@ -6,9 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.DecodeTokenModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 
 namespace SP25_RPSC.Services.Service.RoomServices
 {
@@ -16,21 +18,26 @@ namespace SP25_RPSC.Services.Service.RoomServices
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IDecodeTokenHandler _decodeTokenHandler;
 
-
-        public RoomServices(IUnitOfWork unitOfWork, IMapper mapper)
+        public RoomServices(IUnitOfWork unitOfWork, IMapper mapper, IDecodeTokenHandler decodeTokenHandler)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _decodeTokenHandler = decodeTokenHandler;
         }
 
 
         public async Task<GetRequiresRoomRentalByLandlordResponseModel> GetRequiresRoomRentalByLandlordId(
-    string landlordId, string searchQuery, int pageIndex, int pageSize)
+    string token, string searchQuery, int pageIndex, int pageSize)
         {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+
             Expression<Func<Room, bool>> searchFilter = room =>
                 room.RoomType != null &&
-                room.RoomType.LandlordId == landlordId &&
+                room.RoomType.LandlordId == landlord.LandlordId &&
                 room.RoomRentRequests.Any(r => r.Status == "Pending") &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  room.RoomNumber.Contains(searchQuery) ||
