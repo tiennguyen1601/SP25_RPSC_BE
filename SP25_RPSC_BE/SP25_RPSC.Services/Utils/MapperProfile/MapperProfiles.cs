@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PdfSharpCore.Pdf.IO;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.FeedbackModel.Response;
 using SP25_RPSC.Data.Models.LContractModel.Response;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
@@ -173,6 +174,22 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl))
                 .ReverseMap();
+
+            //---------------------------Feedback-------------------------------
+            CreateMap<Feedback, ListFeedbackRoomeRes>()
+           .ForMember(dest => dest.FeedbackID, opt => opt.MapFrom(src => src.FeedbackId))
+           .ForMember(dest => dest.ReviewerName, opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.FullName : "Không xác định"))
+           .ForMember(dest => dest.ReviewerPhoneNumber, opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.PhoneNumber : "Không có số điện thoại"))
+           .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RentalRoom.RoomNumber ?? "Không có số phòng"));
+
+            CreateMap<Feedback, FeedbackDetailResDTO>()
+            .ForMember(dest => dest.ReviewerName, opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.FullName : "Không xác định"))
+            .ForMember(dest => dest.ReviewerPhoneNumber, opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.PhoneNumber : "Không có số điện thoại"))
+            .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RentalRoom.RoomNumber ?? "Không có số phòng"))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description ?? "Không có nội dung"))
+            .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Rating ?? 0))
+            .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate ?? DateTime.UtcNow))
+            .ForMember(dest => dest.ImageUrls, opt => opt.Ignore());
         }
     }
 }

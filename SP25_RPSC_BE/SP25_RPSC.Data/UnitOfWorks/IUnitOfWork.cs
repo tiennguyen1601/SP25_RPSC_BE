@@ -8,6 +8,7 @@ using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
 using SP25_RPSC.Data.Repositories.FeedbackRepository;
+using SP25_RPSC.Data.Repositories.ImageRfRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
@@ -74,6 +75,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IBussinessImageRepository BussinessImageRepository { get; }
         ICustomerRentRoomDetailRequestRepositories CustomerRentRoomDetailRequestRepositories { get; }
         IRoomRentRequestRepository RoomRentRequestRepository { get; }
+        IImageRfRepository ImageRfRepository { get; }
 
 
         Task<IDbContextTransaction> BeginTransactionAsync();

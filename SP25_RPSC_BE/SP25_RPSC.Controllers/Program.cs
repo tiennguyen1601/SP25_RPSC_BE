@@ -26,6 +26,7 @@ using SP25_RPSC.Services.Service.PayOSService;
 using SP25_RPSC.Services.Service.NotificationService;
 using SP25_RPSC.Services.Service.RoomServices;
 using SP25_RPSC.Services.Service.RoomRentRequestService;
+using SP25_RPSC.Services.Service.FeedbackService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ILandlordContractService, LandlordContractService>();
 builder.Services.AddScoped<ILandlordService, LandlordService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
 
 

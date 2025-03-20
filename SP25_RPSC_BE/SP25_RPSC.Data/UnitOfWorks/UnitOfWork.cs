@@ -8,6 +8,7 @@ using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
 using SP25_RPSC.Data.Repositories.FeedbackRepository;
+using SP25_RPSC.Data.Repositories.ImageRfRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
@@ -74,6 +75,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IBussinessImageRepository _bussinessImageRepository;
         private ICustomerRentRoomDetailRequestRepositories _customerRentRoomDetailRequestRepositories;
         private IRoomRentRequestRepository _roomRentRequestRepository;
+        private IImageRfRepository _imageRfRepository;
 
 
 
@@ -324,6 +326,14 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _roomRentRequestRepository ??= new RoomRentRequestRepository(_context);
+            }
+        }
+
+        public IImageRfRepository ImageRfRepository
+        {
+            get
+            {
+                return _imageRfRepository ??= new ImageRfRepository(_context);
             }
         }
 
