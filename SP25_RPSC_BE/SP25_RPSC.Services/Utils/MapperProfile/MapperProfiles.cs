@@ -156,7 +156,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                         new RoomServicePrice
                         {
                             RoomServicePriceId = src.Price.RoomServicePriceId.ToString(),
-                            ApplicableDate = src.Price.ApplicableDate,
+                            Price = src.Price.Price
                         }
                     }
                 )).ReverseMap();
