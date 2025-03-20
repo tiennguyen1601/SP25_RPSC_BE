@@ -44,11 +44,12 @@ namespace SP25_RPSC.Services.Service.RoomServices
                  room.Title.Contains(searchQuery));
 
             var rooms = await _unitOfWork.RoomRepository.Get(
-                includeProperties: "RoomType,RoomRentRequests,RoomImages,RoomPrices",
-                filter: searchFilter,
-                pageIndex: pageIndex,
-                pageSize: pageSize
-            );
+                        includeProperties: "RoomType,RoomRentRequests.CustomerRentRoomDetailRequests,RoomImages,RoomPrices",
+                        filter: searchFilter,
+                        pageIndex: pageIndex,
+                        pageSize: pageSize
+                    );
+
 
             var totalRooms = await _unitOfWork.RoomRepository.CountAsync(searchFilter);
 
@@ -72,7 +73,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 Status = room.Status,
                 Location = room.Location,
                 RoomTypeName = room.RoomType?.RoomTypeName ?? "N/A",
-                TotalRentRequests = room.RoomRentRequests.Count(r => r.Status == "Pending"),
+                TotalRentRequests = room.RoomRentRequests
+                        .Sum(r => r.CustomerRentRoomDetailRequests.Count(c => c.Status == "Pending")),
 
                 RoomImages = room.RoomImages.Select(img => img.ImageUrl).ToList(),
 

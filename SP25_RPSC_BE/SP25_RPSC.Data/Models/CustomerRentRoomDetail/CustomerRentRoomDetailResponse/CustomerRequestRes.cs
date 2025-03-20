@@ -21,7 +21,9 @@ namespace SP25_RPSC.Data.Models.CustomerRentRoomDetail.CustomerRentRoomDetailRes
         public string PhoneNumber { get; set; }
         public string Avatar { get; set; }
 
-        public string Message { get; set; } 
+        public string Message { get; set; }
+        public int MonthWantRent { get; set; }
+
     }
 
 
