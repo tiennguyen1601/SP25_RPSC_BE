@@ -34,7 +34,7 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.Request
     {
 
         public string RoomServiceName { get; set; }
-        public string Description { get; set; }
+        //public string Description { get; set; }
 
         [JsonIgnore]
         public string status = StatusEnums.Active.ToString();
@@ -50,6 +50,5 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.Request
 
         public decimal Price { get; set; }
 
-        public DateTime? ApplicableDate { get; set; }
     }
 }

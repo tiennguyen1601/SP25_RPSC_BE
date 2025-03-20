@@ -101,13 +101,12 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         [Route("Create-RoomType")]
 
-        public async Task<ActionResult> CreateRoomType(RoomTypeCreateRequestModel model, string phonenum)
+        public async Task<ActionResult> CreateRoomType(RoomTypeCreateRequestModel model, string token)
         {
             //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
-            var result = await _roomTypeService.CreateRoomType(model, phonenum);
+            var result = await _roomTypeService.CreateRoomType(model, token);
 
             if (result)
             {
@@ -115,11 +114,11 @@ namespace SP25_RPSC.Controllers.Controllers
                 {
                     IsSuccess = true,
                     Code = (int)HttpStatusCode.OK,
-                    Message = "Room type denied successfully"
+                    Message = "Room type created successfully"
                 });
             }
 
-            return BadRequest(new { Message = "Room type cannot be denied, status is not 'Pending'" });
+            return BadRequest(new { Message = "Room type cannot be created" });
         }
     }
 }
