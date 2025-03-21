@@ -24,6 +24,8 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
         public string Location { get; set; }
         public string RoomTypeName { get; set; }
         public decimal? Price { get; set; }
+        public decimal? Square { get; set; }
+        public int? Area { get; set; }
         public List<string> RoomImages { get; set; } = new List<string>();
         public int TotalRentRequests { get; set; }
     }
