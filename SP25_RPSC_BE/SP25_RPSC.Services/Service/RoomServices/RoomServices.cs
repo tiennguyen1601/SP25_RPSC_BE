@@ -73,6 +73,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 Status = room.Status,
                 Location = room.Location,
                 RoomTypeName = room.RoomType?.RoomTypeName ?? "N/A",
+                Square = room.RoomType?.Square, 
+                Area = room.RoomType?.Area,
                 TotalRentRequests = room.RoomRentRequests
                         .Sum(r => r.CustomerRentRoomDetailRequests.Count(c => c.Status == "Pending")),
 
