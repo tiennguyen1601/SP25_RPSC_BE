@@ -27,6 +27,7 @@ using SP25_RPSC.Services.Service.NotificationService;
 using SP25_RPSC.Services.Service.RoomServices;
 using SP25_RPSC.Services.Service.RoomRentRequestService;
 using SP25_RPSC.Services.Service.FeedbackService;
+using SP25_RPSC.Services.Service.RoomStayService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,7 @@ builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomServices, RoomServices>();
 builder.Services.AddScoped<IRoomRentRequestService, RoomRentRequestService>();
+builder.Services.AddScoped<IRoomStayService, RoomStayService>();
 builder.Services.AddScoped<IPayOSService, PayOSService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
