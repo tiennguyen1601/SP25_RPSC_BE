@@ -9,11 +9,13 @@ public partial class ServicePackage
 
     public string Type { get; set; } = null!;
 
-    public string HighLight { get; set; } = null!;
+    public string HighLightTime { get; set; } = null!;
 
-    public string? Size { get; set; }
+    public int? MaxPost { get; set; }
 
     public string? Status { get; set; }
+
+    public string Label { get; set; } = null!;
 
     public virtual ICollection<LandlordContract> LandlordContracts { get; set; } = new List<LandlordContract>();
 

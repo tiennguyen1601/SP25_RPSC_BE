@@ -9,7 +9,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 {
     public interface IRoomStayService
     {
-        Task<GetAllRoomStaysResponseModel> GetRoomStaysByLandlordId(string token, string searchQuery, int pageIndex, int pageSize, string status);
+        Task<GetAllRoomStaysResponseModel> GetRoomStaysByLandlordId(string token, string searchQuery, int pageIndex, int pageSize);
         Task<GetRoomStayCustomersResponseModel> GetRoomStaysCustomerByRoomStayId(string roomStayId);
     }
 }

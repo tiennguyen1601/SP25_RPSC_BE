@@ -27,7 +27,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
         }
 
         public async Task<GetAllRoomStaysResponseModel> GetRoomStaysByLandlordId(
-    string token, string searchQuery, int pageIndex, int pageSize, string status)
+    string token, string searchQuery, int pageIndex, int pageSize)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
@@ -42,8 +42,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 
             Expression<Func<RoomStay, bool>> searchFilter = rs =>
                 rs.LandlordId == landlordId &&
-                (string.IsNullOrEmpty(searchQuery) || rs.Room.RoomNumber.Contains(searchQuery)) &&
-                (string.IsNullOrEmpty(status) || rs.Status == status);
+                (string.IsNullOrEmpty(searchQuery) || rs.Room.RoomNumber.Contains(searchQuery));
 
             var roomStays = await _unitOfWork.RoomStayRepository.Get(
                 includeProperties: "Room,Room.RoomImages",
@@ -67,8 +66,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
         {
             var roomStayCustomers = (await _unitOfWork.RoomStayCustomerRepository
                     .Get(filter: rsc => rsc.RoomStayId == roomStayId, includeProperties: "Customer.User")
-                    ).ToList(); 
-
+                    ).ToList();
 
             if (!roomStayCustomers?.Any() ?? true)
             {
@@ -80,18 +78,17 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                         filter: rs => rs.RoomStayId == roomStayId
                     )).FirstOrDefault();
 
-
-
-
-
-
             if (roomStay == null)
             {
                 throw new KeyNotFoundException("RoomStay not found.");
             }
 
+            decimal? latestPrice = GetLatestPrice(roomStay.Room.RoomPrices);
+
             var customerResponses = _mapper.Map<List<RoomStayCustomerDto>>(roomStayCustomers);
             var roomStayResponse = _mapper.Map<RoomStayDetailsDto>(roomStay);
+
+            roomStayResponse.Room.Price = latestPrice;
 
             return new GetRoomStayCustomersResponseModel
             {
@@ -100,6 +97,15 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                 TotalCustomers = customerResponses.Count
             };
         }
+        private decimal? GetLatestPrice(IEnumerable<RoomPrice> roomPrices)
+        {
+            if (roomPrices == null || !roomPrices.Any())
+                return null;
+
+            return roomPrices.OrderByDescending(p => p.ApplicableDate).FirstOrDefault()?.Price;
+        }
+
+
 
     }
 

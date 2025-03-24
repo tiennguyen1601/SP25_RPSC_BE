@@ -42,8 +42,9 @@ namespace SP25_RPSC.Services.Service.PackageService
             var package = new ServicePackage
             {
                 Type = model.Type,
-                HighLight = model.HighLight,
-                Size = model.Size,
+                HighLightTime = model.HighLightTime,
+                MaxPost = model.MaxPost,
+                Label = model.Label,
                 Status = StatusEnums.Active.ToString(),
             };
 
@@ -133,8 +134,9 @@ namespace SP25_RPSC.Services.Service.PackageService
             {
                 PackageId = servicePackage.PackageId,
                 Type = servicePackage.Type,
-                HighLight = servicePackage.HighLight,
-                Size = servicePackage.Size,
+                HighLightTime = servicePackage.HighLightTime,
+                MaxPost = servicePackage.MaxPost,
+                label = servicePackage.Label,
                 Status = servicePackage.Status,
                 ListDetails = servicePackage.ServiceDetails.Select(detail => new ServiceDetailReponse.ListDetailService
                 {
@@ -172,8 +174,9 @@ namespace SP25_RPSC.Services.Service.PackageService
             {
                 PackageId = package.PackageId,
                 Type = package.Type,
-                HighLight = package.HighLight,
-                Size = package.Size,
+                HighLightTime = package.HighLightTime,
+                MaxPost = package.MaxPost,
+                Label = package.Label,
                 Status = package.Status,
                 ListServicePrice = package.ServiceDetails?.Select(serviceDetail => new ServicePriceResponse
                 {

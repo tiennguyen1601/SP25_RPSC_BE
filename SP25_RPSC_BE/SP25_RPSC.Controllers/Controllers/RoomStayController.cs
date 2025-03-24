@@ -18,11 +18,11 @@ namespace SP25_RPSC.Controllers.Controllers
             _roomStayService = roomStayService;
         }
         [HttpGet("by-landlord")]
-        public async Task<IActionResult> GetRoomStaysByLandlord(int pageIndex, int pageSize, string query = "", string? status = "")
+        public async Task<IActionResult> GetRoomStaysByLandlord(int pageIndex, int pageSize, string query = "")
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
 
-            var result = await _roomStayService.GetRoomStaysByLandlordId(token, query, pageIndex, pageSize, status);
+            var result = await _roomStayService.GetRoomStaysByLandlordId(token, query, pageIndex, pageSize);
 
             if (result == null || result.RoomStays.Count == 0)
             {

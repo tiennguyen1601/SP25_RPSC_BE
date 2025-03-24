@@ -10,5 +10,6 @@ namespace SP25_RPSC.Services.Service.RoomServices
     public interface IRoomServices
     {
         Task<GetRequiresRoomRentalByLandlordResponseModel> GetRequiresRoomRentalByLandlordId(string token, string searchQuery, int pageIndex, int pageSize);
+        Task<RoomCountResponseModel> GetRoomCountsByLandlordId(string token);
     }
 }

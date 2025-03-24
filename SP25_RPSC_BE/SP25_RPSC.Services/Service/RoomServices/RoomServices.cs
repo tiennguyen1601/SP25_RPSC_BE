@@ -5,6 +5,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using CloudinaryDotNet.Actions;
+using MailKit.Search;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.DecodeTokenModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
@@ -94,7 +96,46 @@ namespace SP25_RPSC.Services.Service.RoomServices
             };
         }
 
+        public async Task<RoomCountResponseModel> GetRoomCountsByLandlordId(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
 
+            if (landlord == null)
+            {
+                throw new Exception("Landlord not found");
+            }
+
+            var allRooms = (await _unitOfWork.RoomRepository
+                        .Get(includeProperties: "RoomType"))
+                        .Where(c => c.RoomType != null && c.RoomType.LandlordId == landlord.LandlordId)
+                        .ToList();
+
+            var totalRooms = allRooms.Count;
+            var totalActiveRooms = allRooms.Count(r => r.Status == "Available");
+            var totalRentingRooms = allRooms.Count(r => r.Status == "Renting");
+
+            var totalRequests = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.CountAsync(
+    req => req.RoomRentRequests.Room.RoomType != null &&
+           req.RoomRentRequests.Room.RoomType.LandlordId == landlord.LandlordId &&
+           req.Status == "Pending");
+
+
+            var totalCustomersRenting = (await _unitOfWork.RoomStayCustomerRepository
+                .Get(filter: rsc => rsc.LandlordId == landlord.LandlordId && rsc.Status == "Active"))
+                .Count();
+
+            return new RoomCountResponseModel
+            {
+                TotalRooms = totalRooms,
+                TotalRoomsActive = totalActiveRooms,
+                TotalRoomsRenting = totalRentingRooms,
+                TotalCustomersRenting = totalCustomersRenting,
+                TotalRequests = totalRequests
+            };
+        }
 
 
 
