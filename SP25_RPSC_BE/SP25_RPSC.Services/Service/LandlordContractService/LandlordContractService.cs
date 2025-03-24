@@ -43,7 +43,8 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
         {
             Expression<Func<LandlordContract, bool>> searchFilter = lc =>
                 (string.IsNullOrEmpty(searchQuery) ||
-                 lc.Package.Type.Contains(searchQuery))
+                 lc.Package.Type.Contains(searchQuery) 
+                 || lc.Landlord.User.FullName.Contains(searchQuery) || lc.Landlord.User.PhoneNumber.Contains(searchQuery))
                 &&
                 (string.IsNullOrEmpty(status) || lc.Status == status); 
 
