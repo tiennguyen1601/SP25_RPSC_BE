@@ -69,6 +69,27 @@ namespace SP25_RPSC.Controllers.Controllers
             return StatusCode(response.Code, response);
         }
 
+        [HttpPost]
+        [Route("register-customer")]
+        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisterReqModel customerRegisterReqModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _authenticationService.RegisterCustomer(customerRegisterReqModel);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Register successfully",
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest model)
