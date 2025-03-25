@@ -17,6 +17,8 @@ public partial class Customer
 
     public string? Requirement { get; set; }
 
+    public string? CustomerType { get; set; }
+
     public string? Status { get; set; }
 
     public string? UserId { get; set; }

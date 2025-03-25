@@ -13,6 +13,9 @@ namespace SP25_RPSC.Data.Repositories.CustomerRepository
     public interface ICustomerRepository : IGenericRepository<Customer>
     {
         //Task<ListCustomerRes> GetAllCustomer();
+
+        Task<Customer> GetCustomerByUserId(string userId);
+
     }
 
     public class CustomerRepository : GenericRepository<Customer>, ICustomerRepository
@@ -22,6 +25,11 @@ namespace SP25_RPSC.Data.Repositories.CustomerRepository
         public CustomerRepository(RpscContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<Customer> GetCustomerByUserId(string userId)
+        {
+            return await _context.Customers.Where(x => x.User.UserId.Equals(userId)).FirstOrDefaultAsync(); ;
         }
 
         //public async Task<ListCustomerRes> GetAllCustomer()
