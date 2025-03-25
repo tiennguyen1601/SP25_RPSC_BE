@@ -172,6 +172,8 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
 
 
             CreateMap<User, UserRegisterReqModel>().ReverseMap();
+            CreateMap<User, CustomerRegisterReqModel>().ReverseMap();
+
 
             CreateMap<PackageCreateDetailReqestModel, ServiceDetail>()
               .ForMember(dest => dest.PricePackages, opt => opt.MapFrom(src =>
