@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Services.Service.UserService;
+using SP25_RPSC.Services.Service.CustomerService;
 using System.Net;
 
 namespace SP25_RPSC.Controllers.Controllers
@@ -12,10 +14,12 @@ namespace SP25_RPSC.Controllers.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ICustomerService _customerService;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, ICustomerService customerService)
         {
             _userService = userService;
+            _customerService = customerService;
         }
 
         [HttpGet]
@@ -198,6 +202,34 @@ namespace SP25_RPSC.Controllers.Controllers
             };
 
             return StatusCode(response.Code, response);
+        }
+
+
+
+
+
+        [HttpPut]
+        [Route("Update-Customer-Profile")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromForm] UpdateInfoReq updateReqtModel, [FromQuery] string userEmail)
+        {
+            bool isUpdated = await _customerService.UpdateInfo(updateReqtModel, userEmail);
+
+            if (!isUpdated)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Failed to update customer profile."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Customer profile updated successfully."
+            });
         }
 
 

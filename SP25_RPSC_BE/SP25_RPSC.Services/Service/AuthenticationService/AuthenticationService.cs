@@ -214,6 +214,57 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
         }
 
 
+        public async Task RegisterCustomer(CustomerRegisterReqModel model)
+        {
+            var existMail = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
+            if (existMail != null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "The email has already registered by other account!");
+            }
+
+            var newOtp = OTPGeneration.CreateNewOTPCode();
+            var userId = Guid.NewGuid().ToString();
+
+            User newUser = _mapper.Map<User>(model);
+            newUser.UserId = userId;
+            newUser.Password = PasswordHasher.HashPassword(newUser.Password);
+            newUser.Role = (await _unitOfWork.RoleRepository.Get(x => x.RoleName.Equals(RoleEnums.Customer.ToString()))).FirstOrDefault();
+            newUser.Status = StatusEnums.Pending.ToString();
+            newUser.CreateAt = DateTime.Now;
+            newUser.UpdateAt = DateTime.Now;
+            //newUser.Avatar = model.Avatar
+
+            var cusType = CustomerTypeEnums.Student.ToString();
+            if (model.CustomerType != null) { cusType = model.CustomerType.ToString(); }
+
+            Customer newCus = new Customer();
+            newCus.CustomerId = Guid.NewGuid().ToString();
+            newCus.UserId = userId;
+            newCus.CustomerType = cusType;
+            newCus.Status = StatusEnums.Pending.ToString();     
+
+            var htmlBody = EmailTemplate.VerifyEmailOTP(model.Email, newOtp);
+            bool sendEmailSuccess = await _emailService.SendEmail(model.Email, "Verify Email", htmlBody);
+
+            if (!sendEmailSuccess)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "An error occurred while sending email!");
+            }
+
+            Otp newOTPCode = new Otp()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Code = newOtp,
+                CreatedBy = newUser.UserId,
+                CreatedAt = DateTime.Now,
+                IsUsed = false,
+            };
+            await _unitOfWork.UserRepository.Add(newUser);
+            await _unitOfWork.CustomerRepository.Add(newCus);
+            await _unitOfWork.OTPRepository.Add(newOTPCode);
+        }
+
+
 
     }
 }

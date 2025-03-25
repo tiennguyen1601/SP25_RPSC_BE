@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -9,6 +10,7 @@ using SP25_RPSC.Data.Models.CustomerRentRoomDetail.CustomerRentRoomDetailRespons
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
 using SP25_RPSC.Services.Service.JWTService;
+using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Services.Utils.Email;
 
@@ -67,45 +69,68 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
         {
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
+
             var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
             if (landlord == null)
             {
-                return false;
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found");
             }
-            var landlordId = landlord.LandlordId;
+
             var request = (await _unitOfWork.RoomRentRequestRepository.Get(
-                        filter: r => r.RoomRentRequestsId == roomRentRequestsId,
-                        includeProperties: "CustomerRentRoomDetailRequests.Customer,Room"
-                    )).FirstOrDefault();
+                filter: r => r.RoomRentRequestsId == roomRentRequestsId,
+                includeProperties: "CustomerRentRoomDetailRequests.Customer,Room"
+            )).FirstOrDefault();
 
             if (request == null || request.CustomerRentRoomDetailRequests == null || !request.CustomerRentRoomDetailRequests.Any())
             {
-                return false;
+                throw new ApiException(HttpStatusCode.NotFound, "Room rent request not found or has no customers");
             }
-
-            DateTime today = DateTime.UtcNow;
-            DateTime startDate = new DateTime(today.Year, today.Month, 1).AddMonths(1);
 
             var selectedCustomerRequest = request.CustomerRentRoomDetailRequests
                 .FirstOrDefault(c => c.CustomerId == selectedCustomerId);
-            int monthWantRent = selectedCustomerRequest?.MonthWantRent ?? 6;
 
+            if (selectedCustomerRequest == null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Selected customer not found in request");
+            }
+
+            var room = request.Room;
+            if (room == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Room not found");
+            }
+
+            if (room.Status == "Renting")
+            {
+                throw new ApiException(HttpStatusCode.Conflict, "Room is already rented");
+            }
+
+            bool roomOccupied = (await _unitOfWork.RoomStayRepository.Get(
+                                 filter: rs => rs.RoomId == room.RoomId && rs.Status == "Active"
+                             )).Any();
+
+            if (roomOccupied)
+            {
+                throw new ApiException(HttpStatusCode.Conflict, "Room is already occupied");
+            }
+
+            room.Status = "Renting";
+            room.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.RoomRepository.Update(room);
+
+            DateTime today = DateTime.UtcNow;
+            DateTime startDate = new DateTime(today.Year, today.Month, 1).AddMonths(1);
+            int monthWantRent = selectedCustomerRequest.MonthWantRent ?? 6;
             DateTime endDate = startDate.AddMonths(monthWantRent);
 
-
-            var roomAddress = request.Room?.Location ?? "Không xác định";
-            var existingRoomStay = await _unitOfWork.RoomStayRepository.Get(
-                                   filter: rs => rs.RoomId == request.RoomId && rs.Status == "Active");
-
-            if (existingRoomStay.Any())
-            {
-                return false;
-            }
+            var roomAddress = room.Location ?? "Không xác định";
 
             foreach (var customerRequest in request.CustomerRentRoomDetailRequests)
             {
-                var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.CustomerId == customerRequest.CustomerId, includeProperties: "User"))
-                    .FirstOrDefault();
+                var customer = (await _unitOfWork.CustomerRepository.Get(
+                    filter: c => c.CustomerId == customerRequest.CustomerId,
+                    includeProperties: "User"
+                )).FirstOrDefault();
 
                 if (customer == null || customer.User == null) continue;
 
@@ -115,14 +140,12 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 if (customerRequest.CustomerId == selectedCustomerId)
                 {
                     customerRequest.Status = "Accepted";
-
                     var successEmail = EmailTemplate.BookingSuccess(fullName, roomAddress, email, startDate.ToString("yyyy-MM-dd"));
                     await _emailService.SendEmail(email, "Xác nhận thuê phòng thành công", successEmail);
                 }
                 else
                 {
                     customerRequest.Status = "Rejected";
-
                     var failureEmail = EmailTemplate.BookingFailure(fullName, roomAddress, email, "Phòng đã được thuê bởi khách khác.");
                     await _emailService.SendEmail(email, "Thông báo từ chối thuê phòng", failureEmail);
                 }
@@ -130,32 +153,17 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             request.Status = "Active";
 
-            foreach (var customerRequest in request.CustomerRentRoomDetailRequests)
-            {
-                if (customerRequest.CustomerId == selectedCustomerId)
-                {
-                    customerRequest.Status = "Active"; 
-                }
-            }
-
-            await _unitOfWork.SaveAsync();
-
-           
-
             var newRoomStay = new RoomStay
             {
                 RoomStayId = Guid.NewGuid().ToString(),
-                RoomId = request.RoomId,
-                LandlordId = landlordId,
-                StartDate = startDate,  
-                EndDate = endDate,      
+                RoomId = room.RoomId,
+                LandlordId = landlord.LandlordId,
+                StartDate = startDate,
+                EndDate = endDate,
                 Status = "Active",
                 UpdatedAt = DateTime.UtcNow
             };
             await _unitOfWork.RoomStayRepository.Add(newRoomStay);
-            await _unitOfWork.SaveAsync();
-
-            await _unitOfWork.SaveAsync();
 
             var newRoomStayCustomer = new RoomStayCustomer
             {
@@ -164,14 +172,17 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 Status = "Active",
                 RoomStayId = newRoomStay.RoomStayId,
                 CustomerId = selectedCustomerId,
-                LandlordId = landlordId,
+                LandlordId = landlord.LandlordId,
                 UpdatedAt = DateTime.UtcNow
             };
             await _unitOfWork.RoomStayCustomerRepository.Add(newRoomStayCustomer);
+
             await _unitOfWork.SaveAsync();
 
             return true;
         }
+
+
 
     }
 }

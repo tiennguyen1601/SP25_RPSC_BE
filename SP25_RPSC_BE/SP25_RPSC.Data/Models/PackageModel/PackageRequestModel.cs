@@ -12,10 +12,14 @@ namespace SP25_RPSC.Data.Models.PackageModel
         public string Type { get; set; }
 
         [Required(ErrorMessage = "HighLight không được để trống")]
-        public string HighLight { get; set; }
+        public string HighLightTime { get; set; }
 
-        [MaxLength(50, ErrorMessage = "Size không được quá 50 ký tự")]
-        public string? Size { get; set; }
+        [Required(ErrorMessage = "MaxPost không được để trống")]
+        public int? MaxPost { get; set; }
+        [Required(ErrorMessage = "Label không được để trống")]
+        public string? Label { get; set; }
+
+
     }
 
     public class PackageCreateDetailReqestModel

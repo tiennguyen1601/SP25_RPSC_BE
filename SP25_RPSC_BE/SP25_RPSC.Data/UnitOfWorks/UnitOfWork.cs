@@ -2,6 +2,7 @@
 using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
+using SP25_RPSC.Data.Repositories.ChatRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
 using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
@@ -77,6 +78,8 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private ICustomerRentRoomDetailRequestRepositories _customerRentRoomDetailRequestRepositories;
         private IRoomRentRequestRepository _roomRentRequestRepository;
         private IImageRfRepository _imageRfRepository;
+        private IChatRepository _chatRepository;
+
         private IRoomAmentyRepository _roomAmentyRepository;
 
 
@@ -84,6 +87,9 @@ namespace SP25_RPSC.Data.UnitOfWorks
         {
             _context = context;
         }
+
+        public IChatRepository ChatRepository { get { return _chatRepository ??= new ChatRepository(_context); } }
+
         public IAddressRepository AddressRepository
         {
             get

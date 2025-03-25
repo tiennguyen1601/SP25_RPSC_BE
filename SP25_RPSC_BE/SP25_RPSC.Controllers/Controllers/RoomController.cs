@@ -37,5 +37,22 @@ namespace SP25_RPSC.Controllers.Controllers
             return StatusCode(response.Code, response);
         }
 
+        [HttpGet("Get-Room-Counts")]
+        public async Task<ActionResult> GetRoomCounts()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var roomCounts = await _roomService.GetRoomCountsByLandlordId(token);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get room count successfully",
+                Data = roomCounts
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
     }
 }

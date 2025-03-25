@@ -12,5 +12,6 @@ namespace SP25_RPSC.Services.Service.TransactionService
         Task<Transaction?> GetUnpaidTransOfRepresentative(string landlordId);
         Task AddNewTransaction(Transaction transaction);
         Task UpdateTransaction(Transaction transaction);
+        Task<Dictionary<string, decimal>> GetTransactionSummaryByMonth(int? year, DateTime? startDate, DateTime? endDate);
     }
 }
