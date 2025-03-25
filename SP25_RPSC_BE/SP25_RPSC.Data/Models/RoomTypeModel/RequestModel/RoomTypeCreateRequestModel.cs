@@ -2,6 +2,7 @@
 using SP25_RPSC.Data.Models.PackageModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -26,10 +27,18 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.Request
         public string Description { get; set; }
 
         public int MaxOccupancy { get; set; }
+       
+        public location location { get; set; }
 
         public ICollection<RoomServiceRequestCreate> ListRoomServices { get; set; }
     }
 
+    public class location
+    {
+        public double Long { get; set; }
+
+        public double Lat { get; set; }
+    }
     public class RoomServiceRequestCreate
     {
 
