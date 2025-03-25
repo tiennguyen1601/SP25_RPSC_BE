@@ -67,6 +67,7 @@ CREATE TABLE Customer (
     BudgetRange NVARCHAR(50),
     PreferredLocation NVARCHAR(255),
     Requirement NVARCHAR(MAX),
+	CustomerType NVARCHAR(50),
     Status NVARCHAR(50),
     UserId NVARCHAR(36),
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
