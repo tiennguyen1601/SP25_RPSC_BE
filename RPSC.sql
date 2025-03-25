@@ -32,6 +32,7 @@ CREATE TABLE [User] (
 );
 GO
 
+
 --Bảng Landlord
 CREATE TABLE Landlord (
     LandlordId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -223,6 +224,17 @@ CREATE TABLE Notification (
 );
 GO
 
+--Bảng ServicePackage
+CREATE TABLE ServicePackage (
+    PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Type NVARCHAR(255) NOT NULL,
+    HighLightTime NVARCHAR(255) NOT NULL,
+    MaxPost INT NULL,
+	Label NVARCHAR(255) NOT NULL,
+    Status NVARCHAR(50)
+);
+GO
+
 --Bảng LandlordContracts
 CREATE TABLE LandlordContracts (
     LContractId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -294,17 +306,6 @@ CREATE TABLE Favorite (
     CustomerId NVARCHAR(36),
     CONSTRAINT FK_Favorite_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
     CONSTRAINT FK_Favorite_Customer FOREIGN KEY (CustomerId) REFERENCES Customer(CustomerId)
-);
-GO
-
---Bảng ServicePackage
-CREATE TABLE ServicePackage (
-    PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Type NVARCHAR(255) NOT NULL,
-    HighLightTime NVARCHAR(255) NOT NULL,
-    MaxPost INT NULL,
-	Label NVARCHAR(255) NOT NULL,
-    Status NVARCHAR(50)
 );
 GO
 
@@ -453,11 +454,22 @@ CREATE TABLE CustomerRentRoomDetailRequest (
     Message NVARCHAR(MAX),
     RoomRentRequestsId NVARCHAR(36),
     CustomerId NVARCHAR(36),
-	 MonthWantRent INT,
+	MonthWantRent INT,
     CONSTRAINT FK_CustomerRequest_RoomRentRequests FOREIGN KEY (RoomRentRequestsId) REFERENCES RoomRentRequests(RoomRentRequestsId),
     CONSTRAINT FK_CustomerRentRoomDetailRequest_Customer FOREIGN KEY (CustomerId) REFERENCES Customer(CustomerId)
 );
 GO
+
+--Bảng Chat
+CREATE TABLE Chat (
+	ChatId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	SenderId  NVARCHAR(36),
+	ReceiverId NVARCHAR(36),
+	CreateAt  DATETIME DEFAULT GETDATE(),
+	Status NVARCHAR(50),
+	CONSTRAINT FK_Sender_User FOREIGN KEY (SenderId) REFERENCES [User](UserId),
+    CONSTRAINT FK_Receiver_User FOREIGN KEY (ReceiverId) REFERENCES [User](UserId)
+);
 
 
 
