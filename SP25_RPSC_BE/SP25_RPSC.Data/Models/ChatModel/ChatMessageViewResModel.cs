@@ -17,14 +17,14 @@ namespace SP25_RPSC.Data.Models.ChatModel
 
     public class Sender
     {
-        public Guid SenderId { get; set; }
+        public String SenderId { get; set; }
         public string SenderUsername { get; set; }
         public string SenderProfileUrl { get; set; }
     }
 
     public class Receiver
     {
-        public Guid ReceiverId { get; set; }
+        public String ReceiverId { get; set; }
         public string ReceiverUsername { get; set; }
         public string ReceiverProfileUrl { get; set; }
     }

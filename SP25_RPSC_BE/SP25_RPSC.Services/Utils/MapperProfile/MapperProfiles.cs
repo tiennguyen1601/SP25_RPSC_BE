@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PdfSharpCore.Pdf.IO;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.ChatModel;
 using SP25_RPSC.Data.Models.FeedbackModel.Response;
 using SP25_RPSC.Data.Models.LContractModel.Response;
 using SP25_RPSC.Data.Models.PackageModel;
@@ -262,6 +263,23 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Rating ?? 0))
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate ?? DateTime.UtcNow))
             .ForMember(dest => dest.ImageUrls, opt => opt.Ignore());
+
+
+            CreateMap<Chat, ChatMessageViewResModel>()
+            .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreateAt))
+            .ForMember(dest => dest.Sender, opt => opt.MapFrom(src => new Sender
+            {
+            SenderId = src.Sender.UserId,
+            SenderUsername = src.Sender.FullName,
+            SenderProfileUrl = src.Sender.Avatar
+            }))
+            .ForMember(dest => dest.Receiver, opt => opt.MapFrom(src => new Receiver
+            {
+            ReceiverId = src.Receiver.UserId,
+            ReceiverUsername = src.Receiver.FullName,
+            ReceiverProfileUrl = src.Receiver.Avatar
+            }));
         }
     }
 }
