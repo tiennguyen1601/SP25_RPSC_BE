@@ -28,6 +28,8 @@ using SP25_RPSC.Services.Service.RoomServices;
 using SP25_RPSC.Services.Service.RoomRentRequestService;
 using SP25_RPSC.Services.Service.FeedbackService;
 using SP25_RPSC.Services.Service.RoomStayService;
+using SP25_RPSC.Services.Service.ChatService;
+using SP25_RPSC.Services.Service.Hubs.ChatHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 builder.Services.AddUnitOfWork();
 
 
@@ -68,6 +71,7 @@ builder.Services.AddScoped<ILandlordService, LandlordService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
@@ -86,14 +90,17 @@ builder.Services.AddDbContext<RpscContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowAll",
+    options.AddPolicy("AllowAll",
                       policy =>
                       {
-                          policy.AllowAnyOrigin()
+                          policy.AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowAnyMethod();
+                          .SetIsOriginAllowed(_ => true)
+                          .AllowCredentials();
                       });
 });
+
+
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
@@ -151,7 +158,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -159,4 +165,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapHub<ChatHub>("/chatHub");
+app.UseCors("AllowAll");
 app.Run();

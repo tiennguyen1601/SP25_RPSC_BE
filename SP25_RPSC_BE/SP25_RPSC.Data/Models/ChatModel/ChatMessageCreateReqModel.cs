@@ -12,9 +12,9 @@ namespace SP25_RPSC.Data.Models.ChatModel
         [Required]
         public string message { get; set; }
         [Required]
-        public Guid senderId { get; set; }
+        public string senderId { get; set; }
         [Required]
-        public Guid receiverId { get; set; }
+        public string receiverId { get; set; }
     }
 
 }
