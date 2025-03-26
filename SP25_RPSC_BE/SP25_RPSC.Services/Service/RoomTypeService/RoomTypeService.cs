@@ -112,6 +112,12 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                 throw new ApiException(HttpStatusCode.BadRequest, "Invalid numeric values");
             }
 
+            var address = new Address{
+                AddressId = Guid.NewGuid().ToString(),
+                Long = model.location.Long,
+                Lat = model.location.Lat
+            };
+
             var roomTypeServices = _mapper.Map<List<RoomService>>(model.ListRoomServices);
 
             var roomType = new RoomType
@@ -126,6 +132,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                 RoomServices = roomTypeServices,
                 UpdatedAt = DateTime.UtcNow,
                 Landlord = existingUser,
+                Address= address,
             };
 
             await _unitOfWork.RoomTypeRepository.Add(roomType);

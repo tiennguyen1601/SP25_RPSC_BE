@@ -13,9 +13,9 @@ public partial class ServicePackage
 
     public int? MaxPost { get; set; }
 
-    public string? Status { get; set; }
-
     public string Label { get; set; } = null!;
+
+    public string? Status { get; set; }
 
     public virtual ICollection<LandlordContract> LandlordContracts { get; set; } = new List<LandlordContract>();
 

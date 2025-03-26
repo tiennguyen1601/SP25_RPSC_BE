@@ -2,6 +2,7 @@
 using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
+using SP25_RPSC.Data.Repositories.ChatRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
 using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
@@ -19,6 +20,7 @@ using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
+using SP25_RPSC.Data.Repositories.RoomAmentyRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomPriceRepository;
@@ -76,13 +78,18 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private ICustomerRentRoomDetailRequestRepositories _customerRentRoomDetailRequestRepositories;
         private IRoomRentRequestRepository _roomRentRequestRepository;
         private IImageRfRepository _imageRfRepository;
+        private IChatRepository _chatRepository;
 
+        private IRoomAmentyRepository _roomAmentyRepository;
 
 
         public UnitOfWork(RpscContext context)
         {
             _context = context;
         }
+
+        public IChatRepository ChatRepository { get { return _chatRepository ??= new ChatRepository(_context); } }
+
         public IAddressRepository AddressRepository
         {
             get
@@ -334,6 +341,14 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _imageRfRepository ??= new ImageRfRepository(_context);
+            }
+        }
+
+        public IRoomAmentyRepository RoomAmentyRepository
+        {
+            get
+            {
+                return _roomAmentyRepository ??= new RoomAmentyRepository(_context);
             }
         }
 
