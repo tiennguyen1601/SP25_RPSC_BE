@@ -13,6 +13,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
     public interface IPaymentService
     {
         Task<ResultModel> CreatePaymentPackageRequest(PaymentPackageRequestDTO paymentInfo, HttpContext context);
+        Task<ResultModel> CreateExtendPackageRequest(PaymentExtendPackageRequestDTO extendInfo, HttpContext context);
         Task<ResultModel> HandlePaymentPackageResponse(PaymentPackageResponseDTO response);
     }
 }

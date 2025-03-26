@@ -33,6 +33,16 @@ namespace SP25_RPSC.Controllers.Controllers
             return Created("", response);
         }
 
+        [HttpPost("package/extend")]
+        [Authorize(Roles = "REPRESENTATIVE")]
+        public async Task<IActionResult> CreateExtendRequestUrl([FromForm] PaymentExtendPackageRequestDTO request)
+        {
+            // call payment service
+            var response = await _paymentService.CreateExtendPackageRequest(request, HttpContext);
+
+            return Ok(response);
+        }
+
         [HttpPost("package/handle-response")]
         //[Authorize(Roles = "Landlord")]
         public async Task<IActionResult> HandleResponse([FromBody] PaymentPackageResponseDTO responseInfo)
