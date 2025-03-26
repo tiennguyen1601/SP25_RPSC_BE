@@ -20,6 +20,7 @@ using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
+using SP25_RPSC.Data.Repositories.RoomAmentyRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomPriceRepository;
@@ -79,6 +80,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IImageRfRepository _imageRfRepository;
         private IChatRepository _chatRepository;
 
+        private IRoomAmentyRepository _roomAmentyRepository;
 
 
         public UnitOfWork(RpscContext context)
@@ -339,6 +341,14 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _imageRfRepository ??= new ImageRfRepository(_context);
+            }
+        }
+
+        public IRoomAmentyRepository RoomAmentyRepository
+        {
+            get
+            {
+                return _roomAmentyRepository ??= new RoomAmentyRepository(_context);
             }
         }
 
