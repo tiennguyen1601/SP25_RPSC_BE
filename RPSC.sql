@@ -149,7 +149,9 @@ CREATE TABLE Post (
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME,
     RentalRoomId NVARCHAR(36),
-    CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
+	UserId NVARCHAR(36),
+    CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId),
+	CONSTRAINT FK_Post_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 GO
 
