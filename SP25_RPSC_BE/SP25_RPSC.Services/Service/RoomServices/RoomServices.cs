@@ -55,7 +55,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 Status = StatusEnums.Active.ToString(),
                 UpdatedAt = DateTime.Now,
                 RoomPrices = roomPrice,
-
+                RoomTypeId = model.roomtypeId,
             };
 
             var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
@@ -65,22 +65,22 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 {
                  ImageId = Guid.NewGuid().ToString(),
                  ImageUrl = link,
-
                 };
                room.RoomImages.Add(Image);
             }
 
-            foreach (var amenty in model.roomAmentyCreateModels)
+            foreach (var amenty in model.AmentyId)
             {
                 var roomAmentyList = new RoomAmentiesList
                 {
-                    RoomAmentyId = amenty.AmentyId,
+                    RoomAmentyId = amenty,
                     RoomId = room.RoomId
                 };
                 await _unitOfWork.RoomAmentyListRepository.Add(roomAmentyList);
             }
 
             await _unitOfWork.RoomRepository.Add(room);
+            await _unitOfWork.SaveAsync();
             return true;
         }
 
