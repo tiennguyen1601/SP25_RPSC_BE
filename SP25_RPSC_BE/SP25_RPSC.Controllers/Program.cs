@@ -32,6 +32,7 @@ using Microsoft.OpenApi.Any;
 using SP25_RPSC.Services.Service.CustomerService;
 using SP25_RPSC.Services.Service.ChatService;
 using SP25_RPSC.Services.Service.Hubs.ChatHub;
+using SP25_RPSC.Services.Service.ContractCustomerService;
 using SP25_RPSC.Services.Service.PostService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -75,6 +76,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICustomerContractService, CustomerContractService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 

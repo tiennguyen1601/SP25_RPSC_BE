@@ -136,6 +136,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             };
 
             await _unitOfWork.RoomTypeRepository.Add(roomType);
+            await _unitOfWork.SaveAsync();
             return true;
         }
     }

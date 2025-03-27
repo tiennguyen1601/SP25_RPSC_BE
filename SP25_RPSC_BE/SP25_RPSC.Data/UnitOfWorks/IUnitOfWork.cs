@@ -20,6 +20,7 @@ using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
+using SP25_RPSC.Data.Repositories.RoomAmentyListRepository;
 using SP25_RPSC.Data.Repositories.RoomAmentyRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
@@ -81,6 +82,8 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IChatRepository ChatRepository { get; }
 
         IRoomAmentyRepository RoomAmentyRepository { get; }
+
+        IRoomAmentyListRepository RoomAmentyListRepository { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync();
 

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.ResultModel;
+using SP25_RPSC.Data.Models.RoomModel.RequestModel;
+using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Services.Service.RoomServices;
 using SP25_RPSC.Services.Service.RoomTypeService;
 
@@ -37,21 +39,24 @@ namespace SP25_RPSC.Controllers.Controllers
             return StatusCode(response.Code, response);
         }
 
-        [HttpGet("Get-Room-Counts")]
-        public async Task<ActionResult> GetRoomCounts()
+        [HttpPost]
+        [Route("Create-Room")]
+        public async Task<ActionResult> CreateRoom(RoomCreateRequestModel model)
         {
-            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            var roomCounts = await _roomService.GetRoomCountsByLandlordId(token);
+            //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
+            var result = await _roomService.CreateRoom(model);
 
-            ResultModel response = new ResultModel
+            if (result)
             {
-                IsSuccess = true,
-                Code = (int)HttpStatusCode.OK,
-                Message = "Get room count successfully",
-                Data = roomCounts
-            };
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Room created successfully"
+                });
+            }
 
-            return StatusCode(response.Code, response);
+            return BadRequest(new { Message = "Room cannot be created" });
         }
 
     }

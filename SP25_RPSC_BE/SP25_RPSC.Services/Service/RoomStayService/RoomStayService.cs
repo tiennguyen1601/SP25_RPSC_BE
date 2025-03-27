@@ -97,6 +97,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                 TotalCustomers = customerResponses.Count
             };
         }
+
         private decimal? GetLatestPrice(IEnumerable<RoomPrice> roomPrices)
         {
             if (roomPrices == null || !roomPrices.Any())

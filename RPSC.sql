@@ -185,7 +185,7 @@ CREATE TABLE CustomerContracts (
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
-    Term NVARCHAR(50),
+    Term NVARCHAR(MAX),
     TenantId NVARCHAR(36),
     RentalRoomId NVARCHAR(36),
     CONSTRAINT FK_CustomerContracts_Tenant FOREIGN KEY (TenantId) REFERENCES Customer(CustomerId),
@@ -467,6 +467,7 @@ CREATE TABLE Chat (
 	ReceiverId NVARCHAR(36),
 	CreateAt  DATETIME DEFAULT GETDATE(),
 	Status NVARCHAR(50),
+    Message NVARCHAR(MAX),
 	CONSTRAINT FK_Sender_User FOREIGN KEY (SenderId) REFERENCES [User](UserId),
     CONSTRAINT FK_Receiver_User FOREIGN KEY (ReceiverId) REFERENCES [User](UserId)
 );

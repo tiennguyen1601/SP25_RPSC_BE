@@ -32,11 +32,13 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
         public async Task DeleteContract(string packageId)
         {
             await _unitOfWork.LandlordContractRepository.Delete(packageId);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task InsertContract(LandlordContract contract)
         {
             await _unitOfWork.LandlordContractRepository.Add(contract);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task<ViewLandlordContractResDTO> GetAllLandlordContract(string searchQuery, int pageIndex, int pageSize, string status)
