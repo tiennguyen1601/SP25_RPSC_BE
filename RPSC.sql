@@ -73,9 +73,6 @@ CREATE TABLE Customer (
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 
-
-GO
-
 --Bảng Address
 CREATE TABLE [Address] (
     AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
