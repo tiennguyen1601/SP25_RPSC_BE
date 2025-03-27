@@ -13,7 +13,10 @@ public enum CustomerTypeEnums
     Student = 0,
 
     [EnumMember(Value = "Worker")]
-    Worker = 1
+    Worker = 1,
+
+    Tenant, 
+    Member
 }
 
 

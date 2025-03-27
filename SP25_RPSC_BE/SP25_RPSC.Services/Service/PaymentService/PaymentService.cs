@@ -191,6 +191,82 @@ namespace SP25_RPSC.Services.Service.PaymentService
             };
         }
 
+        public async Task<ResultModel> CreateExtendPackageRequest(PaymentExtendPackageRequestDTO extendInfo, HttpContext context)
+        {
+            // check Landlord
+            var Landlord = await _landlordService.GetLandlordById(extendInfo.LandlordId);
+
+            // CASE NOT EXISTED, throw 404 error - NOT FOUND
+            if (Landlord == null)
+            {
+                throw new Exception("Landlord does not exist");
+            }
+
+            // revoke all old expired packages
+            await _unitOfWork.LandlordContractRepository.RevokeExpirePackages(extendInfo.LandlordId);
+
+            // check package
+            await _packageService.CheckPackageRequest(extendInfo.LandlordId, extendInfo.PackageId);
+
+            // check package
+            var currContracts = await _landlordContractService.GetCurrentContracts(extendInfo.LandlordId);
+            var currContract = currContracts.FirstOrDefault(u => u.PackageId == extendInfo.PackageId);
+
+            if (currContract == null)
+            {
+                throw new Exception("Package payment overdue");
+            }
+
+            // package
+            var package = await _packageService.GetById(extendInfo.PackageId);
+            if (!package.ServiceDetails.Select(x => x.ServiceDetailId).ToList().Contains(extendInfo.ServiceDetailId)) throw new Exception("Service not found");
+
+            // unpaid trans
+            var upTran = await _transactionService.GetUnpaidTransOfRepresentative(extendInfo.LandlordId!);
+
+            // check if unpaid tran exists
+            if (upTran != null)
+            {
+                upTran.Status = StatusEnums.CANCELLED.ToString();
+                await _transactionService.UpdateTransaction(upTran);
+            }
+
+            // init new tran
+            var newTran = new Transaction()
+            {
+                TransactionId = Guid.NewGuid().ToString(),
+                PaymentMethod = "Online",
+                TransactionInfo = string.Empty,
+                TransactionNumber = string.Empty,
+                PaymentDate = DateTime.Now,
+                Type = StatusEnums.EXTEND.ToString(),
+                LcontractId = currContract.LcontractId,
+                Amount = (double)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == extendInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
+                Status = StatusEnums.Processing.ToString(),
+            };
+
+            // add
+            _transactionService.AddNewTransaction(newTran);
+
+            // save
+            await _unitOfWork.SaveAsync();
+
+            object response = await _payOSService.CreatePaymentUrl(new PayOSReqModel
+            {
+                CancleUrl = "http://localhost:5173/landlord/confirmpayment",
+                RedirectUrl = "http://localhost:5173/landlord/confirmpayment",
+                PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == extendInfo.ServiceDetailId).Name + package!.Type,
+                Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == extendInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
+            });
+
+            return new ResultModel
+            {
+                Code = (int)HttpStatusCode.OK,
+                Message = "Tạo thành công",
+                Data = response
+            };
+        }
+
         public async Task<ResultModel> HandlePaymentPackageResponse(PaymentPackageResponseDTO response)
         {
             // check Landlord
