@@ -13,7 +13,10 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
         Task<UserLoginResModel> Login(UserLoginReqModel userLoginReqModel);
 
         Task Register(UserRegisterReqModel userRegisterReqModel);
+        Task RegisterCustomer(CustomerRegisterReqModel customerRegisterReqModel);
 
         Task Logout(string refreshToken);
+        Task ForgotPassword(string email);
+        Task ResetPassword(ResetPasswordRequest model);
     }
 }

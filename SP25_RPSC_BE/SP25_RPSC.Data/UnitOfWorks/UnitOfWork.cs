@@ -1,11 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
+using SP25_RPSC.Data.Repositories.BussinessImageRepository;
+using SP25_RPSC.Data.Repositories.ChatRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
+using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
 using SP25_RPSC.Data.Repositories.FeedbackRepository;
+using SP25_RPSC.Data.Repositories.ImageRfRepository;
 using SP25_RPSC.Data.Repositories.LandlordContractRepository;
 using SP25_RPSC.Data.Repositories.LandlordRepository;
 using SP25_RPSC.Data.Repositories.NotificationRepository;
@@ -16,9 +20,11 @@ using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
+using SP25_RPSC.Data.Repositories.RoomAmentyRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomPriceRepository;
+using SP25_RPSC.Data.Repositories.RoomRentRequestRepository;
 using SP25_RPSC.Data.Repositories.RoomRepository;
 using SP25_RPSC.Data.Repositories.RoomServicePriceRepository;
 using SP25_RPSC.Data.Repositories.RoomServiceRepository;
@@ -68,11 +74,22 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IOTPRepository _otpRepository;
         private IRefreshTokenRepository _refreshTokenRepository;
         private ITransactionRepository _transactionRepository;
+        private IBussinessImageRepository _bussinessImageRepository;
+        private ICustomerRentRoomDetailRequestRepositories _customerRentRoomDetailRequestRepositories;
+        private IRoomRentRequestRepository _roomRentRequestRepository;
+        private IImageRfRepository _imageRfRepository;
+        private IChatRepository _chatRepository;
+
+        private IRoomAmentyRepository _roomAmentyRepository;
+
 
         public UnitOfWork(RpscContext context)
         {
             _context = context;
         }
+
+        public IChatRepository ChatRepository { get { return _chatRepository ??= new ChatRepository(_context); } }
+
         public IAddressRepository AddressRepository
         {
             get
@@ -295,7 +312,45 @@ namespace SP25_RPSC.Data.UnitOfWorks
                 return _transactionRepository ??= new TransactionRepository(_context);
             }
         }
+        public IBussinessImageRepository BussinessImageRepository
+        {
+            get
+            {
+                return _bussinessImageRepository ??= new BussinessImageRepository(_context);
+            }
+        }
 
+        public ICustomerRentRoomDetailRequestRepositories CustomerRentRoomDetailRequestRepositories
+        {
+            get
+            {
+                return _customerRentRoomDetailRequestRepositories ??= new CustomerRentRoomDetailRequestRepositories(_context);
+            }
+        }
+
+        public IRoomRentRequestRepository RoomRentRequestRepository
+        {
+            get
+            {
+                return _roomRentRequestRepository ??= new RoomRentRequestRepository(_context);
+            }
+        }
+
+        public IImageRfRepository ImageRfRepository
+        {
+            get
+            {
+                return _imageRfRepository ??= new ImageRfRepository(_context);
+            }
+        }
+
+        public IRoomAmentyRepository RoomAmentyRepository
+        {
+            get
+            {
+                return _roomAmentyRepository ??= new RoomAmentyRepository(_context);
+            }
+        }
 
         public void Save()
         {

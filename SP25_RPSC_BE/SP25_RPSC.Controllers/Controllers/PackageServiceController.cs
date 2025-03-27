@@ -42,6 +42,32 @@ namespace SP25_RPSC.Controllers.Controllers
             await _packageService.CreatePackage(model);
             return Ok("Create Service successfully");
         }
+
+
+        [HttpPost("create-service-detail")]
+        public async Task<IActionResult> CreateServiceDetail([FromBody] ServiceDetailCreateRequestModel model)
+        {
+            if (model == null)
+            {
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Invalid request data."
+                });
+            }
+
+            await _packageService.CreateServiceDetail(model);
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Service detail created successfully."
+            });
+        }
+
+
         [HttpGet("get-service-package-by-landlord")]
         public async Task<ActionResult> GetServicePackageforLandlord()
         {
@@ -62,7 +88,7 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
 
-            await _packageService.UpdatePrice(priceId, request.NewPrice);
+            await _packageService.UpdatePriceAndServiceDetail(priceId, request.NewPrice,request.NewName ,request.NewDuration, request.NewDescription);
 
             return Ok(new ResultModel
             {

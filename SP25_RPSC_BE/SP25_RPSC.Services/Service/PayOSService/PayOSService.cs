@@ -28,13 +28,15 @@ namespace SP25_RPSC.Services.Service.PayOSService
                 _config["PayOS:ChecksumKey"]
             );
 
+            int orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff"));
+
             // Tạo item thanh toán
             ItemData item = new ItemData(payOSReqModel.PackageName, 1, (int)payOSReqModel.Amount);
             List<ItemData> items = new List<ItemData> { item };
 
             // Chuẩn bị dữ liệu thanh toán
             PaymentData paymentData = new PaymentData(
-                payOSReqModel.OrderId,
+                orderCode,
                 (int)payOSReqModel.Amount,
                 payOSReqModel.PackageName,
                 items,
@@ -49,7 +51,13 @@ namespace SP25_RPSC.Services.Service.PayOSService
 
         public async Task<PaymentLinkInformation> CancelPaymentLink(long orderCode)
         {
-            PaymentLinkInformation cancelledPaymentLinkInfo = await _payOS.cancelPaymentLink(orderCode);
+            PayOS payOS = new PayOS(
+              _config["PayOS:ClientID"],
+              _config["PayOS:ApiKey"],
+              _config["PayOS:ChecksumKey"]
+          );
+
+            PaymentLinkInformation cancelledPaymentLinkInfo = await payOS.cancelPaymentLink(orderCode);
 
             return cancelledPaymentLinkInfo;
         }

@@ -12,15 +12,6 @@ CREATE TABLE Role (
 );
 GO
 
---Bảng ServicePackage
-CREATE TABLE ServicePackage (
-    PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Name NVARCHAR(255) NOT NULL,
-    Duration INT,
-    Description NVARCHAR(MAX),
-    Status NVARCHAR(50)
-);
-GO
 
 --Bảng User
 CREATE TABLE [User] (
@@ -40,6 +31,7 @@ CREATE TABLE [User] (
     CONSTRAINT FK_User_Role FOREIGN KEY (RoleId) REFERENCES Role(RoleId)
 );
 GO
+
 
 --Bảng Landlord
 CREATE TABLE Landlord (
@@ -75,13 +67,11 @@ CREATE TABLE Customer (
     BudgetRange NVARCHAR(50),
     PreferredLocation NVARCHAR(255),
     Requirement NVARCHAR(MAX),
+	CustomerType NVARCHAR(50),
     Status NVARCHAR(50),
     UserId NVARCHAR(36),
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
-
-
-GO
 
 --Bảng Address
 CREATE TABLE [Address] (
@@ -153,20 +143,21 @@ GO
 CREATE TABLE Post (
     PostId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Title NVARCHAR(255),
-    Descripton NVARCHAR(MAX),
+    Description NVARCHAR(MAX),
     Price DECIMAL(18,2),
     Status NVARCHAR(50),
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME,
     RentalRoomId NVARCHAR(36),
-    CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
+    UserId NVARCHAR(36),
+    CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId),
+	CONSTRAINT FK_Post_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 GO
 
 --Bảng RoommateRequests
 CREATE TABLE RoommateRequests (
     RequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    Message NVARCHAR(MAX),
     CreatedAt DATETIME DEFAULT GETDATE(),
     Status NVARCHAR(50), -- Ví dụ: Pending, Accepted, Rejected
     PostId NVARCHAR(36),
@@ -177,6 +168,7 @@ GO
 --Bảng CustomerRequest
 CREATE TABLE CustomerRequest (
     CustomerRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	 Message NVARCHAR(MAX),
     Status NVARCHAR(50),
     RequestId NVARCHAR(36),
     CustomerId NVARCHAR(36),
@@ -193,7 +185,7 @@ CREATE TABLE CustomerContracts (
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
-    Term NVARCHAR(50),
+    Term NVARCHAR(MAX),
     TenantId NVARCHAR(36),
     RentalRoomId NVARCHAR(36),
     CONSTRAINT FK_CustomerContracts_Tenant FOREIGN KEY (TenantId) REFERENCES Customer(CustomerId),
@@ -220,6 +212,8 @@ CREATE TABLE Report (
 );
 GO
 
+
+
 --Bảng Notification
 CREATE TABLE Notification (
     NotificationId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -227,6 +221,17 @@ CREATE TABLE Notification (
     CreatedDate DATETIME DEFAULT GETDATE(),
     UserId NVARCHAR(36),
     CONSTRAINT FK_Notification_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
+);
+GO
+
+--Bảng ServicePackage
+CREATE TABLE ServicePackage (
+    PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Type NVARCHAR(255) NOT NULL,
+    HighLightTime NVARCHAR(255) NOT NULL,
+    MaxPost INT NULL,
+	Label NVARCHAR(255) NOT NULL,
+    Status NVARCHAR(50)
 );
 GO
 
@@ -253,7 +258,7 @@ CREATE TABLE [Transaction] (
     [TransactionId] [nvarchar](36) NOT NULL PRIMARY KEY,
 	[TransactionNumber] [nvarchar](max) NOT NULL,
 	[TransactionInfo] [nvarchar](max) NOT NULL,
-	[Type] [int] NOT NULL,
+	[Type] [nvarchar](36) NOT NULL,
 	[Amount] [float] NOT NULL,
     PaymentDate DATETIME,
     PaymentMethod NVARCHAR(50) CHECK (PaymentMethod IN ('Online', 'Cash')),
@@ -280,6 +285,17 @@ CREATE TABLE Feedback (
     CONSTRAINT FK_Feedback_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
 );
 GO
+--Bảng ImageRF
+CREATE TABLE ImageRF (
+    ImageRFId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    ImageRFUrl NVARCHAR(255),
+    FeedbackId NVARCHAR(36),
+	ReportId NVARCHAR(36),
+    CONSTRAINT FK_ImageRF_Feedback FOREIGN KEY (FeedbackId) REFERENCES Feedback(FeedbackId),
+    CONSTRAINT FK_ImageRF_Report FOREIGN KEY (ReportId) REFERENCES Report(ReportId)
+);
+GO
+
 
 --Bảng Favorite
 CREATE TABLE Favorite (
@@ -296,13 +312,15 @@ GO
 --Bảng ServiceDetail
 CREATE TABLE ServiceDetail (
     ServiceDetailId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
-    [Type] NVARCHAR(50),
-    HighLight NVARCHAR(255),
+    Name NVARCHAR(50),
+    Duration NVARCHAR(255),
+	Description NVARCHAR(MAX),
 	Status NVARCHAR(36),
 	PackageId  NVARCHAR(36),
     CONSTRAINT FK_ServicePackage FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId)
 );
 GO
+
 
 
 --Bảng PricePackage
@@ -320,8 +338,8 @@ GO
 CREATE TABLE RoomImage (
     ImageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ImageUrl NVARCHAR(255),
-    RoomTypeId NVARCHAR(36),
-    CONSTRAINT FK_RoomImage_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_RoomImage_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
 );
 GO
 
@@ -330,8 +348,8 @@ CREATE TABLE RoomPrice (
     RoomPriceId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     ApplicableDate DATETIME,
     Price DECIMAL(18,2),
-    RoomTypeId NVARCHAR(36),
-    CONSTRAINT FK_RoomPrice_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId)
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_RoomPrice_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
 );
 GO
 
@@ -340,6 +358,8 @@ CREATE TABLE RoomStay (
     RoomStayId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     RoomId NVARCHAR(36),
     LandlordId NVARCHAR(36),
+	StartDate DATETIME,
+	EndDate DATETIME,
     Status NVARCHAR(50),
     UpdatedAt DATETIME,
     CONSTRAINT FK_RoomStay_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
@@ -350,6 +370,8 @@ GO
 --Bảng RoomStayCustomer
 CREATE TABLE RoomStayCustomer (
     RoomStayCustomerId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	Type NVARCHAR(50),
+	Status NVARCHAR(50),
     RoomStayId NVARCHAR(36),
     CustomerId NVARCHAR(36),
     UpdatedAt DATETIME,
@@ -359,6 +381,8 @@ CREATE TABLE RoomStayCustomer (
     CONSTRAINT FK_RoomStayCustomer_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
 GO
+
+
 
 --Bảng RoomAmenties
 CREATE TABLE RoomAmenties (
@@ -413,64 +437,153 @@ CREATE TABLE ExtendCContracts (
    ContractID  NVARCHAR(36),
    CONSTRAINT FK_CustomerContracts FOREIGN KEY (ContractID) REFERENCES [CustomerContracts](ContractID)
 );
+
+CREATE TABLE RoomRentRequests (
+    RoomRentRequestsId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    Status NVARCHAR(50),
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_RoomRentRequests_Rooms FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId)
+);
+GO
+
+--Bảng CustomerRentRoomDetailRequest
+CREATE TABLE CustomerRentRoomDetailRequest (
+    CustomerRentRoomDetailRequestId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Status NVARCHAR(50),
+    Message NVARCHAR(MAX),
+    RoomRentRequestsId NVARCHAR(36),
+    CustomerId NVARCHAR(36),
+	MonthWantRent INT,
+    CONSTRAINT FK_CustomerRequest_RoomRentRequests FOREIGN KEY (RoomRentRequestsId) REFERENCES RoomRentRequests(RoomRentRequestsId),
+    CONSTRAINT FK_CustomerRentRoomDetailRequest_Customer FOREIGN KEY (CustomerId) REFERENCES Customer(CustomerId)
+);
+GO
+
+--Bảng Chat
+CREATE TABLE Chat (
+	ChatId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+	SenderId  NVARCHAR(36),
+	ReceiverId NVARCHAR(36),
+	CreateAt  DATETIME DEFAULT GETDATE(),
+	Status NVARCHAR(50),
+    Message NVARCHAR(MAX),
+	CONSTRAINT FK_Sender_User FOREIGN KEY (SenderId) REFERENCES [User](UserId),
+    CONSTRAINT FK_Receiver_User FOREIGN KEY (ReceiverId) REFERENCES [User](UserId)
+);
+
+
+
 INSERT INTO Role (RoleId, RoleName)
 VALUES 
-(NEWID(), 'Customer'),
-(NEWID(), 'Landlord'),
-(NEWID(), 'Admin');
+(1, 'Customer'),
+(2, 'Landlord'),
+(3, 'Admin');
 
-INSERT INTO [RPSC].[dbo].[ServicePackage] ([Name], [Duration], [Description], [Status])
+INSERT INTO [RPSC].[dbo].[ServicePackage] ([Type], [HighLightTime], [MaxPost], [Label] ,[Status])
 VALUES
-    (N'1 ngày', 1, N'Gói dịch vụ 1 ngày', 'Active'),
-    (N'1 tuần', 7, N'Gói dịch vụ 1 tuần', 'Active'),
-    (N'1 tháng', 30, N'Gói dịch vụ 1 tháng', 'Active');
+    (N'Gói cơ bản', N'Không hiện lên trang chủ', 5, N'Không' ,'Active'),
+    (N'Gói Vip 1', N'Hiện lên trang chủ 10 tiếng', 10, N'Tin nổi bật' ,'Active'),
+    (N'Gói Vip 2', N'Hiện lên trang chủ 24 tiếng', 20, N'Tin nổi bật' ,'Active'),
+	(N'Gói Vip 3',N'Hiện lên trang chủ 48 tiếng', 25, N'Tin nổi bật' ,'Active'),
+	(N'Gói Vip 4', N'Hiện lên trang chủ 72 tiếng', 30,N'Tin VIP kèm theo hiệu ứng' , 'Active');
 
 	
-
-	INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Type], [HighLight], [Status], [PackageId])
+INSERT INTO [RPSC].[dbo].[ServiceDetail] ([Name], [Duration], [Description],[Status], [PackageId])
 VALUES
-    (N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
-	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')),
+    (N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói cơ bản')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói cơ bản')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói cơ bản')),
+	
 
-	(N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
-	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')),
+	(N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 1')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 1')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 1')),
     
 
-    (N'Tin thường', N'Màu mặc định, viết thường', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-    (N'Tin Vip 1', N'MÀU XANH, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-	(N'Tin Vip 2', N'MÀU CAM, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-	(N'Tin Vip 3', N'MÀU HỒNG, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')),
-	(N'Tin Vip 4', N'MÀU ĐỎ, IN HOA', 'Active', (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng'));
+    (N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 2')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 2')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 2')),
+
+	(N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 3')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 3')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 3')),
+
+	(N'Gói 1 ngày', 1, N'Gói dịch vụ 1 ngày' ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 4')),
+    (N'Gói 1 tuần', 7,N'Gói dịch vụ 1 tuần'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 4')),
+	(N'Gói 1 tháng', 30,N'Gói dịch vụ 1 tháng'  ,'Active', (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 4'));
     
 
 
 INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
 VALUES
-    -- 1 ngày
-    (2000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (4000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (8000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (11000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
-    (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 ngày')), 'Active'),
+    -- Tin thường
+    (2000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói cơ bản')), 'Active'),
+    (4000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói cơ bản')), 'Active'),
+    (8000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói cơ bản')), 'Active');
 
-    -- 1 tuần
-    (49000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (59000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (69000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (79000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
-    (89000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tuần')), 'Active'),
+-- Tin Vip 1
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (5000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 1')), 'Active'),
+    (10000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 1')), 'Active'),
+    (20000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 1')), 'Active');
 
-    -- 1 tháng
-    (100000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin thường' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 1' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (300000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 2' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (600000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 3' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active'),
-    (1200000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Type = N'Tin Vip 4' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Name = N'1 tháng')), 'Active');
+-- Tin Vip 2
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (10000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 2')), 'Active'),
+    (20000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 2')), 'Active'),
+    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 2')), 'Active');
 
-  
+-- Tin Vip 3
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (15000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 3')), 'Active'),
+    (30000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 3')), 'Active'),
+    (60000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 3')), 'Active');
+
+-- Tin Vip 4
+INSERT INTO [RPSC].[dbo].[PricePackage] ([Price], [ApplicableDate], [ServiceDetailId], [Status])
+VALUES
+    (20000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 ngày' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 4')), 'Active'),
+    (40000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tuần' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 4')), 'Active'),
+    (80000, GETDATE(), (SELECT ServiceDetailId FROM ServiceDetail WHERE Name = N'Gói 1 tháng' AND PackageId = (SELECT PackageId FROM ServicePackage WHERE Type = N'Gói Vip 4')), 'Active');
+
+   
+
+	--passowrd Tien@123
+
+	INSERT INTO [User] (Email, FullName, Dob, Address, PhoneNumber, Gender, Avatar, Password, Status, CreateAt, UpdateAt, RoleId)
+VALUES 
+('landlord1@example.com', 'John Doe', '1985-06-15', '123 Main St, District 1', '0123456789', 'Male', 'https://example.com/avatar1.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
+('landlord2@example.com', 'Jane Smith', '1990-08-22', '456 Le Loi St, District 3', '0987654321', 'Female', 'https://example.com/avatar2.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
+('landlord3@example.com', 'Robert Johnson', '1988-01-10', '789 Nguyen Hue, Thu Duc City', '0778899001', 'Male', 'https://example.com/avatar3.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Pending', GETDATE(), NULL, 2),
+('landlord4@example.com', 'Emily Brown', '1992-12-05', '102 Vo Van Kiet, Binh Thanh', '0998877665', 'Female', 'https://example.com/avatar4.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Inactive', GETDATE(), NULL, 2),
+('landlord5@example.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '0665544332', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 2),
+('admin@gmail.com', 'Michael Wilson', '1995-03-18', '205 Tran Hung Dao, District 5', '123123', 'Male', 'https://example.com/avatar5.jpg', 'c1e71b26d13b80ed4d25d1d3be8a709ffd16270f6636ce36823e60c8e2fcdfa9', 'Active', GETDATE(), NULL, 3);
+
+INSERT INTO Landlord (CompanyName, NumberRoom, LicenseNumber, BankName, BankNumber, Template, Status, CreatedDate, UpdatedDate, UserId)
+VALUES 
+('Green Home Rental', 10, 'LN123456', 'Vietcombank', '123456789', 'Standard', 'Active', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord1@example.com')),
+('City Living', 15, 'LN654321', 'Techcombank', '987654321', 'Premium', 'Active', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord2@example.com')),
+('Sunshine Apartments', 8, 'LN987654', 'BIDV', '456123789', 'Basic', 'Pending', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord3@example.com')),
+('Blue Ocean Housing', 12, 'LN321654', 'Agribank', '321654987', 'Deluxe', 'Inactive', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord4@example.com')),
+('Urban Stays', 20, 'LN852963', 'MB Bank', '852963741', 'Standard', 'Active', GETDATE(), NULL, (SELECT UserId FROM [User] WHERE Email = 'landlord5@example.com'));
+
+INSERT INTO BusinessImage (ImageURL, CreatedDate, Status, LandlordId)
+VALUES
+('https://example.com/image1.jpg', GETDATE(), 'Active', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image2.jpg', GETDATE(), 'Active', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image3.jpg', GETDATE(), 'Inactive', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image4.jpg', GETDATE(), 'Pending', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID())),
+('https://example.com/image5.jpg', GETDATE(), 'Active', (SELECT TOP 1 LandlordId FROM Landlord ORDER BY NEWID()));
+
+INSERT INTO Customer (Preferences, LifeStyle, BudgetRange, PreferredLocation, Requirement, Status, UserId)
+VALUES
+('Near university, pet-friendly', 'Quiet', '200-300$', 'District 1', 'No smoking', 'Active', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Gym nearby, furnished room', 'Social', '300-400$', 'Thu Duc City', 'Must have air conditioning', 'Active', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Low-cost, shared room', 'Minimalist', '150-250$', 'Binh Thanh District', 'No pets allowed', 'Pending', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Single room, high security', 'Independent', '400-500$', 'District 3', 'Must have fast internet', 'Inactive', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID())),
+('Close to metro, modern design', 'Workaholic', '500-600$', 'District 2', 'No preference', 'Active', (SELECT TOP 1 UserId FROM [User] ORDER BY NEWID()));
+

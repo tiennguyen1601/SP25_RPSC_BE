@@ -1,10 +1,5 @@
-﻿using SP25_RPSC.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Models.PackageModel
 {
@@ -12,13 +7,19 @@ namespace SP25_RPSC.Data.Models.PackageModel
     {
         [JsonIgnore]
         public Guid PackageId { get; set; } = Guid.NewGuid();
-        public string Name { get; set; }
 
-        public string Description { get; set; }
+        [Required(ErrorMessage = "Type không được để trống")]
+        public string Type { get; set; }
 
-        public int Duration { get; set; }
+        [Required(ErrorMessage = "HighLight không được để trống")]
+        public string HighLightTime { get; set; }
 
-        public ICollection<PackageCreateDetailReqestModel> PackageDetails { get; set; }
+        [Required(ErrorMessage = "MaxPost không được để trống")]
+        public int? MaxPost { get; set; }
+        [Required(ErrorMessage = "Label không được để trống")]
+        public string? Label { get; set; }
+
+
     }
 
     public class PackageCreateDetailReqestModel

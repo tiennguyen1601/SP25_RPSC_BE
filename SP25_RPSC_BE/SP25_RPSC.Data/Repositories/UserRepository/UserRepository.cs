@@ -13,6 +13,7 @@ namespace SP25_RPSC.Data.Repositories.UserRepository
     {
         Task<User> GetUserByPhoneNumber(string phoneNumber);
         Task<User> GetUserByEmail(string email);
+        Task<User> GetUserById(string id);
 
     }
 
@@ -29,6 +30,8 @@ namespace SP25_RPSC.Data.Repositories.UserRepository
         {
             return await _context.Users
                 .Include(u => u.Role)
+                .Include(u => u.Landlords) 
+                .Include(u => u.Customers)
                 .FirstOrDefaultAsync(u => u.PhoneNumber.Equals(phoneNumber) ||
             (u.Email == phoneNumber));
 
@@ -37,6 +40,13 @@ namespace SP25_RPSC.Data.Repositories.UserRepository
         public async Task<User> GetUserByEmail(string email)
         {
             return await _context.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
+        }
+
+        public async Task<User> GetUserById(string id)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId.Equals(id));
         }
     }
 }

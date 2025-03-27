@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SP25_RPSC.Data.Models.OTPModel;
 using SP25_RPSC.Data.Models.RefreshTokenModel.Request;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Data.Models.UserModels.Request;
@@ -63,6 +64,60 @@ namespace SP25_RPSC.Controllers.Controllers
                 IsSuccess = true,
                 Code = (int)HttpStatusCode.OK,
                 Message = "Register successfully",
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
+        [HttpPost]
+        [Route("register-customer")]
+        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisterReqModel customerRegisterReqModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _authenticationService.RegisterCustomer(customerRegisterReqModel);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Register successfully",
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest model)
+        {
+            await _authenticationService.ForgotPassword(model.Email);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "OTP has been sent to your email.",
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
+        
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest model)
+        {
+            await _authenticationService.ResetPassword(model);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Password reset successfully.",
             };
 
             return StatusCode(response.Code, response);

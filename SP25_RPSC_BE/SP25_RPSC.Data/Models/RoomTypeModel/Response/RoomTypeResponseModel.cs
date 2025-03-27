@@ -16,4 +16,5 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.Response
         public DateTime CreatedAt { get; set; }
         public string LandlordName { get; set; }
     }
+
 }

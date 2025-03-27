@@ -1,0 +1,53 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.PostModel.Response;
+using SP25_RPSC.Data.Models.ResultModel;
+using SP25_RPSC.Services.Service.PostService;
+using System.Net;
+using System.Threading.Tasks;
+
+namespace SP25_RPSC.Controllers.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PostController : ControllerBase
+    {
+        private readonly IPostService _postService;
+
+        public PostController(IPostService postService)
+        {
+            _postService = postService;
+        }
+
+        [HttpGet("Get-All-Roommate-Post")]
+        public async Task<ActionResult<PagedResult<RoommatePostRes>>> SearchRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
+        {
+            try
+            {
+                searchRequest.PageNumber = searchRequest.PageNumber <= 0 ? 1 : searchRequest.PageNumber;
+                searchRequest.PageSize = searchRequest.PageSize <= 0 ? 10 :
+                    searchRequest.PageSize > 100 ? 100 : searchRequest.PageSize;
+
+                var result = await _postService.GetRoommatePosts(searchRequest);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get roommate posts successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while get roommate posts",
+                    Error = ex.Message
+                });
+            }
+        }
+
+    }
+}

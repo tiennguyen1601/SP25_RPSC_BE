@@ -9,7 +9,7 @@ public partial class Post
 
     public string? Title { get; set; }
 
-    public string? Descripton { get; set; }
+    public string? Description { get; set; }
 
     public decimal? Price { get; set; }
 
@@ -20,8 +20,10 @@ public partial class Post
     public DateTime? UpdatedAt { get; set; }
 
     public string? RentalRoomId { get; set; }
-
     public virtual Room? RentalRoom { get; set; }
+
+    public string? UserId { get; set; }
+    public virtual User? User { get; set; }
 
     public virtual ICollection<RoommateRequest> RoommateRequests { get; set; } = new List<RoommateRequest>();
 }

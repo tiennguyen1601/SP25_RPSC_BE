@@ -18,6 +18,22 @@ using SP25_RPSC.Services.Service.PackageService;
 using SP25_RPSC.Services.Service.RoomTypeService;
 using System.Text.Json.Serialization;
 using SP25_RPSC.Services.Service;
+using SP25_RPSC.Services.Service.PaymentService;
+using SP25_RPSC.Services.Service.TransactionService;
+using SP25_RPSC.Services.Service.LandlordContractService;
+using SP25_RPSC.Services.Service.LandlordService;
+using SP25_RPSC.Services.Service.PayOSService;
+using SP25_RPSC.Services.Service.NotificationService;
+using SP25_RPSC.Services.Service.RoomServices;
+using SP25_RPSC.Services.Service.RoomRentRequestService;
+using SP25_RPSC.Services.Service.FeedbackService;
+using SP25_RPSC.Services.Service.RoomStayService;
+using Microsoft.OpenApi.Any;
+using SP25_RPSC.Services.Service.CustomerService;
+using SP25_RPSC.Services.Service.ChatService;
+using SP25_RPSC.Services.Service.Hubs.ChatHub;
+using SP25_RPSC.Services.Service.ContractCustomerService;
+using SP25_RPSC.Services.Service.PostService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +43,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
 builder.Services.AddUnitOfWork();
 
 
@@ -43,11 +60,25 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IDecodeTokenHandler, DecodeTokenHandler>();
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IOTPService, OTPService>();
-builder.Services.AddScoped < IEmailService,  EmailService>();
+builder.Services.AddScoped<IEmailService,  EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IRoomServices, RoomServices>();
+builder.Services.AddScoped<IRoomRentRequestService, RoomRentRequestService>();
+builder.Services.AddScoped<IRoomStayService, RoomStayService>();
+builder.Services.AddScoped<IPayOSService, PayOSService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<ILandlordContractService, LandlordContractService>();
+builder.Services.AddScoped<ILandlordService, LandlordService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ICloudinaryStorageService, CloudinaryStorageService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICustomerContractService, CustomerContractService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
@@ -66,14 +97,17 @@ builder.Services.AddDbContext<RpscContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowAll",
+    options.AddPolicy("AllowAll",
                       policy =>
                       {
-                          policy.AllowAnyOrigin()
+                          policy.AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowAnyMethod();
+                          .SetIsOriginAllowed(_ => true)
+                          .AllowCredentials();
                       });
 });
+
+
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
@@ -120,7 +154,33 @@ builder.Services.AddSwaggerGen(options =>
             new string[] {}
         }
     });
+
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "RPSC API",
+        Version = "v1",
+        Description = "API for RPSC Back end from VuKhaideptrai using JWT Bearer authentication"
+    });
+
+    options.EnableAnnotations();
+    options.MapType<CustomerTypeEnums>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Enum = Enum.GetNames(typeof(CustomerTypeEnums))
+        .Select(name => (IOpenApiAny)new OpenApiString(name))
+        .ToList(),
+        Description = "Customer Type: Student or Worker"
+    });
 });
+
+//-----------------------------------------CONTROLLER-----------------------------------------
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
+
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
@@ -131,7 +191,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -139,4 +198,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapHub<ChatHub>("/chatHub");
+app.UseCors("AllowAll");
 app.Run();

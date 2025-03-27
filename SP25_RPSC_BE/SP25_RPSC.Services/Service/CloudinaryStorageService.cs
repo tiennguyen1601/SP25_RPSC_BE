@@ -3,6 +3,7 @@ using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using PdfSharpCore.Pdf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace SP25_RPSC.Services.Service
     public interface ICloudinaryStorageService
     {
         Task<List<string>> UploadImageAsync(List<IFormFile> file);
+        Task<string> UploadImage(IFormFile file);
+        Task<string> UploadPdf(PdfDocument pdfDoc);
     }
 
 
@@ -75,6 +78,65 @@ namespace SP25_RPSC.Services.Service
             var result = await _cloudinary.DestroyAsync(deleteParams);
 
             return result;
+        }
+
+        public async Task<string> UploadImage(IFormFile file)
+        {
+            // init image upload params
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(Guid.NewGuid().ToString(), file.OpenReadStream()),
+                UseFilename = true,
+                UniqueFilename = true,
+                Overwrite = true
+            };
+
+            // upload
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            // check if it occur any error
+            if (uploadResult.Error != null)
+            {
+                throw new Exception(uploadResult.Error.Message);
+            }
+
+            return uploadResult.Url.ToString();
+        }
+
+        public async Task<string> UploadPdf(PdfDocument pdfDoc)
+        {
+            using (var stream = new MemoryStream())
+            {
+
+                pdfDoc.Save(stream, false);
+                stream.Position = 0;
+
+                // init image upload params
+                var uploadParams = new RawUploadParams
+                {
+                    File = new FileDescription("contract.pdf", stream),
+                    PublicId = $"contracts/{Guid.NewGuid()}",
+                    AccessMode = "public",
+                    AccessControl = new List<AccessControlRule>
+                    {
+                        new AccessControlRule
+                        {
+                            AccessType = AccessType.Anonymous
+                        }
+                    }
+                };
+
+                // upload
+                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+                // check if it occur any error
+                if (uploadResult.Error != null)
+                {
+                    throw new Exception(uploadResult.Error.Message);
+                }
+
+                return uploadResult.SecureUrl.ToString();
+            }
         }
     }
 }

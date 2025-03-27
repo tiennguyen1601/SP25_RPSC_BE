@@ -14,10 +14,16 @@ namespace SP25_RPSC.Data.Models.UserModels.Response
 
         public string Email { get; set; } = null!;
 
+        public string FullName { get; set; }
+
+        public string Phone { get; set; }
+
         public string? Role { get; set; }
 
         public string Token { get; set; }
 
         public string RefreshToken { get; set; }
+
+        public string? RoleUserId { get; set; }
     }
 }

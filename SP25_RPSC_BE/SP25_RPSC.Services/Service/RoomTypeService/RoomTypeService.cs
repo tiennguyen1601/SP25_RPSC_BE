@@ -1,13 +1,21 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Enums;
+using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
+using SP25_RPSC.Services.Service.JWTService;
+using SP25_RPSC.Services.Utils.CustomException;
+using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static QRCoder.PayloadGenerator;
 
 namespace SP25_RPSC.Services.Service.RoomTypeService
 {
@@ -15,11 +23,13 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IDecodeTokenHandler _decodeTokenHandler;
 
-        public RoomTypeService(IUnitOfWork unitOfWork, IMapper mapper)
+        public RoomTypeService(IUnitOfWork unitOfWork, IMapper mapper, IDecodeTokenHandler decodeTokenHandler)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _decodeTokenHandler = decodeTokenHandler;
         }
 
         public async Task<List<RoomTypeResponseModel>> GetAllRoomTypesPending(int pageIndex, int pageSize)
@@ -88,5 +98,46 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Inactive");
         }
 
+        public async Task<bool> CreateRoomType(RoomTypeCreateRequestModel model, string token)
+        {
+            var phoneNum = _decodeTokenHandler.decode(token).phoneNumber;
+            var existingUser = await _unitOfWork.LandlordRepository.GetLandlordByPhoneNumber(phoneNum);
+            if (string.IsNullOrEmpty(model.RoomTypeName))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "RoomTypeName is required");
+            }
+
+            if (model.Deposite < 0 || model.Square < 0 || model.Area < 0)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Invalid numeric values");
+            }
+
+            var address = new Address{
+                AddressId = Guid.NewGuid().ToString(),
+                Long = model.location.Long,
+                Lat = model.location.Lat
+            };
+
+            var roomTypeServices = _mapper.Map<List<RoomService>>(model.ListRoomServices);
+
+            var roomType = new RoomType
+            {
+                RoomTypeName = model.RoomTypeName,
+                Deposite = model.Deposite,
+                Area = model.Area,
+                Square = model.Square,
+                Description = model.Description,
+                MaxOccupancy = model.MaxOccupancy,
+                Status = StatusEnums.Pending.ToString(),
+                RoomServices = roomTypeServices,
+                UpdatedAt = DateTime.UtcNow,
+                Landlord = existingUser,
+                Address= address,
+            };
+
+            await _unitOfWork.RoomTypeRepository.Add(roomType);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
     }
 }

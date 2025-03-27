@@ -17,11 +17,15 @@ public partial class Customer
 
     public string? Requirement { get; set; }
 
+    public string? CustomerType { get; set; }
+
     public string? Status { get; set; }
 
     public string? UserId { get; set; }
 
     public virtual ICollection<CustomerContract> CustomerContracts { get; set; } = new List<CustomerContract>();
+
+    public virtual ICollection<CustomerRentRoomDetailRequest> CustomerRentRoomDetailRequests { get; set; } = new List<CustomerRentRoomDetailRequest>();
 
     public virtual ICollection<CustomerRequest> CustomerRequests { get; set; } = new List<CustomerRequest>();
 

@@ -33,6 +33,12 @@ public partial class Room
 
     public virtual ICollection<RoomAmentiesList> RoomAmentiesLists { get; set; } = new List<RoomAmentiesList>();
 
+    public virtual ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
+
+    public virtual ICollection<RoomPrice> RoomPrices { get; set; } = new List<RoomPrice>();
+
+    public virtual ICollection<RoomRentRequest> RoomRentRequests { get; set; } = new List<RoomRentRequest>();
+
     public virtual ICollection<RoomStay> RoomStays { get; set; } = new List<RoomStay>();
 
     public virtual RoomType? RoomType { get; set; }

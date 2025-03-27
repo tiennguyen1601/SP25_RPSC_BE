@@ -41,10 +41,11 @@ namespace SP25_RPSC.Data.Repositories.RoomTypeRepository
         {
             return await _context.RoomTypes
                 .Where(rt => rt.RoomTypeId == roomTypeId)
+                .Include(rt => rt.Landlord)
                 .Include(rt => rt.Address)
-                .Include(rt => rt.RoomImages)
-                .Include(rt => rt.RoomPrices)
-                .Include(rt => rt.RoomServices) 
+                //.Include(rt => rt.RoomImages)
+                //.Include(rt => rt.RoomPrices)
+                .Include(rt => rt.RoomServices)
                 .ThenInclude(rs => rs.RoomServicePrices)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();

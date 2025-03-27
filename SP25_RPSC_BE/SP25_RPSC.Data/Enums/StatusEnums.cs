@@ -14,6 +14,12 @@ namespace SP25_RPSC.Data.Enums
         Active,
         Inactive,
         Banned,
-        Deactive
+        Deactive,
+        Expired,
+        Processing,
+        CANCELLED,
+        Buyed,
+        PAID,
+        EXTEND
     }
 }

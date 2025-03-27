@@ -16,7 +16,11 @@ namespace SP25_RPSC.Services.Service.UserService
 
         Task RegisterLandlord(LandlordRegisterReqModel model, string email);
         Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, int pageIndex, int pageSize);
-        Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved);
+        Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved, string rejectionReason = "");
         Task<List<LanlordRegisByIdResponse>> GetRegisLandLordById(string landlordId);
+        Task<List<LanlordRegisByIdResponse>> GetProfileLordById(string landlordId);
+        Task<bool> UpdateLandlordProfile(string landlordId, UpdateLandlordProfileRequest model);
+        Task<(int TotalCustomers, int TotalLandlords)> GetTotalUserCounts();
+        Task UpdateUser(User user);
     }
 }

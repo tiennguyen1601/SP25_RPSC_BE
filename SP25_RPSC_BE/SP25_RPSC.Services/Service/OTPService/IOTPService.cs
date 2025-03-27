@@ -7,5 +7,6 @@ namespace SP25_RPSC.Services.Service.OTPService
     {
         //bool SendOtp(string phone, string otp);
         Task VerifyOTPToActivateAccount(OTPVerifyRequestModel model);
+        Task VerifyOTPForResetPassword(OTPVerifyRequestModel model);
     }
 }

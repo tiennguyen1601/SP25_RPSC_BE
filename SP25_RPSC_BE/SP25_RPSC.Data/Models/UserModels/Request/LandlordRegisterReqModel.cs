@@ -13,8 +13,8 @@ namespace SP25_RPSC.Data.Models.UserModels.Request
         [Required(ErrorMessage = "Please input your company name!")]
         public string? CompanyName { get; set; }
 
-        [Required(ErrorMessage = "Please input your room number!")]
-        public string? NumberRoom { get; set; }
+        //[Required(ErrorMessage = "Please input your room number!")]
+        //public string? NumberRoom { get; set; }
 
         [Required(ErrorMessage = "Please input your license number!")]
         public string? LicenseNumber { get; set; }

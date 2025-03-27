@@ -52,6 +52,7 @@ namespace SP25_RPSC.Services.Service.OTPService
 
                 await _unitOfWork.OTPRepository.Update(latestOTP);
                 await _unitOfWork.UserRepository.Update(currentUser);
+                await _unitOfWork.SaveAsync();
             }
         }
 
@@ -82,5 +83,45 @@ namespace SP25_RPSC.Services.Service.OTPService
         //        return false;
         //    }
         //}
+        public async Task VerifyOTPForResetPassword(OTPVerifyRequestModel model)
+        {
+            var user = await _unitOfWork.UserRepository.GetUserByEmail(model.Email);
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Email không tồn tại.");
+            }
+
+            var latestOTP = await _unitOfWork.OTPRepository.GetLatestOTPPassword(user.UserId);
+            if (latestOTP == null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Không tìm thấy OTP.");
+            }
+
+            Console.WriteLine($"OTP từ DB: {latestOTP.Code}, Thời gian tạo: {latestOTP.CreatedAt}");
+            Console.WriteLine($"OTP nhập vào: {model.OTP}");
+
+            if (latestOTP.IsUsed.GetValueOrDefault())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "OTP đã được sử dụng.");
+            }
+
+            if ((DateTime.Now - latestOTP.CreatedAt.GetValueOrDefault()).TotalMinutes > 30)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "OTP đã hết hạn.");
+            }
+
+            if (!latestOTP.Code.Equals(model.OTP))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Mã OTP không chính xác.");
+            }
+
+
+            latestOTP.IsUsed = true;
+            await _unitOfWork.OTPRepository.Update(latestOTP);
+            await _unitOfWork.SaveAsync();
+        }
+
+
+
     }
 }

@@ -12,6 +12,7 @@ namespace SP25_RPSC.Data.Repositories.ServicePackageRepository
     public interface IServicePackageRepository : IGenericRepository<ServicePackage>
     {
         Task<ServicePackage> GetServicePackageById(string id);
+        Task<ServicePackage?> GetPackageById(string packageId);
     }
 
     public class ServicePackageRepository : GenericRepository<ServicePackage>, IServicePackageRepository
@@ -28,6 +29,13 @@ namespace SP25_RPSC.Data.Repositories.ServicePackageRepository
             return await _context.ServicePackages.Include(x=> x.ServiceDetails)
                                                  .ThenInclude(x=> x.PricePackages)
                                                  .FirstOrDefaultAsync(x => x.PackageId.Equals(id));
+        }
+
+        public async Task<ServicePackage?> GetPackageById(string packageId)
+        {
+            return await _context.ServicePackages.Where(u => u.PackageId == packageId)
+                .Include(u => u.ServiceDetails).ThenInclude(u => u.PricePackages)
+                .FirstOrDefaultAsync();
         }
     }
 }
