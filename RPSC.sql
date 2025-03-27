@@ -73,9 +73,6 @@ CREATE TABLE Customer (
     CONSTRAINT FK_Customer_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 
-
-GO
-
 --Bảng Address
 CREATE TABLE [Address] (
     AddressId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
@@ -152,7 +149,9 @@ CREATE TABLE Post (
     CreatedAt DATETIME DEFAULT GETDATE(),
     UpdatedAt DATETIME,
     RentalRoomId NVARCHAR(36),
-    CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId)
+    UserId NVARCHAR(36),
+    CONSTRAINT FK_Post_RentalRoom FOREIGN KEY (RentalRoomId) REFERENCES Rooms(RoomId),
+	CONSTRAINT FK_Post_User FOREIGN KEY (UserId) REFERENCES [User](UserId)
 );
 GO
 
@@ -186,7 +185,7 @@ CREATE TABLE CustomerContracts (
     Status NVARCHAR(50),
     CreatedDate DATETIME DEFAULT GETDATE(),
     UpdatedDate DATETIME,
-    Term NVARCHAR(50),
+    Term NVARCHAR(MAX),
     TenantId NVARCHAR(36),
     RentalRoomId NVARCHAR(36),
     CONSTRAINT FK_CustomerContracts_Tenant FOREIGN KEY (TenantId) REFERENCES Customer(CustomerId),
@@ -468,6 +467,7 @@ CREATE TABLE Chat (
 	ReceiverId NVARCHAR(36),
 	CreateAt  DATETIME DEFAULT GETDATE(),
 	Status NVARCHAR(50),
+    Message NVARCHAR(MAX),
 	CONSTRAINT FK_Sender_User FOREIGN KEY (SenderId) REFERENCES [User](UserId),
     CONSTRAINT FK_Receiver_User FOREIGN KEY (ReceiverId) REFERENCES [User](UserId)
 );

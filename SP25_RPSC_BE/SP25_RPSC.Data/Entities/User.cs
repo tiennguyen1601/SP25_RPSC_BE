@@ -31,6 +31,8 @@ public partial class User
 
     public string? RoleId { get; set; }
 
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+
     public virtual ICollection<Chat> ChatReceivers { get; set; } = new List<Chat>();
 
     public virtual ICollection<Chat> ChatSenders { get; set; } = new List<Chat>();

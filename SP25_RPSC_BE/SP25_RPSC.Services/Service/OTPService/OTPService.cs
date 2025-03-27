@@ -52,6 +52,7 @@ namespace SP25_RPSC.Services.Service.OTPService
 
                 await _unitOfWork.OTPRepository.Update(latestOTP);
                 await _unitOfWork.UserRepository.Update(currentUser);
+                await _unitOfWork.SaveAsync();
             }
         }
 
@@ -117,6 +118,7 @@ namespace SP25_RPSC.Services.Service.OTPService
 
             latestOTP.IsUsed = true;
             await _unitOfWork.OTPRepository.Update(latestOTP);
+            await _unitOfWork.SaveAsync();
         }
 
 

@@ -23,6 +23,7 @@ namespace SP25_RPSC.Services.Service.NotificationService
         public async Task AddNotification(Notification notification)
         {
             await _unitOfWork.NotificationRepository.Add(notification);
+            await _unitOfWork.SaveAsync();
         }
 
     }

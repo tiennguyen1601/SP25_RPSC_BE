@@ -113,6 +113,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
             }
 
             await _unitOfWork.RefreshTokenRepository.Remove(currRefreshToken);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task Register(UserRegisterReqModel model)
@@ -165,6 +166,8 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
             };
             await _unitOfWork.UserRepository.Add(newUser);
             await _unitOfWork.OTPRepository.Add(newOTPCode);
+            await _unitOfWork.SaveAsync();
+
         }
 
         public async Task ForgotPassword(string email)
@@ -194,6 +197,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
                 IsUsed = false
             };
             await _unitOfWork.OTPRepository.Add(newOtp);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task ResetPassword(ResetPasswordRequest model)
@@ -211,6 +215,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
 
             user.Password = PasswordHasher.HashPassword(model.NewPassword);
             await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
         }
 
 
@@ -262,6 +267,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
             await _unitOfWork.UserRepository.Add(newUser);
             await _unitOfWork.CustomerRepository.Add(newCus);
             await _unitOfWork.OTPRepository.Add(newOTPCode);
+            await _unitOfWork.SaveAsync();
         }
 
 

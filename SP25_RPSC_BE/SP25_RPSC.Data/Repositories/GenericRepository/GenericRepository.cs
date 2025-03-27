@@ -114,7 +114,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             try
             {
                 await _entities.AddAsync(entity);
-                await context.SaveChangesAsync();
+                //await context.SaveChangesAsync();
 
             }
             catch (Exception ex)
@@ -128,7 +128,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             try
             {
                 _entities.Remove(entity);
-                await context.SaveChangesAsync();
+                //await context.SaveChangesAsync();
 
             }
             catch (Exception ex)
@@ -150,7 +150,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             try
             {
                 _entities.Update(entity);
-                await context.SaveChangesAsync();
+                //await context.SaveChangesAsync();
 
             }
             catch (Exception ex)
@@ -164,7 +164,7 @@ namespace SP25_RPSC.Data.Repositories.GenericRepositories
             try
             {
                 _entities.UpdateRange(entities);
-                await context.SaveChangesAsync();
+                //await context.SaveChangesAsync();
 
             }
             catch (Exception ex)

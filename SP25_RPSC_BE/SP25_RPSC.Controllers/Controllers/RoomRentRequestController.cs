@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SP25_RPSC.Data.Models.ContractCustomerModel.ContractCustomerRequest;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Services.Service.RoomRentRequestService;
 using SP25_RPSC.Services.Service.RoomServices;
@@ -70,5 +71,32 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
 
+
+        [HttpPost]
+        [Route("Upload-Contract-Create-RoomStay")]
+        public async Task<ActionResult> ConfirmContractAndCreateRoomStay(
+[FromForm] ContractUploadRequest request)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _roomRentRequestService.ConfirmContractAndCreateRoomStay(
+                    token, request);
+
+            if (!result)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Failed to process upload Contract and create roomstay."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Upload Contract and create roomstay successfully."
+            });
+        }
     }
 }

@@ -49,6 +49,7 @@ namespace SP25_RPSC.Services.Service.PackageService
             };
 
             await _unitOfWork.ServicePackageRepository.Add(package);
+            await _unitOfWork.SaveAsync();
         }
 
 
