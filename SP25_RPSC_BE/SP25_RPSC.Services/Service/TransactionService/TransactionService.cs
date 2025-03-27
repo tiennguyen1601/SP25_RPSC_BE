@@ -30,11 +30,13 @@ namespace SP25_RPSC.Services.Service.TransactionService
         public async Task AddNewTransaction(Transaction transaction)
         {
             await _unitOfWork.TransactionRepository.Add(transaction);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task UpdateTransaction(Transaction transaction)
         {
             await _unitOfWork.TransactionRepository.Update(transaction);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task<Dictionary<string, decimal>> GetTransactionSummaryByMonth(int? year, DateTime? startDate, DateTime? endDate)

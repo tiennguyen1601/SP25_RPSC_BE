@@ -50,6 +50,7 @@ namespace SP25_RPSC.Services.Service.RefeshTokenService
                 currRefreshToken.Token = newRefreshToken;
                 currRefreshToken.ExpiredAt = DateTime.Now.AddDays(1);
                 await _unitOfWork.RefreshTokenRepository.Update(currRefreshToken);
+                await _unitOfWork.SaveAsync();
 
                 return new RefreshTokenResModel
                 {

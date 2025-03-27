@@ -5,7 +5,10 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.ContractCustomerModel.ContractCustomerRequest;
 using SP25_RPSC.Data.Models.CustomerRentRoomDetail.CustomerRentRoomDetailResponse;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
@@ -22,14 +25,18 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly IDecodeTokenHandler _decodeTokenHandler;
+        private readonly ICloudinaryStorageService _cloudinaryStorageService;
 
 
-        public RoomRentRequestService(IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService, IDecodeTokenHandler decodeTokenHandler)
+
+        public RoomRentRequestService(IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService, IDecodeTokenHandler decodeTokenHandler
+            , ICloudinaryStorageService cloudinaryStorageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _emailService = emailService;
             _decodeTokenHandler = decodeTokenHandler;
+            _cloudinaryStorageService = cloudinaryStorageService;
         }
         public async Task<List<CustomerRequestRes>> GetCustomersByRoomRentRequestsId(string roomRentRequestsId)
         {
@@ -153,36 +160,100 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             request.Status = "Active";
 
-            var newRoomStay = new RoomStay
+            var newContract = new CustomerContract
             {
-                RoomStayId = Guid.NewGuid().ToString(),
-                RoomId = room.RoomId,
-                LandlordId = landlord.LandlordId,
+                ContractId = Guid.NewGuid().ToString(),
                 StartDate = startDate,
                 EndDate = endDate,
-                Status = "Active",
-                UpdatedAt = DateTime.UtcNow
+                Status = "Pending",
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow,
+                Term = "",
+                TenantId = selectedCustomerId,
+                RentalRoomId = room.RoomId
             };
-            await _unitOfWork.RoomStayRepository.Add(newRoomStay);
-
-            var newRoomStayCustomer = new RoomStayCustomer
-            {
-                RoomStayCustomerId = Guid.NewGuid().ToString(),
-                Type = "Tenant",
-                Status = "Active",
-                RoomStayId = newRoomStay.RoomStayId,
-                CustomerId = selectedCustomerId,
-                LandlordId = landlord.LandlordId,
-                UpdatedAt = DateTime.UtcNow
-            };
-            await _unitOfWork.RoomStayCustomerRepository.Add(newRoomStayCustomer);
+            await _unitOfWork.CustomerContractRepository.Add(newContract);
 
             await _unitOfWork.SaveAsync();
 
             return true;
         }
+        public async Task<bool> ConfirmContractAndCreateRoomStay(string token, ContractUploadRequest request)
+        {
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var tokenModel = _decodeTokenHandler.decode(token);
+                var userId = tokenModel.userid;
 
+                var landlord = (await _unitOfWork.LandlordRepository
+                                    .Get(filter: l => l.UserId == userId))
+                                    .FirstOrDefault();
 
+                if (landlord == null) throw new ApiException(HttpStatusCode.NotFound, "Landlord not found");
+
+                var contract = (await _unitOfWork.CustomerContractRepository
+                                .Get(filter: c => c.ContractId == request.ContractId, includeProperties: "Tenant,RentalRoom"))
+                                .FirstOrDefault();
+
+                if (contract == null) throw new ApiException(HttpStatusCode.NotFound, "Contract not found");
+
+                var room = contract.RentalRoom;
+                if (room == null) throw new ApiException(HttpStatusCode.NotFound, "Room not found");
+                if (room.Status == "Renting") throw new ApiException(HttpStatusCode.Conflict, "Room is already rented");
+
+                string contractPdfUrl = "";
+                if (request.ContractFile != null)
+                {
+                    var uploadResult = await _cloudinaryStorageService.UploadImageAsync(new List<IFormFile> { request.ContractFile });
+                    contractPdfUrl = uploadResult.FirstOrDefault();
+                }
+
+                room.Status = "Renting";
+                room.UpdatedAt = DateTime.UtcNow;
+                _unitOfWork.RoomRepository.Update(room);
+
+                var newRoomStay = new RoomStay
+                {
+                    RoomStayId = Guid.NewGuid().ToString(),
+                    RoomId = room.RoomId,
+                    LandlordId = landlord.LandlordId,
+                    StartDate = contract.StartDate,
+                    EndDate = contract.EndDate,
+                    Status = "Active",
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.RoomStayRepository.Add(newRoomStay);
+
+                var newRoomStayCustomer = new RoomStayCustomer
+                {
+                    RoomStayCustomerId = Guid.NewGuid().ToString(),
+                    Type = "Tenant",
+                    Status = "Active",
+                    RoomStayId = newRoomStay.RoomStayId,
+                    CustomerId = contract.TenantId,
+                    LandlordId = landlord.LandlordId,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.RoomStayCustomerRepository.Add(newRoomStayCustomer);
+
+                contract.Status = "Active";
+                contract.UpdatedDate = DateTime.UtcNow;
+                contract.Term = contractPdfUrl;
+                _unitOfWork.CustomerContractRepository.Update(contract);
+
+                await _unitOfWork.SaveAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new ApiException(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
 
     }
 }
+
