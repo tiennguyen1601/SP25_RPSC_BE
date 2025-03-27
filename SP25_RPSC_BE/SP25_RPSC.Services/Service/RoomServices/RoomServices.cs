@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using CloudinaryDotNet.Actions;
 using MailKit.Search;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.DecodeTokenModel;
+using SP25_RPSC.Data.Models.RoomModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
@@ -21,14 +24,65 @@ namespace SP25_RPSC.Services.Service.RoomServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IDecodeTokenHandler _decodeTokenHandler;
+       private readonly ICloudinaryStorageService _cloudinaryStorageService;
 
-        public RoomServices(IUnitOfWork unitOfWork, IMapper mapper, IDecodeTokenHandler decodeTokenHandler)
+        public RoomServices(IUnitOfWork unitOfWork, IMapper mapper, IDecodeTokenHandler decodeTokenHandler, ICloudinaryStorageService cloudinaryStorageService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _decodeTokenHandler = decodeTokenHandler;
+            _cloudinaryStorageService = cloudinaryStorageService;
         }
 
+        public async Task<bool> CreateRoom(RoomCreateRequestModel model)
+        {
+            var roomPrice = new List<RoomPrice>
+            {
+              new RoomPrice
+              {
+                RoomPriceId = Guid.NewGuid().ToString(),
+                Price = model.price,
+                ApplicableDate = DateTime.Now,
+              }
+            };
+
+            var room = new Room
+            {
+                RoomId = Guid.NewGuid().ToString(),
+                RoomNumber = model.RoomNumber,
+                Title = model.Title,
+                Description = model.Description,
+                Status = StatusEnums.Active.ToString(),
+                UpdatedAt = DateTime.Now,
+                RoomPrices = roomPrice,
+
+            };
+
+            var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
+            foreach (var link in downloadUrl)
+            {
+                var Image = new RoomImage
+                {
+                 ImageId = Guid.NewGuid().ToString(),
+                 ImageUrl = link,
+
+                };
+               room.RoomImages.Add(Image);
+            }
+
+            foreach (var amenty in model.roomAmentyCreateModels)
+            {
+                var roomAmentyList = new RoomAmentiesList
+                {
+                    RoomAmentyId = amenty.AmentyId,
+                    RoomId = room.RoomId
+                };
+                await _unitOfWork.RoomAmentyListRepository.Add(roomAmentyList);
+            }
+
+            await _unitOfWork.RoomRepository.Add(room);
+            return true;
+        }
 
         public async Task<GetRequiresRoomRentalByLandlordResponseModel> GetRequiresRoomRentalByLandlordId(
     string token, string searchQuery, int pageIndex, int pageSize)
