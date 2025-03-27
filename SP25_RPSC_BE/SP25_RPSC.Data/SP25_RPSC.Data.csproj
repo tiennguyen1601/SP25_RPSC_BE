@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\PostModel\Request\" />
     <Folder Include="Models\TransactionModel\TransactionResponseModel\" />
   </ItemGroup>
 
