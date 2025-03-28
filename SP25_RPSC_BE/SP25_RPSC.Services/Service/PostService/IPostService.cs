@@ -10,5 +10,6 @@ namespace SP25_RPSC.Services.Service.PostService
     public interface IPostService
     {
         Task<PagedResult<RoommatePostRes>> GetRoommatePosts(RoommatePostSearchReq search);
+        Task<RoommatePostDetailRes> GetRoommatePostDetail(string postId);
     }
 }

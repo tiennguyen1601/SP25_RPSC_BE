@@ -159,7 +159,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "RPSC API",
         Version = "v1",
-        Description = "API for RPSC Back end from VuKhaideptrai using JWT Bearer authentication"
+        Description = "API for RPSC Back End using JWT Bearer authentication"
     });
 
     options.EnableAnnotations();
