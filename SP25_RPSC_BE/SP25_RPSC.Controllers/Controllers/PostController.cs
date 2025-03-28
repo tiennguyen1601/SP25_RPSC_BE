@@ -20,7 +20,7 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
         [HttpGet("Get-All-Roommate-Post")]
-        public async Task<ActionResult<PagedResult<RoommatePostRes>>> SearchRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
+        public async Task<ActionResult<PagedResult<RoommatePostRes>>> GetAllRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
         {
             try
             {
@@ -44,6 +44,32 @@ namespace SP25_RPSC.Controllers.Controllers
                 return StatusCode(500, new
                 {
                     Message = "An error occurred while get roommate posts",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("Get-Roommate-Post-Detail")]
+        public async Task<ActionResult<RoommatePostDetailRes>> GetRoommatePostDetail(string postId)
+        {
+            try
+            {
+                var result = await _postService.GetRoommatePostDetail(postId);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get roommate post detail successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while get roommate post detail",
                     Error = ex.Message
                 });
             }
