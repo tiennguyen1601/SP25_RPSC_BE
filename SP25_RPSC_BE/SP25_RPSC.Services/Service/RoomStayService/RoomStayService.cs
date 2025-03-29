@@ -134,7 +134,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                 {
                     RoomStay = null,
                     RoommateList = new List<RoommateInfo>(),
-                    TotalRoomate = 0
+                    TotalRoomer = 0
                 };
             }
 

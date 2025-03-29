@@ -75,7 +75,7 @@ namespace SP25_RPSC.Controllers.Controllers
 
             var result = await _roomStayService.GetListRoommate(token);
 
-            if (result == null || result.TotalRoomate == 0)
+            if (result == null || result.TotalRoomer == 0)
             {
                 return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
                 {
