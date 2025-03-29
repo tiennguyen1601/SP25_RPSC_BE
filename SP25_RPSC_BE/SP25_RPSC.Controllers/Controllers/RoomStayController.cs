@@ -67,5 +67,32 @@ namespace SP25_RPSC.Controllers.Controllers
             });
         }
 
+
+        [HttpGet("get-roommates-by-customer")]
+        public async Task<IActionResult> GetRoommatesByCustomer()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var result = await _roomStayService.GetListRoommate(token);
+
+            if (result == null || result.TotalRoomate == 0)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "Customer not in any room or room have customer only"
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get list roommate successfully.",
+                Data = result
+            });
+        }
+
     }
 }

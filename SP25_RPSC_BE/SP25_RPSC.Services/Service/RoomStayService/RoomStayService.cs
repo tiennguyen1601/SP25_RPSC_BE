@@ -107,6 +107,94 @@ namespace SP25_RPSC.Services.Service.RoomStayService
         }
 
 
+        public async Task<ListRoommateRes> GetListRoommate(string token)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Missing token!");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId)).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found");
+            }
+
+            var customerId = customer.CustomerId;
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                        includeProperties: "RoomStay",
+                        filter: rs => rs.CustomerId == customerId
+                    )).FirstOrDefault();
+
+            if (roomStayCustomer == null || roomStayCustomer.RoomStay == null)
+            {
+                return new ListRoommateRes
+                {
+                    RoomStay = null,
+                    RoommateList = new List<RoommateInfo>(),
+                    TotalRoomate = 0
+                };
+            }
+
+            var roomStayId = roomStayCustomer.RoomStayId;
+            var roomStay = (await _unitOfWork.RoomStayRepository.Get(
+                        includeProperties: "Room",
+                        filter: rs => rs.RoomStayId == roomStayId
+                    )).FirstOrDefault();
+
+
+            var roommates = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                       includeProperties: "Customer,Customer.User",
+                       filter: rsc => rsc.RoomStayId == roomStayId && rsc.CustomerId != customerId && rsc.Status == "Active"
+                   )).ToList();
+
+            var roommateInfoList = new List<RoommateInfo>();
+            foreach (var roommate in roommates)
+            {
+                if (roommate.Customer?.User != null)
+                {
+                    roommateInfoList.Add(new RoommateInfo
+                    {
+                        CustomerId = roommate.CustomerId,
+                        RoomerType = roommate.Type,
+                        CustomerType = roommate.Customer.CustomerType,
+                        Email = roommate.Customer.User.Email,
+                        FullName = roommate.Customer.User.FullName,
+                        Dob = roommate.Customer.User.Dob,
+                        Address = roommate.Customer.User.Address,
+                        PhoneNumber = roommate.Customer.User.PhoneNumber,
+                        Gender = roommate.Customer.User.Gender,
+                        Avatar = roommate.Customer.User.Avatar,
+                        Preferences = roommate.Customer.Preferences,
+                        LifeStyle = roommate.Customer.LifeStyle,
+                        BudgetRange = roommate.Customer.BudgetRange,
+                        PreferredLocation = roommate.Customer.PreferredLocation,
+                        Requirement = roommate.Customer.Requirement,
+                        UserId = roommate.Customer.UserId
+                    });
+                }
+            }
+
+            var response = new ListRoommateRes
+            {
+                RoomStay = roomStay != null ? new RoomStayInfo
+                {
+                    RoomStayId = roomStay.RoomStayId,
+                    RoomId = roomStay.RoomId,
+                    LandlordId = roomStay.LandlordId,
+                    StartDate = roomStay.StartDate,
+                    EndDate = roomStay.EndDate,
+                    Status = roomStay.Status
+                } : null,
+                RoommateList = roommateInfoList,
+                TotalRoomer = 1 + roommates.Count 
+            };
+
+            return response;
+
+        }
 
     }
 

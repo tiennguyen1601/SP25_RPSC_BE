@@ -1,4 +1,5 @@
-﻿using SP25_RPSC.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace SP25_RPSC.Data.Repositories.RoomStayRepository
 {
     public interface IRoomStayRepository : IGenericRepository<RoomStay>
     {
-
+        //Task<List<Customer>> GetRoommateByCustomerId(string customerId);
     }
 
     public class RoomStayRepository : GenericRepository<RoomStay>, IRoomStayRepository
@@ -21,5 +22,7 @@ namespace SP25_RPSC.Data.Repositories.RoomStayRepository
         {
             _context = context;
         }
+
+        
     }
 }
