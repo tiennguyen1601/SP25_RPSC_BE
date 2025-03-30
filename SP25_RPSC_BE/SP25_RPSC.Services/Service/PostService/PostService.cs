@@ -90,7 +90,7 @@ namespace SP25_RPSC.Services.Service.PostService
 
             var query = await _unitOfWork.PostRepository.Get(
                 filter: p => 
-                    p.Status == StatusEnums.Pending.ToString() && 
+                    p.Status == StatusEnums.Active.ToString() && 
                     p.User != null,
                 includeProperties: "User,User.Customers,RentalRoom"
             );

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MailKit.Search;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.RoomStay;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
@@ -111,7 +112,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
         {
             if (token == null)
             {
-                throw new UnauthorizedAccessException("Missing token!");
+                throw new UnauthorizedAccessException("Invalid or expired token.");
             }
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
