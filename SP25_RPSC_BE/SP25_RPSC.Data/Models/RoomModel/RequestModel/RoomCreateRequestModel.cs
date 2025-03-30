@@ -23,11 +23,14 @@ namespace SP25_RPSC.Data.Models.RoomModel.RequestModel
 
         public required List<IFormFile> Images { get; set; }
 
-        public ICollection<RoomAmentyCreateModel> roomAmentyCreateModels { get; set; }
+        public List<string> AmentyId { get; set; }
+
+        //public ICollection<RoomAmentyCreateModel> roomAmentyCreateModels { get; set; }
+
     }
 
-    public class RoomAmentyCreateModel
-    {
-        public string AmentyId { get; set; }
-    }
+    //public class RoomAmentyCreateModel
+    //{
+    //    public string AmentyId { get; set; }
+    //}
 }

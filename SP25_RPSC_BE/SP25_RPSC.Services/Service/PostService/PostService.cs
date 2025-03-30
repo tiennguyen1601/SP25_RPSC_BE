@@ -28,6 +28,61 @@ namespace SP25_RPSC.Services.Service.PostService
             _emailService = emailService;
         }
 
+        public async Task<RoommatePostDetailRes> GetRoommatePostDetail(string postId)
+        {
+            if (string.IsNullOrWhiteSpace(postId))
+            {
+                throw new ArgumentException("Post ID cannot be null or empty.", nameof(postId));
+            }
+
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null) {
+                throw new KeyNotFoundException($"Post with ID {postId} not found.");
+            }
+
+            var postDetailResponse = new RoommatePostDetailRes
+            {
+                PostId = post.PostId,
+                Title = post.Title,
+                Description = post.Description,
+                Location = post.RentalRoom?.Location,
+                Status = post.Status,
+                CreatedAt = post.CreatedAt,
+                PostOwnerInfo = new PostOwnerInfo
+                {
+                    FullName = post.User?.FullName,
+                    Avatar = post.User?.Avatar,
+                    Gender = post.User?.Gender,
+                    Age = post.User?.Dob.HasValue == true ? CalculateAge(post.User.Dob.Value) : null,
+                    LifeStyle = post.User?.Customers?.FirstOrDefault()?.LifeStyle,
+                    Requirement = post.User?.Customers?.FirstOrDefault()?.Requirement,
+                    PostOwnerType = post.User?.Customers?.FirstOrDefault()?.CustomerType
+                },
+                RoomInfo = post.RentalRoom != null ? new RoomInfo
+                {
+                    RoomId = post.RentalRoom.RoomId,
+                    RoomNumber = post.RentalRoom.RoomNumber,
+                    Title = post.RentalRoom.Title,
+                    Description = post.RentalRoom.Description,
+                    Location = post.RentalRoom.Location,
+                    RoomTypeName = post.RentalRoom.RoomType.RoomTypeName,
+                    Price = post.RentalRoom.RoomPrices?
+                        .Where(rp => rp.ApplicableDate <= DateTime.Now)
+                        .OrderByDescending(rp => rp.ApplicableDate)
+                        .FirstOrDefault()?.Price,
+                    Square = post.RentalRoom.RoomType.Square,
+                    Area = post.RentalRoom.RoomType.Area,
+                    RoomImages = post.RentalRoom.RoomImages?.Select(ri => ri.ImageUrl).ToList() ?? new List<string>(),
+                    RoomAmenities = post.RentalRoom.RoomAmentiesLists?
+                                    .Where(ra => ra.RoomAmenty != null)
+                                    .Select(ra => ra.RoomAmenty.Name)
+                                    .ToList() ?? new List<string>()
+                } : null
+            };
+
+            return postDetailResponse;
+        }
+
         public async Task<PagedResult<RoommatePostRes>> GetRoommatePosts(RoommatePostSearchReq search)
         {
             search.PageNumber = search.PageNumber <= 0 ? 1 : search.PageNumber;
@@ -35,7 +90,7 @@ namespace SP25_RPSC.Services.Service.PostService
 
             var query = await _unitOfWork.PostRepository.Get(
                 filter: p => 
-                    p.Status == StatusEnums.Pending.ToString() && 
+                    p.Status == StatusEnums.Active.ToString() && 
                     p.User != null,
                 includeProperties: "User,User.Customers,RentalRoom"
             );
@@ -144,5 +199,6 @@ namespace SP25_RPSC.Services.Service.PostService
 
             return age;
         }
+
     }
 }

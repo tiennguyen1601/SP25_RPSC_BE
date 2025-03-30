@@ -34,6 +34,7 @@ using SP25_RPSC.Services.Service.ChatService;
 using SP25_RPSC.Services.Service.Hubs.ChatHub;
 using SP25_RPSC.Services.Service.ContractCustomerService;
 using SP25_RPSC.Services.Service.PostService;
+using SP25_RPSC.Services.Service.AmentyService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +80,7 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerContractService, CustomerContractService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IAmentyService, AmentyService>(); 
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
@@ -158,7 +160,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "RPSC API",
         Version = "v1",
-        Description = "API for RPSC Back end from VuKhaideptrai using JWT Bearer authentication"
+        Description = "API for RPSC Back End using JWT Bearer authentication"
     });
 
     options.EnableAnnotations();

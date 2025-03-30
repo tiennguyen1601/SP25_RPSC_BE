@@ -10,7 +10,12 @@ namespace SP25_RPSC.Controllers.Controllers
     [ApiController]
     public class RoomAmentyController : ControllerBase
     {
-        private IAmentyService _amentyService;
+        private readonly IAmentyService _amentyService;
+
+        public RoomAmentyController(IAmentyService amentyService)
+        {
+            _amentyService = amentyService;
+        }
 
         [HttpPost]
         [Route("Create-RoomAmenty")]
