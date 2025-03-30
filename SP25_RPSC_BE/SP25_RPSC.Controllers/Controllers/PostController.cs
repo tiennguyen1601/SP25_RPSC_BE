@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.PostModel.Request;
 using SP25_RPSC.Data.Models.PostModel.Response;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Services.Service.PostService;
@@ -73,6 +74,33 @@ namespace SP25_RPSC.Controllers.Controllers
                     Error = ex.Message
                 });
             }
+        }
+
+        [HttpPost("create-roommate-post")]
+        public async Task<IActionResult> Create([FromBody] CreateRoommatePostReq request)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _postService.CreateRoommatePost(token, request);
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Create new roommate post successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            } catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while create new roommate post",
+                    Error = ex.Message
+                });
+            }
+            
+
         }
 
     }

@@ -29,6 +29,7 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
         public decimal? Price { get; set; }
         public decimal? Square { get; set; }
         public int? Area { get; set; }
+        public int TotalRoomer { get; set; }
         public List<string> RoomImages { get; set; } = new List<string>();
         public List<string> RoomAmenities { get; set; } = new List<string>();
     }
