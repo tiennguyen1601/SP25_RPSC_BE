@@ -31,6 +31,7 @@ namespace SP25_RPSC.Data.Repositories.PostRepository
                 .Include(r => r.RentalRoom).ThenInclude(rt => rt.RoomPrices)
                 .Include(r => r.RentalRoom).ThenInclude(ri => ri.RoomImages)
                 .Include(r => r.RentalRoom).ThenInclude(al => al.RoomAmentiesLists).ThenInclude(a => a.RoomAmenty)
+                .Include(r => r.RentalRoom).ThenInclude(rs => rs.RoomStays).ThenInclude(a => a.RoomStayCustomers)
                 .FirstOrDefaultAsync();
         }
     }
