@@ -98,13 +98,12 @@ builder.Services.AddDbContext<RpscContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
-                      policy =>
-                      {
-                          policy.AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .SetIsOriginAllowed(_ => true)
-                          .AllowCredentials();
-                      });
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
 });
 
 
@@ -191,6 +190,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -199,5 +199,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
-app.UseCors("AllowAll");
+
 app.Run();
