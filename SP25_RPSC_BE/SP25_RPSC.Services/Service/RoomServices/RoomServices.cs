@@ -52,6 +52,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 RoomId = Guid.NewGuid().ToString(),
                 RoomNumber = model.RoomNumber,
                 Title = model.Title,
+                AvailableDateToRent = model.AvailableDateToRent,
                 Description = model.Description,
                 Location = model.Location,
                 Status = "Available",
