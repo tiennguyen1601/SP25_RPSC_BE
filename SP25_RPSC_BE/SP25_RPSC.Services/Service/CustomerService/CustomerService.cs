@@ -1,16 +1,21 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.CustomerModel.Request;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
 using SP25_RPSC.Services.Utils.CustomException;
+using SP25_RPSC.Services.Utils.DecodeTokenHandler;
+using SP25_RPSC.Services.Utils.Email;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static QRCoder.PayloadGenerator;
 
 namespace SP25_RPSC.Services.Service.CustomerService
 {
@@ -23,13 +28,16 @@ namespace SP25_RPSC.Services.Service.CustomerService
         private readonly IMapper _mapper;
         private readonly ICloudinaryStorageService _cloudinaryStorageService;
         private readonly IEmailService _emailService;
+        private readonly IDecodeTokenHandler _decodeTokenHandler;
 
-        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService, IEmailService emailService)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, IDecodeTokenHandler decodeTokenHandler, ICloudinaryStorageService cloudinaryStorageService, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cloudinaryStorageService = cloudinaryStorageService;
             _emailService = emailService;
+            _decodeTokenHandler = decodeTokenHandler;
+
         }
 
         public async Task<bool> UpdateInfo(UpdateInfoReq model, string email)
@@ -80,5 +88,153 @@ namespace SP25_RPSC.Services.Service.CustomerService
         }
 
 
+        public async Task<bool> SendRequestRoomSharing(string token, RoomSharingReq request)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var postId = request.PostId;
+            var post = (await _unitOfWork.PostRepository.Get(filter: p => p.PostId == postId,
+                   includeProperties: "RentalRoom,User"
+               )).FirstOrDefault();
+
+            if (post == null)
+            {
+                throw new KeyNotFoundException("Post not found.");
+            }
+            if (post.Status != StatusEnums.Active.ToString())
+            {
+                throw new InvalidOperationException("Cannot send request to inactive post.");
+            }
+
+            var existingRequest = (await _unitOfWork.RoommateRequestRepository.Get(
+                   filter: rr => rr.PostId == postId,
+                   includeProperties: "CustomerRequests"
+               )).FirstOrDefault();
+
+            if (existingRequest == null)
+            {
+                existingRequest = new RoommateRequest
+                {
+                    RequestId = Guid.NewGuid().ToString(),
+                    CreatedAt = DateTime.Now,
+                    Status = StatusEnums.Pending.ToString(),
+                    PostId = postId
+                };
+                await _unitOfWork.RoommateRequestRepository.Add(existingRequest);
+            }
+            else
+            {
+                var customerAlreadyRequested = existingRequest.CustomerRequests.Any(cr => cr.CustomerId == customer.CustomerId);
+                if (customerAlreadyRequested)
+                {
+                    throw new InvalidOperationException("You have already sent a request for this room.");
+                }
+            }
+
+
+            var mess = "Phòng này đẹp quá, cho mình ở ghép với nhé.";
+            if (!string.IsNullOrWhiteSpace(request.Message)) { mess = request.Message; }
+            var customerRequest = new CustomerRequest
+            {
+                CustomerRequestId = Guid.NewGuid().ToString(),
+                Message = mess,
+                Status = StatusEnums.Pending.ToString(),
+                RequestId = existingRequest.RequestId,
+                CustomerId = customer.CustomerId
+            };
+            await _unitOfWork.CustomerRequestRepository.Add(customerRequest);
+
+            await _unitOfWork.SaveAsync();
+
+            var postOwnerEmail = post.User.Email;
+            var postOwnerName = post.User.FullName;
+            var customerName = customer.User.FullName;
+            var postTitle = post.Title;
+            var roomAddress = post.RentalRoom.Location;
+
+            var roomShareReqMail = EmailTemplate.RoomSharingRequest(postOwnerName, customerName, postTitle, roomAddress, mess);
+            await _emailService.SendEmail(postOwnerEmail, "Yêu cầu chia sẻ phòng trọ - ở ghép", roomShareReqMail);
+
+            return true;
+
+        }
+
+        public async Task<ListRequestSharingRes> GetListRequestSharing(string token)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var post = (await _unitOfWork.PostRepository.Get(filter: p => p.UserId == userId && p.Status == StatusEnums.Active.ToString(),
+                   includeProperties: "RentalRoom,User"
+               )).FirstOrDefault();
+            if (post == null)
+            {
+                throw new KeyNotFoundException("NO_POST");
+            }
+
+            var roommateRequests = await _unitOfWork.RoommateRequestRepository.Get(
+                       filter: r => r.PostId == post.PostId && r.Status == StatusEnums.Pending.ToString(),
+                       includeProperties: "CustomerRequests.Customer.User");
+
+            var result = new ListRequestSharingRes();
+
+            foreach (var request in roommateRequests)
+            {
+                foreach (var customerRequest in request.CustomerRequests)
+                {
+                    if (customerRequest.Customer != null && customerRequest.Customer.User != null)
+                    {
+                        var requestInfo = new RequestSharingInfo
+                        {
+                            Message = customerRequest.Message,
+                            CustomerType = customerRequest.Customer.CustomerType,
+                            Email = customerRequest.Customer.User.Email,
+                            FullName = customerRequest.Customer.User.FullName,
+                            Dob = customerRequest.Customer.User.Dob,
+                            Address = customerRequest.Customer.User.Address,
+                            PhoneNumber = customerRequest.Customer.User.PhoneNumber,
+                            Gender = customerRequest.Customer.User.Gender,
+                            Avatar = customerRequest.Customer.User.Avatar,
+                            Preferences = customerRequest.Customer.Preferences,
+                            LifeStyle = customerRequest.Customer.LifeStyle,
+                            BudgetRange = customerRequest.Customer.BudgetRange,
+                            PreferredLocation = customerRequest.Customer.PreferredLocation,
+                            Requirement = customerRequest.Customer.Requirement,
+                            CustomerId = customerRequest.Customer.CustomerId,
+                            UserId = customerRequest.Customer.User.UserId
+                        };
+
+                        result.RequestSharingList.Add(requestInfo);
+                    }
+                }
+            }
+
+            result.TotalRequestSharing = result.RequestSharingList.Count;
+
+            return result;
+        }
     }
 }

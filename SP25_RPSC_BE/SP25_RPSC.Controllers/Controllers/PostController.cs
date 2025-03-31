@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.PostModel.Request;
 using SP25_RPSC.Data.Models.PostModel.Response;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Services.Service.PostService;
@@ -20,7 +21,7 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
         [HttpGet("Get-All-Roommate-Post")]
-        public async Task<ActionResult<PagedResult<RoommatePostRes>>> SearchRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
+        public async Task<ActionResult<PagedResult<RoommatePostRes>>> GetAllRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
         {
             try
             {
@@ -47,6 +48,59 @@ namespace SP25_RPSC.Controllers.Controllers
                     Error = ex.Message
                 });
             }
+        }
+
+        [HttpGet("Get-Roommate-Post-Detail")]
+        public async Task<ActionResult<RoommatePostDetailRes>> GetRoommatePostDetail(string postId)
+        {
+            try
+            {
+                var result = await _postService.GetRoommatePostDetail(postId);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get roommate post detail successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while get roommate post detail",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("create-roommate-post")]
+        public async Task<IActionResult> Create([FromBody] CreateRoommatePostReq request)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _postService.CreateRoommatePost(token, request);
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Create new roommate post successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            } catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while create new roommate post",
+                    Error = ex.Message
+                });
+            }
+            
+
         }
 
     }

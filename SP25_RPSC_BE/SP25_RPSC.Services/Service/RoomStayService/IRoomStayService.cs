@@ -11,5 +11,6 @@ namespace SP25_RPSC.Services.Service.RoomStayService
     {
         Task<GetAllRoomStaysResponseModel> GetRoomStaysByLandlordId(string token, string searchQuery, int pageIndex, int pageSize);
         Task<GetRoomStayCustomersResponseModel> GetRoomStaysCustomerByRoomStayId(string roomStayId);
+        Task<ListRoommateRes> GetListRoommate(string token);
     }
 }
