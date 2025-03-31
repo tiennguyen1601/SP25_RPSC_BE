@@ -16,12 +16,13 @@ namespace SP25_RPSC.Data.Models.ContractCustomerModel.ContractCustomerResponse
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? Status { get; set; }
+        public string? Term { get; set; }
 
         public RoomResponse Room { get; set; }
         public UserResponse Customer { get; set; }
 
         public DateTime? TimeToUpContract { get; set; }
-        public TimeSpan? TimeRemaining { get; set; }
+        public int? DurationOfRental { get; set; }
     }
 
 

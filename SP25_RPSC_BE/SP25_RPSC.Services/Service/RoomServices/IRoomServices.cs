@@ -14,5 +14,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
         Task<RoomCountResponseModel> GetRoomCountsByLandlordId(string token);
 
         Task<bool> CreateRoom(RoomCreateRequestModel model);
+        Task<GetRoomByRoomTypeIdResponseModel> GetRoomDetailByRoomId(string roomId);
+        Task<GetRoomByRoomTypeIdResponseModel> GetRoomByRoomTypeId(string roomTypeId, int pageIndex, int pageSize, string searchQuery = "", string status = null);
     }
 }

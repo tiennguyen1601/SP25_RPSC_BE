@@ -42,6 +42,7 @@ namespace SP25_RPSC.Controllers.Controllers
         [HttpPost]
         [Route("Create-Room")]
         public async Task<ActionResult> CreateRoom(RoomCreateRequestModel model)
+
         {
             //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
             var result = await _roomService.CreateRoom(model);
@@ -58,6 +59,88 @@ namespace SP25_RPSC.Controllers.Controllers
 
             return BadRequest(new { Message = "Room cannot be created" });
         }
+        [HttpGet]
+        [Route("Get-Room-Counts")]
+        public async Task<ActionResult> GetRoomCountsByLandlord()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var roomCounts = await _roomService.GetRoomCountsByLandlordId(token);
+
+            if (roomCounts == null)
+            {
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "No room count data found"
+                });
+            }
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Room counts retrieved successfully",
+                Data = roomCounts
+            });
+        }
+        [HttpGet]
+        [Route("Get-Rooms-By-RoomTypeId")]
+        public async Task<ActionResult> GetRoomByRoomTypeId(
+            string roomTypeId,
+            int pageIndex,
+            int pageSize,
+            string searchQuery = "",
+            string status = null)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var rooms = await _roomService.GetRoomByRoomTypeId(roomTypeId, pageIndex, pageSize, searchQuery, status);
+
+            if (rooms == null)
+            {
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "No rooms found for this RoomTypeId"
+                });
+            }
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Rooms retrieved successfully",
+                Data = rooms
+            });
+        }
+        [HttpGet]
+        [Route("Get-Room-Detail-By-RoomId")]
+        public async Task<ActionResult> GetRoomDetailByRoomId(string roomId)
+        {
+            var roomDetail = await _roomService.GetRoomDetailByRoomId(roomId);
+
+            if (roomDetail == null || roomDetail.Rooms.Count == 0)
+            {
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "Room not found",
+                    Data = null
+                });
+            }
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Room details retrieved successfully",
+                Data = roomDetail
+            });
+        }
+
 
     }
 }

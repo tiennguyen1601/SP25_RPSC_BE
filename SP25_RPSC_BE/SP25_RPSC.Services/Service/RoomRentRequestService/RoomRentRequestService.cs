@@ -65,7 +65,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 PhoneNumber = c.Customer?.User?.PhoneNumber ?? "N/A",
                 Avatar = c.Customer?.User?.Avatar ?? "N/A",
                 Message = c.Message ?? "",
-
+                DateWantToRent = c.DateWantToRent,
                 MonthWantRent = c.MonthWantRent ?? 6
             }).ToList();
 
@@ -121,14 +121,12 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 throw new ApiException(HttpStatusCode.Conflict, "Room is already occupied");
             }
 
-            room.Status = "Renting";
-            room.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.RoomRepository.Update(room);
-
             DateTime today = DateTime.UtcNow;
             DateTime startDate = new DateTime(today.Year, today.Month, 1).AddMonths(1);
             int monthWantRent = selectedCustomerRequest.MonthWantRent ?? 6;
             DateTime endDate = startDate.AddMonths(monthWantRent);
+
+            DateTime customerRequestedDate = selectedCustomerRequest.DateWantToRent ?? startDate;
 
             var roomAddress = room.Location ?? "Không xác định";
 
@@ -147,7 +145,9 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 if (customerRequest.CustomerId == selectedCustomerId)
                 {
                     customerRequest.Status = "Accepted";
-                    var successEmail = EmailTemplate.BookingSuccess(fullName, roomAddress, email, startDate.ToString("yyyy-MM-dd"));
+                    customerRequest.DateWantToRent = customerRequestedDate;
+
+                    var successEmail = EmailTemplate.BookingSuccess(fullName, roomAddress, email, customerRequestedDate.ToString("yyyy-MM-dd"));
                     await _emailService.SendEmail(email, "Xác nhận thuê phòng thành công", successEmail);
                 }
                 else
@@ -178,6 +178,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             return true;
         }
+
         public async Task<bool> ConfirmContractAndCreateRoomStay(string token, ContractUploadRequest request)
         {
             using var transaction = await _unitOfWork.BeginTransactionAsync();

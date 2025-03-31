@@ -13,6 +13,8 @@ public partial class RoomAmentiesList
 
     public string? RoomAmentyId { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual Room? Room { get; set; }
 
     public virtual RoomAmenty? RoomAmenty { get; set; }

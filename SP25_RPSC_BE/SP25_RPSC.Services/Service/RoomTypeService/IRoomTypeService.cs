@@ -15,5 +15,8 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
         Task<bool> ApproveRoomType(string roomTypeId);
         Task<bool> DenyRoomType(string roomTypeId);
         Task<bool> CreateRoomType(RoomTypeCreateRequestModel model, string token);
+        Task<GetRoomTypeResponseModel> GetRoomTypeByLandlordId(string searchQuery, int pageIndex, int pageSize, string token);
+        Task<GetRoomTypeDetailResponseModel> GetRoomTypeDetailByRoomTypeId(string roomTypeId);
     }
+
 }

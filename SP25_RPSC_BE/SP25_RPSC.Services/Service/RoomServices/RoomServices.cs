@@ -13,6 +13,7 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.DecodeTokenModel;
 using SP25_RPSC.Data.Models.RoomModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
+using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
@@ -52,7 +53,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 RoomNumber = model.RoomNumber,
                 Title = model.Title,
                 Description = model.Description,
-                Status = StatusEnums.Active.ToString(),
+                Location = model.Location,
+                Status = "Available",
                 UpdatedAt = DateTime.Now,
                 RoomPrices = roomPrice,
                 RoomTypeId = model.roomtypeId,
@@ -188,6 +190,63 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 TotalRoomsRenting = totalRentingRooms,
                 TotalCustomersRenting = totalCustomersRenting,
                 TotalRequests = totalRequests
+            };
+        }
+        public async Task<GetRoomByRoomTypeIdResponseModel> GetRoomByRoomTypeId(string roomTypeId, int pageIndex, int pageSize, string searchQuery = "", string status = null)
+        {
+            Expression<Func<Room, bool>> searchFilter = room =>
+                room.RoomTypeId == roomTypeId &&
+                (string.IsNullOrEmpty(searchQuery) ||
+                 room.RoomNumber.Contains(searchQuery) ||
+                 room.Title.Contains(searchQuery)) &&
+                (string.IsNullOrEmpty(status) || room.Status == status);  
+
+            var rooms = await _unitOfWork.RoomRepository.Get(
+                includeProperties: "RoomType,RoomImages,RoomPrices,RoomAmentiesLists",
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            var totalRooms = await _unitOfWork.RoomRepository.CountAsync(searchFilter);
+
+            if (rooms == null || !rooms.Any())
+            {
+                return new GetRoomByRoomTypeIdResponseModel
+                {
+                    Rooms = new List<ListRoomResByRoomTypeId>(), 
+                    TotalRooms = 0
+                };
+            }
+
+            var roomResponses = _mapper.Map<List<ListRoomResByRoomTypeId>>(rooms);
+
+            return new GetRoomByRoomTypeIdResponseModel
+            {
+                Rooms = roomResponses,
+                TotalRooms = totalRooms
+            };
+        }
+        public async Task<GetRoomByRoomTypeIdResponseModel> GetRoomDetailByRoomId(string roomId)
+        {
+            var room = (await _unitOfWork.RoomRepository.Get(
+                    includeProperties: "RoomType,RoomImages,RoomPrices,RoomAmentiesLists.RoomAmenty", 
+                    filter: r => r.RoomId == roomId
+                )).FirstOrDefault();
+
+            if (room == null)
+            {
+                return new GetRoomByRoomTypeIdResponseModel
+                {
+                    Rooms = new List<ListRoomResByRoomTypeId>() 
+                };
+            }
+
+            var roomResponse = _mapper.Map<ListRoomResByRoomTypeId>(room);
+
+            return new GetRoomByRoomTypeIdResponseModel
+            {
+                Rooms = new List<ListRoomResByRoomTypeId> { roomResponse } 
             };
         }
 

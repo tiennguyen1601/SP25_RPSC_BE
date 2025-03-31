@@ -11,11 +11,11 @@ public partial class Chat
 
     public string? ReceiverId { get; set; }
 
-    public string? Message { get; set; }
-
     public DateTime? CreateAt { get; set; }
 
     public string? Status { get; set; }
+
+    public string? Message { get; set; }
 
     public virtual User? Receiver { get; set; }
 

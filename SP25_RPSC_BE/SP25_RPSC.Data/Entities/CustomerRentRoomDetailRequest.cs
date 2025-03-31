@@ -17,6 +17,8 @@ public partial class CustomerRentRoomDetailRequest
 
     public int? MonthWantRent { get; set; }
 
+    public DateTime? DateWantToRent { get; set; }
+
     public virtual Customer? Customer { get; set; }
 
     public virtual RoomRentRequest? RoomRentRequests { get; set; }

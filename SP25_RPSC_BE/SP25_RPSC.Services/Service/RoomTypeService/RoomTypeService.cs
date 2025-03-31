@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
@@ -80,7 +81,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             {
                 return false;
             }
-            return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Active");
+            return await _unitOfWork.RoomTypeRepository.UpdateRoomTypeStatus(roomTypeId, "Available");
         }
 
         public async Task<bool> DenyRoomType(string roomTypeId)
@@ -115,7 +116,11 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             var address = new Address{
                 AddressId = Guid.NewGuid().ToString(),
                 Long = model.location.Long,
-                Lat = model.location.Lat
+                Lat = model.location.Lat,
+                HouseNumber = model.location.HouseNumber,
+                District = model.location.District,
+                Street= model.location.Street,
+                City = model.location.City
             };
 
             var roomTypeServices = _mapper.Map<List<RoomService>>(model.ListRoomServices);
@@ -139,5 +144,80 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             await _unitOfWork.SaveAsync();
             return true;
         }
+
+        public async Task<GetRoomTypeResponseModel> GetRoomTypeByLandlordId(string searchQuery, int pageIndex, int pageSize, string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("Landlord not found");
+            }
+            Expression<Func<RoomType, bool>> searchFilter = r =>
+                (string.IsNullOrEmpty(searchQuery) ||
+                 r.RoomTypeName.Contains(searchQuery) || 
+                 r.Description.Contains(searchQuery)) &&  
+                r.LandlordId == landlord.LandlordId; 
+
+            var roomTypes = await _unitOfWork.RoomTypeRepository.Get(
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            var totalRoomTypes = await _unitOfWork.RoomTypeRepository.CountAsync(searchFilter);
+
+            if (!roomTypes.Any())
+            {
+                return new GetRoomTypeResponseModel { RoomTypes = new List<ListRoomTypeRes>(), TotalRoomTypes = 0 };
+            }
+
+            var roomTypeResponses = _mapper.Map<List<ListRoomTypeRes>>(roomTypes.ToList());
+
+            return new GetRoomTypeResponseModel
+            {
+                RoomTypes = roomTypeResponses,  
+                TotalRoomTypes = totalRoomTypes 
+            };
+        }
+
+        public async Task<GetRoomTypeDetailResponseModel> GetRoomTypeDetailByRoomTypeId(string roomTypeId)
+        {
+            var roomType = (await _unitOfWork.RoomTypeRepository.Get(
+                includeProperties: "Address,RoomServices,RoomServices.RoomServicePrices",  
+                filter: rt => rt.RoomTypeId == roomTypeId
+            )).FirstOrDefault();
+
+            if (roomType == null)
+            {
+                throw new KeyNotFoundException("RoomType not found.");
+            }
+
+            var roomTypeResponse = _mapper.Map<GetRoomTypeDetailResponseModel>(roomType);
+
+            foreach (var roomService in roomType.RoomServices)
+            {
+                var latestPrice = roomService.RoomServicePrices
+                    .OrderByDescending(rsp => rsp.ApplicableDate) 
+                    .FirstOrDefault()?.Price;
+
+                var roomServiceDto = roomTypeResponse.RoomServices
+                    .FirstOrDefault(rs => rs.RoomServiceId == roomService.RoomServiceId);
+
+                if (roomServiceDto != null)
+                {
+                    roomServiceDto.Price = latestPrice;
+                }
+            }
+
+            return roomTypeResponse;
+        }
+
+
+
+
+
     }
 }

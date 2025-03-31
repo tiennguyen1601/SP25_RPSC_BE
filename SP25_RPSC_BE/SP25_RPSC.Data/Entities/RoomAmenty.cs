@@ -13,6 +13,8 @@ public partial class RoomAmenty
 
     public string? LandlordId { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual Landlord? Landlord { get; set; }
 
     public virtual ICollection<RoomAmentiesList> RoomAmentiesLists { get; set; } = new List<RoomAmentiesList>();
