@@ -31,7 +31,7 @@ namespace SP25_RPSC.Controllers.Controllers
                 {
                     IsSuccess = true,
                     Code = (int)HttpStatusCode.OK,
-                    Message = "Send request room sharing successfully",
+                    Message = "Send request room sharing successfully.",
                 };
                 return StatusCode(response.Code, response);
             }
@@ -40,9 +40,57 @@ namespace SP25_RPSC.Controllers.Controllers
                 {
                     IsSuccess = false,
                     Code = (int)HttpStatusCode.InternalServerError,
-                    Message = "Failed to send request room sharing",
+                    Message = "Failed to send request room sharing.",
                 };
                 return StatusCode(response.Code, response);
+            }
+        }
+
+        [HttpGet("get-all-roommate-request")]
+        public async Task<IActionResult> GetAllRoommateRequest()
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerService.GetListRequestSharing(token);
+
+                if (result.TotalRequestSharing == 0)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "You have no roommate requests yet.",
+                        Data = result
+                    });
+                }
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get list roommate request successfully.",
+                    Data = result
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                if (ex.Message == "NO_POST")
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "You do not have any post for looking roommate."
+                    });
+                }
+
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
             }
         }
     }

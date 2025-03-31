@@ -1,5 +1,6 @@
 ﻿
 using SP25_RPSC.Data.Models.CustomerModel.Request;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.Models.UserModels.Request;
 
 namespace SP25_RPSC.Services.Service.CustomerService
@@ -8,5 +9,6 @@ namespace SP25_RPSC.Services.Service.CustomerService
     {
         Task<bool> UpdateInfo(UpdateInfoReq model, string email);
         Task<bool> SendRequestRoomSharing(string token, RoomSharingReq request);
+        Task<ListRequestSharingRes> GetListRequestSharing(string token);
     }
 }
