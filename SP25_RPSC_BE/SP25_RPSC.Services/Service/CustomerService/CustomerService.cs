@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.CustomerModel.Request;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
 using SP25_RPSC.Services.Utils.CustomException;
@@ -170,6 +171,70 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
         }
 
+        public async Task<ListRequestSharingRes> GetListRequestSharing(string token)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
 
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var post = (await _unitOfWork.PostRepository.Get(filter: p => p.UserId == userId && p.Status == StatusEnums.Active.ToString(),
+                   includeProperties: "RentalRoom,User"
+               )).FirstOrDefault();
+            if (post == null)
+            {
+                throw new KeyNotFoundException("NO_POST");
+            }
+
+            var roommateRequests = await _unitOfWork.RoommateRequestRepository.Get(
+                       filter: r => r.PostId == post.PostId && r.Status == StatusEnums.Pending.ToString(),
+                       includeProperties: "CustomerRequests.Customer.User");
+
+            var result = new ListRequestSharingRes();
+
+            foreach (var request in roommateRequests)
+            {
+                foreach (var customerRequest in request.CustomerRequests)
+                {
+                    if (customerRequest.Customer != null && customerRequest.Customer.User != null)
+                    {
+                        var requestInfo = new RequestSharingInfo
+                        {
+                            Message = customerRequest.Message,
+                            CustomerType = customerRequest.Customer.CustomerType,
+                            Email = customerRequest.Customer.User.Email,
+                            FullName = customerRequest.Customer.User.FullName,
+                            Dob = customerRequest.Customer.User.Dob,
+                            Address = customerRequest.Customer.User.Address,
+                            PhoneNumber = customerRequest.Customer.User.PhoneNumber,
+                            Gender = customerRequest.Customer.User.Gender,
+                            Avatar = customerRequest.Customer.User.Avatar,
+                            Preferences = customerRequest.Customer.Preferences,
+                            LifeStyle = customerRequest.Customer.LifeStyle,
+                            BudgetRange = customerRequest.Customer.BudgetRange,
+                            PreferredLocation = customerRequest.Customer.PreferredLocation,
+                            Requirement = customerRequest.Customer.Requirement,
+                            CustomerId = customerRequest.Customer.CustomerId,
+                            UserId = customerRequest.Customer.User.UserId
+                        };
+
+                        result.RequestSharingList.Add(requestInfo);
+                    }
+                }
+            }
+
+            result.TotalRequestSharing = result.RequestSharingList.Count;
+
+            return result;
+        }
     }
 }
