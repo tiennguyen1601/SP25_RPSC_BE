@@ -209,6 +209,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                     {
                         var requestInfo = new RequestSharingInfo
                         {
+                            RequestId = customerRequest.CustomerRequestId,
                             Message = customerRequest.Message,
                             CustomerType = customerRequest.Customer.CustomerType,
                             Email = customerRequest.Customer.User.Email,
@@ -236,5 +237,83 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
             return result;
         }
+
+        public async Task<bool> RejectRequestSharing(string token, string requestId)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            if (string.IsNullOrEmpty(requestId))
+            {
+                throw new ArgumentNullException(nameof(requestId), "Request ID cannot be null or empty.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var post = (await _unitOfWork.PostRepository.Get(filter: p => p.UserId == userId && p.Status == StatusEnums.Active.ToString(),
+                   includeProperties: "RentalRoom,User"
+               )).FirstOrDefault();
+            if (post == null)
+            {
+                throw new KeyNotFoundException("You do not have any active post for looking roommate.");
+            }
+
+            var customerRequest = (await _unitOfWork.CustomerRequestRepository.Get(
+                                        filter: cr => cr.CustomerRequestId == requestId,
+                                        includeProperties: "Request,Customer.User"
+                                    )).FirstOrDefault();
+            if (customerRequest == null)
+            {
+                throw new KeyNotFoundException("Request not found.");
+            }
+
+            var roommateRequest = customerRequest.Request;
+            if (roommateRequest == null || roommateRequest.PostId != post.PostId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to reject this request.");
+            }
+
+            if (customerRequest.Status != StatusEnums.Pending.ToString())
+            {
+                throw new InvalidOperationException($"Cannot reject request with status {customerRequest.Status}.");
+            }
+
+            customerRequest.Status = StatusEnums.Rejected.ToString();
+            await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
+            await _unitOfWork.SaveAsync();
+
+            if (customerRequest.Customer?.User != null)
+            {
+                var requesterEmail = customerRequest.Customer.User.Email;
+                var requesterName = customerRequest.Customer.User.FullName ?? "Người dùng";
+                var postOwnerName = customer.User.FullName ?? "Chủ phòng";
+                var postTitle = post.Title ?? "Phòng trọ";
+                var roomAddress = post.RentalRoom?.Location ?? "Không có địa chỉ";
+
+                var rejectRequestMail = EmailTemplate.RoomSharingRejected(
+                    requesterName,
+                    postOwnerName,
+                    postTitle,
+                    roomAddress);
+
+                await _emailService.SendEmail(
+                    requesterEmail,
+                    "Thông báo từ chối yêu cầu chia sẻ phòng trọ",
+                    rejectRequestMail);
+            }
+
+            return true;
+        }
+
     }
 }
