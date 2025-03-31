@@ -10,5 +10,6 @@ namespace SP25_RPSC.Services.Service.CustomerService
         Task<bool> UpdateInfo(UpdateInfoReq model, string email);
         Task<bool> SendRequestRoomSharing(string token, RoomSharingReq request);
         Task<ListRequestSharingRes> GetListRequestSharing(string token);
+        Task<bool> RejectRequestSharing(string token, string requestId);
     }
 }

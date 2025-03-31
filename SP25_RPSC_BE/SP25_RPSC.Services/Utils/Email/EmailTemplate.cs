@@ -256,5 +256,33 @@ namespace SP25_RPSC.Services.Utils.Email
 
         }
 
+        public static string RoomSharingRejected(string requesterName, string postOwnerName, string postTitle, string roomAddress)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #dc3545; text-align: center;'>Thông báo từ chối yêu cầu ở ghép</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{requesterName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi rất tiếc phải thông báo rằng yêu cầu ở ghép của bạn đã bị từ chối.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+                <p><strong>Bài đăng:</strong> {postTitle}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Chủ phòng:</strong> {postOwnerName}</p>
+            </div>
+            
+            <p style='font-size: 14px;'>Đừng nản lòng! Bạn có thể tiếp tục tìm kiếm các lựa chọn phòng ở ghép khác phù hợp hơn trên nền tảng của chúng tôi.</p>
+            <p style='font-size: 14px;'>Nếu bạn cần hỗ trợ tìm kiếm phòng phù hợp, vui lòng liên hệ với chúng tôi qua ứng dụng hoặc email.</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
     }
 }

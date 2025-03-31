@@ -14,6 +14,7 @@ namespace SP25_RPSC.Data.Models.CustomerModel.Response
 
     public class RequestSharingInfo 
     {
+        public string RequestId { get; set; } = null!;
         public string? Message { get; set; }
         public string? CustomerType { get; set; }
         public string Email { get; set; } = null!;
