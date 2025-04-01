@@ -284,5 +284,104 @@ namespace SP25_RPSC.Services.Utils.Email
     </div>";
         }
 
+
+
+
+        public static string RoomSharingAccepted(string requesterName, string postOwnerName, string postTitle,
+                                        string roomAddress, string postOwnerPhone, string postOwnerEmail)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #28a745; text-align: center;'>Chúc mừng! Yêu cầu ở ghép đã được chấp nhận</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{requesterName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi vui mừng thông báo rằng yêu cầu ở ghép của bạn đã được chấp nhận!</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #28a745; margin: 15px 0;'>
+                <p><strong>Bài đăng:</strong> {postTitle}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Chủ phòng:</strong> {postOwnerName}</p>
+                <p><strong>Số điện thoại liên hệ:</strong> {postOwnerPhone}</p>
+                <p><strong>Email liên hệ:</strong> {postOwnerEmail}</p>
+            </div>
+            
+            <p style='font-size: 14px;'>Vui lòng liên hệ với chủ phòng sớm nhất có thể để thảo luận về các bước tiếp theo và sắp xếp thời gian chuyển vào.</p>
+            <p style='font-size: 14px;'>Chúc bạn có trải nghiệm tuyệt vời tại nơi ở mới!</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+        public static string RoomSharingConfirmation(string postOwnerName, string requesterName, string postTitle,
+                                                   string roomAddress, string requesterPhone, string requesterEmail)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #2196F3; text-align: center;'>Xác nhận chấp nhận yêu cầu ở ghép</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{postOwnerName}</strong>,</p>
+            <p style='font-size: 14px;'>Bạn đã chấp nhận <strong>{requesterName}</strong> làm người ở ghép cùng.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #2196F3; margin: 15px 0;'>
+                <p><strong>Bài đăng:</strong> {postTitle}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Thông tin người ở ghép:</strong></p>
+                <ul>
+                    <li><strong>Họ tên:</strong> {requesterName}</li>
+                    <li><strong>Số điện thoại:</strong> {requesterPhone}</li>
+                    <li><strong>Email:</strong> {requesterEmail}</li>
+                </ul>
+            </div>
+            
+            <p style='font-size: 14px;'>Bài đăng tìm người ở ghép của bạn đã được đánh dấu là không còn hoạt động.</p>
+            <p style='font-size: 14px;'>Chúc bạn và người ở ghép mới có trải nghiệm tốt đẹp khi ở cùng nhau!</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+        public static string RoomSharingNotificationToLandlord(string landlordName, string postOwnerName,
+                                                             string requesterName, string postTitle, string roomAddress)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #FF9800; text-align: center;'>Thông báo phòng trọ đã có người ở ghép</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{landlordName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng phòng trọ của bạn đã có thêm người ở ghép mới.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #FF9800; margin: 15px 0;'>
+                <p><strong>Bài đăng:</strong> {postTitle}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Người thuê hiện tại:</strong> {postOwnerName}</p>
+                <p><strong>Người ở ghép mới:</strong> {requesterName}</p>
+            </div>
+            
+            <p style='font-size: 14px;'>{postOwnerName} (người thuê hiện tại) đã chấp nhận {requesterName} làm người ở ghép.</p>
+            <p style='font-size: 14px;'>Việc chia sẻ phòng trọ này đã được xác nhận và thực hiện thông qua hệ thống của chúng tôi.</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+
     }
 }

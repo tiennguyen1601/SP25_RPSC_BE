@@ -46,6 +46,62 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpGet("get-all-sent-roommate-request")]
+        public async Task<IActionResult> GetSentRoommateRequests()
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerService.GetListSentRequestSharing(token);
+
+                if (result.TotalSentRequests == 0)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "You have not sent any roommate requests yet.",
+                        Data = result
+                    });
+                }
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get list of sent roommate requests successfully.",
+                    Data = result
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving sent roommate requests: " + ex.Message
+                });
+            }
+        }
+
         [HttpGet("get-all-roommate-request")]
         public async Task<IActionResult> GetAllRoommateRequest()
         {
@@ -93,6 +149,8 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+
+        
 
         [HttpPut("reject-roommate-request/{requestId}")]
         public async Task<IActionResult> RejectRoommateRequest(string requestId)
@@ -154,6 +212,71 @@ namespace SP25_RPSC.Controllers.Controllers
                     IsSuccess = false,
                     Code = (int)HttpStatusCode.InternalServerError,
                     Message = "An error occurred while rejecting the roommate request."
+                });
+            }
+        }
+
+
+        [HttpPut("accept-roommate-request/{requestId}")]
+        public async Task<IActionResult> AcceptRoommateRequest(string requestId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerService.AcceptRequestSharing(token, requestId);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Roommate request accepted successfully."
+                };
+
+                return StatusCode(response.Code, response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while accepting the roommate request."
                 });
             }
         }

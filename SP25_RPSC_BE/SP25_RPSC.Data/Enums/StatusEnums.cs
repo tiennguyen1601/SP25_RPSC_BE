@@ -10,9 +10,11 @@ namespace SP25_RPSC.Data.Enums
     {
         Pending,
         Approved,
+        Accepted,
         Rejected,
         Active,
         Inactive,
+        Completed,
         Banned,
         Deactive,
         Expired,
