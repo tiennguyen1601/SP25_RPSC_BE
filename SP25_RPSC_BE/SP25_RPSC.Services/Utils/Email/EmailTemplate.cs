@@ -30,7 +30,7 @@ namespace SP25_RPSC.Services.Utils.Email
          </p>
          <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>
            <p style='font-size: 14px;'>This is an automated email, please do not reply.</p>
-             <p style='font-size: 14px;'>Best regards,<br/><strong>Workshopista</strong></p>
+             <p style='font-size: 14px;'>Best regards,<br/><strong>EasyRoomie</strong></p>
      </div>
 </div>";
 
@@ -92,7 +92,7 @@ namespace SP25_RPSC.Services.Utils.Email
          </p>
          <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>
          <p style='font-size: 14px;'>This is an automated email, please do not reply.</p>
-         <p style='font-size: 14px;'>Best regards,<br/><strong>Workshopista</strong></p>
+         <p style='font-size: 14px;'>Best regards,<br/><strong>EasyRoomie</strong></p>
      </div>
 </div>";
 
