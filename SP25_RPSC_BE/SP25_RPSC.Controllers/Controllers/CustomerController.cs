@@ -280,5 +280,63 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+
+        [HttpPost("request-leave-room-by-member")]
+        public async Task<IActionResult> RequestLeaveRoom()
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerService.RequestLeaveRoom(token);
+
+                if (result)
+                {
+                    ResultModel response = new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Leave room request sent successfully.",
+                    };
+                    return StatusCode(response.Code, response);
+                }
+                else
+                {
+                    ResultModel response = new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.InternalServerError,
+                        Message = "Failed to send leave room request.",
+                    };
+                    return StatusCode(response.Code, response);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while processing leave room request: " + ex.Message
+                });
+            }
+        }
     }
 }

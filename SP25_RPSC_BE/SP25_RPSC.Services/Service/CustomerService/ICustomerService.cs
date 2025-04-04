@@ -13,6 +13,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
         Task<ListSentRequestSharingRes> GetListSentRequestSharing(string token);
         Task<bool> RejectRequestSharing(string token, string requestId);
         Task<bool> AcceptRequestSharing(string token, string requestId);
+        Task<bool> RequestLeaveRoom(string token);
 
     }
 }
