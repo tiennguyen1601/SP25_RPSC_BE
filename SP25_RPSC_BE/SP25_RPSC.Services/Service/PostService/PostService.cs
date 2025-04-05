@@ -138,6 +138,24 @@ namespace SP25_RPSC.Services.Service.PostService
                     .SelectMany(rs => rs.RoomStayCustomers)
                     .Count();
 
+            // Get room services with prices that were valid at the time the post was created
+            var postCreationDate = post.CreatedAt ?? DateTime.Now;
+            var roomServices = post.RentalRoom?.RoomType?.RoomServices?
+                .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
+                .Select(rs => new RoomServiceInfo
+                {
+                    ServiceId = rs.RoomServiceId,
+                    ServiceName = rs.RoomServiceName,
+                    Description = rs.Description,
+                    // Get the price that was valid at post creation time
+                    // (the most recent price that was applicable before or on post creation date)
+                    Price = rs.RoomServicePrices?
+                        .Where(rsp => rsp.ApplicableDate <= postCreationDate)
+                        .OrderByDescending(rsp => rsp.ApplicableDate)
+                        .FirstOrDefault()?.Price
+                })
+                .ToList() ?? new List<RoomServiceInfo>();
+
             var postDetailResponse = new RoommatePostDetailRes
             {
                 PostId = post.PostId,
@@ -159,39 +177,45 @@ namespace SP25_RPSC.Services.Service.PostService
                 RoomInfo = post.RentalRoom != null ? new RoomInfo
                 {
                     RoomId = post.RentalRoom.RoomId,
+                    LandlordName = post.RentalRoom.RoomType?.Landlord?.User?.FullName ?? "Unknown",
                     RoomNumber = post.RentalRoom.RoomNumber,
                     Title = post.RentalRoom.Title,
                     Description = post.RentalRoom.Description,
                     Location = post.RentalRoom.Location,
                     RoomTypeName = post.RentalRoom.RoomType.RoomTypeName,
-                    Price = post.RentalRoom.RoomPrices?
-                        .Where(rp => rp.ApplicableDate <= DateTime.Now)
-                        .OrderByDescending(rp => rp.ApplicableDate)
-                        .FirstOrDefault()?.Price,
+                    Price = post.Price,
                     Square = post.RentalRoom.RoomType.Square,
                     Area = post.RentalRoom.RoomType.Area,
                     TotalRoomer = totalRoomers,
                     RoomImages = post.RentalRoom.RoomImages?.Select(ri => ri.ImageUrl).ToList() ?? new List<string>(),
                     RoomAmenities = post.RentalRoom.RoomAmentiesLists?
-                                    .Where(ra => ra.RoomAmenty != null)
-                                    .Select(ra => ra.RoomAmenty.Name)
-                                    .ToList() ?? new List<string>()
+                                        .Where(ra => ra.RoomAmenty != null)
+                                        .Select(ra => ra.RoomAmenty.Name)
+                                        .ToList() ?? new List<string>(),
+                    Services = roomServices
                 } : null
             };
-
             return postDetailResponse;
         }
 
-        public async Task<PagedResult<RoommatePostRes>> GetRoommatePosts(RoommatePostSearchReq search)
+        public async Task<PagedResult<RoommatePostRes>> GetRoommatePosts(string token, RoommatePostSearchReq search)
         {
             search.PageNumber = search.PageNumber <= 0 ? 1 : search.PageNumber;
             search.PageSize = search.PageSize <= 0 ? 10 : search.PageSize;
 
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
             var query = await _unitOfWork.PostRepository.Get(
                 filter: p => 
                     p.Status == StatusEnums.Active.ToString() && 
-                    p.User != null,
-                includeProperties: "User,User.Customers,RentalRoom"
+                    p.User != null &&
+                    p.UserId != userId,
+                includeProperties: "User,User.Customers,RentalRoom,RentalRoom.RoomPrices"
             );
             
             if (!string.IsNullOrWhiteSpace(search.Address))
@@ -261,6 +285,7 @@ namespace SP25_RPSC.Services.Service.PostService
                 PostId = x.Post.PostId,
                 Title = x.Post.Title,
                 Description = x.Post.Description,
+                Price = x.Post.Price,
                 Status = x.Post.Status,
                 CreatedAt = x.Post.CreatedAt,
                 Location = x.Post.RentalRoom?.Location,

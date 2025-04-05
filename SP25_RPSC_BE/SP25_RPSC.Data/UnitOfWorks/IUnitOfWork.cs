@@ -4,6 +4,7 @@ using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
 using SP25_RPSC.Data.Repositories.ChatRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
+using SP25_RPSC.Data.Repositories.CustomerMoveOutRepository;
 using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
@@ -84,6 +85,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IRoomAmentyRepository RoomAmentyRepository { get; }
 
         IRoomAmentyListRepository RoomAmentyListRepository { get; }
+        ICustomerMoveOutRepository CustomerMoveOutRepository { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync();
 

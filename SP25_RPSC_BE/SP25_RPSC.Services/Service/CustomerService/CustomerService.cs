@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.CustomerModel.Request;
 using SP25_RPSC.Data.Models.CustomerModel.Response;
+using SP25_RPSC.Data.Models.CustomerRentRoomDetail.CustomerRentRoomDetailResponse;
+using SP25_RPSC.Data.Repositories.CustomerMoveOutRepository;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
 using SP25_RPSC.Services.Utils.CustomException;
@@ -539,5 +542,287 @@ namespace SP25_RPSC.Services.Service.CustomerService
             return true;
         }
 
+        public async Task<bool> RequestLeaveRoom(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc => rsc.Customer.CustomerId == customer.CustomerId
+                    && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStayCustomer == null)
+            {
+                throw new KeyNotFoundException("You do not in any room.");
+            }
+            if (!roomStayCustomer.Type.Equals(CustomerTypeEnums.Member.ToString()))
+            {
+                throw new UnauthorizedAccessException("This is request leave room API for member!");
+            }
+
+            var existingMoveOutRequest = await _unitOfWork.CustomerMoveOutRepository.Get(
+                    filter: cmo => cmo.UserMoveId == userId &&
+                                  cmo.RoomStayId == roomStayCustomer.RoomStayId &&
+                                  cmo.Status == 0);
+
+            if (existingMoveOutRequest.Any())
+            {
+                throw new InvalidOperationException("You have already send a request to leave this room.");
+            }
+
+            var roomStay = await _unitOfWork.RoomStayRepository.GetByIDAsync(roomStayCustomer.RoomStayId);
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+
+            var customerMoveOut = new CustomerMoveOut
+            {
+                Cmoid = Guid.NewGuid().ToString(),
+                UserMoveId = userId,
+                UserDepositeId = null,
+                RoomStayId = roomStay.RoomStayId,
+                DateRequest = DateTime.Now,
+                Status = 0
+            };
+
+            await _unitOfWork.CustomerMoveOutRepository.Add(customerMoveOut);
+            await _unitOfWork.SaveAsync();
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.LandlordId == roomStay.LandlordId,
+                    includeProperties: "User")).FirstOrDefault(); 
+            if (landlord == null)
+            {
+                throw new KeyNotFoundException("Landlord not found.");
+            }
+
+            var tenant = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: rsc => rsc.RoomStayId == roomStay.RoomStayId &&
+                                  rsc.Status.Equals(StatusEnums.Active.ToString()) &&
+                                  rsc.Type.Equals(CustomerTypeEnums.Tenant.ToString()) && 
+                                  rsc.CustomerId != customer.CustomerId, 
+                    includeProperties: "Customer,Customer.User")).FirstOrDefault();
+            if (tenant == null)
+            {
+                throw new KeyNotFoundException("Tenant not found.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomStay.RoomId);
+            if (room == null)
+            {
+                throw new KeyNotFoundException("Room not found.");
+            }
+
+            var landlordMail = landlord.User.Email;
+            var landlordName = landlord.User.FullName ?? "Chủ phòng";
+            var tenantdMail = tenant.Customer.User.Email;
+            var tenantName = tenant.Customer.User.FullName ?? "Người chịu trách nhiệm";
+            var memberName = customer.User.FullName ?? "Thành viên";
+            var roomNumber = room.RoomNumber ?? "Số phòng";
+            var roomAddress = room.Location ?? "Địa chỉ";
+            var dateRequest = DateTime.Now;
+
+            var mailLeaveRoomForLandlord = EmailTemplate.MemberLeaveRoomNotificationForLandlord(
+                landlordName,
+                tenantName,
+                memberName,
+                roomNumber,
+                roomAddress,
+                dateRequest.ToString());
+
+            await _emailService.SendEmail(
+                landlordMail,
+                "Thông báo yêu cầu rời phòng",
+                mailLeaveRoomForLandlord);
+
+            var mailLeaveRoomForTenant = EmailTemplate.MemberLeaveRoomNotificationForTenant(
+                tenantName,
+                memberName,
+                roomNumber,
+                roomAddress,
+                dateRequest.ToString());
+
+            await _emailService.SendEmail(
+                tenantdMail,
+                "Thông báo yêu cầu rời phòng",
+                mailLeaveRoomForTenant);
+
+            var mailLeaveRoomConfirmForMember = EmailTemplate.LeaveRoomConfirmationForMember(
+                memberName,
+                tenantName,
+                roomNumber,
+                roomAddress,
+                dateRequest.ToString());
+
+            await _emailService.SendEmail(
+                customer.User.Email,
+                "Thông báo xác nhận yêu cầu rời phòng",
+                mailLeaveRoomConfirmForMember);
+
+            return true;
+        }
+
+        public async Task<ListLeaveRoomRes> GetListLeaveRoomRequest(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc => rsc.Customer.CustomerId == customer.CustomerId
+                    && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStayCustomer == null)
+            {
+                throw new KeyNotFoundException("You do not in any room.");
+            }
+            if (!roomStayCustomer.Type.Equals(CustomerTypeEnums.Tenant.ToString()))
+            {
+                throw new UnauthorizedAccessException("This is get list room leaving request API for tenant!");
+            }
+
+            var roomStay = await _unitOfWork.RoomStayRepository.GetByIDAsync(roomStayCustomer.RoomStayId);
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+            var leaveRoomListRequest = await _unitOfWork.CustomerMoveOutRepository.Get(
+                    filter: cmo => cmo.RoomStayId == roomStayCustomer.RoomStayId && cmo.Status == 0,
+                    includeProperties: "UserMove");
+            if (leaveRoomListRequest == null || !leaveRoomListRequest.Any())
+            {
+                throw new KeyNotFoundException("No room leaving request.");
+            }
+
+            var result = new ListLeaveRoomRes();
+
+            foreach (var request in leaveRoomListRequest)
+            {
+                if (request.UserMove != null)
+                {
+                    var userMove = request.UserMove;
+                    var memberCustomer = await _unitOfWork.CustomerRepository.Get(
+                        filter: c => c.UserId == userMove.UserId,
+                        includeProperties: "User");
+
+                    var memberInfo = memberCustomer.FirstOrDefault();
+
+                    if (memberInfo != null && memberInfo.User != null)
+                    {
+                        var customerMoveOutRes = new CustomerMoveOutRes
+                        {
+                            Cmoid = request.Cmoid,
+                            UserMoveId = request.UserMoveId,
+                            RoomStayId = request.RoomStayId,
+                            DateRequest = request.DateRequest,
+                            Status = request.Status,
+                            MemberInfo = new MemberInfo
+                            {
+                                UserId = userMove.UserId,
+                                CustomerId = memberInfo.CustomerId,
+                                Email = memberInfo.User.Email,
+                                FullName = memberInfo.User.FullName,
+                                Dob = memberInfo.User.Dob,
+                                PhoneNumber = memberInfo.User.PhoneNumber,
+                                Gender = memberInfo.User.Gender,
+                                Avatar = memberInfo.User.Avatar
+                            }
+                        };
+
+                        result.LeaveRoomRequestList.Add(customerMoveOutRes);
+                    }
+                }
+            }
+            return result;
+        }
+
+        public async Task<bool> AcceptLeaveRoomRequest(string token, string requestId)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc => rsc.Customer.CustomerId == customer.CustomerId
+                    && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStayCustomer == null)
+            {
+                throw new KeyNotFoundException("You do not in any room.");
+            }
+            if (!roomStayCustomer.Type.Equals(CustomerTypeEnums.Tenant.ToString()))
+            {
+                throw new UnauthorizedAccessException("This is accept room leaving request API for tenant!");
+            }
+
+            var roomStay = await _unitOfWork.RoomStayRepository.GetByIDAsync(roomStayCustomer.RoomStayId);
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+            var customerMoveOut = await _unitOfWork.CustomerMoveOutRepository.GetByIDAsync(requestId);
+            if (customerMoveOut == null || customerMoveOut.Status == 1)
+            {
+                throw new KeyNotFoundException("Room leaving request not found.");
+            }
+            if (customerMoveOut.RoomStayId != roomStayCustomer.RoomStayId)
+            {
+                throw new UnauthorizedAccessException("You are not in the same room.");
+            }
+
+            var userMoveId = customerMoveOut.UserMoveId;
+            var cusMove = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userMoveId,
+                    includeProperties: "User")).FirstOrDefault();
+
+            customerMoveOut.Status = 1;
+            await _unitOfWork.CustomerMoveOutRepository.Update(customerMoveOut);
+
+            var roomStayCustomerMove = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc => rsc.Customer.CustomerId == cusMove.CustomerId
+                    && rsc.RoomStayId == roomStayCustomer.RoomStayId
+                    && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStayCustomerMove == null)
+            {
+                throw new KeyNotFoundException("Customer not in this room or already leave room.");
+            }
+            roomStayCustomerMove.Status = StatusEnums.Inactive.ToString();
+            await _unitOfWork.RoomStayCustomerRepository.Update(roomStayCustomerMove);
+
+
+            //gui mail
+
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
     }
 }
