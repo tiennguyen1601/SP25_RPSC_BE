@@ -25,11 +25,13 @@ namespace SP25_RPSC.Controllers.Controllers
         {
             try
             {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
                 searchRequest.PageNumber = searchRequest.PageNumber <= 0 ? 1 : searchRequest.PageNumber;
                 searchRequest.PageSize = searchRequest.PageSize <= 0 ? 10 :
                     searchRequest.PageSize > 100 ? 100 : searchRequest.PageSize;
 
-                var result = await _postService.GetRoommatePosts(searchRequest);
+                var result = await _postService.GetRoommatePosts(token, searchRequest);
 
                 ResultModel response = new ResultModel
                 {
