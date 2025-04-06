@@ -141,6 +141,11 @@ namespace SP25_RPSC.Controllers.Controllers
             });
         }
 
-
+        [HttpGet]
+        public async Task<IActionResult> GetAllRooms()
+        {
+            var rooms = await _roomService.GetAllRoomsAsync();
+            return Ok(rooms);
+        }
     }
 }

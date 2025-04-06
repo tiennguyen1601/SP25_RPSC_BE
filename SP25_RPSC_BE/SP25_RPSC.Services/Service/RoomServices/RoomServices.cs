@@ -251,7 +251,10 @@ namespace SP25_RPSC.Services.Service.RoomServices
             };
         }
 
-
-
+        public async Task<List<RoomResponseModel>> GetAllRoomsAsync()
+        {
+            var rooms = await _unitOfWork.RoomRepository.GetAllRoomsAsync();
+            return _mapper.Map<List<RoomResponseModel>>(rooms);
+        }
     }
 }

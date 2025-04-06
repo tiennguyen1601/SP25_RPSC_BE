@@ -233,6 +233,7 @@ CREATE TABLE ServicePackage (
     PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Type NVARCHAR(255) NOT NULL,
     HighLightTime NVARCHAR(255) NOT NULL,
+	PriorityTime INT NULL,
     MaxPost INT NULL,
 	Label NVARCHAR(255) NOT NULL,
     Status NVARCHAR(50)

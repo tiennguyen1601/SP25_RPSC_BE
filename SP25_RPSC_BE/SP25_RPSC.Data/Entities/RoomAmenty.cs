@@ -11,9 +11,9 @@ public partial class RoomAmenty
 
     public decimal? Compensation { get; set; }
 
-    public string? LandlordId { get; set; }
-
     public string? Status { get; set; }
+
+    public string? LandlordId { get; set; }
 
     public virtual Landlord? Landlord { get; set; }
 

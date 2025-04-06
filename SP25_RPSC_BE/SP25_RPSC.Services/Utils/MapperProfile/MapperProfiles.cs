@@ -380,6 +380,27 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             ReceiverUsername = src.Receiver.FullName,
             ReceiverProfileUrl = src.Receiver.Avatar
             }));
+
+            CreateMap<Address, AddressDTO>();
+
+            CreateMap<RoomType, RoomTypeResModel>()
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
+
+            CreateMap<Landlord, LandlordResponseModel>()
+                .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<RoomPrice, RoomPriceResponseModel>();
+
+            CreateMap<RoomAmentiesList, RoomAmentyResponseModel>()
+                .ForMember(dest => dest.AmenityId, opt => opt.MapFrom(src => src.RoomAmenty.RoomAmentyId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoomAmenty.Name));
+
+            CreateMap<Room, RoomResponseModel>()
+                .ForMember(dest => dest.RoomType, opt => opt.MapFrom(src => src.RoomType))
+                .ForMember(dest => dest.Landlord, opt => opt.MapFrom(src => src.RoomType.Landlord))
+                .ForMember(dest => dest.RoomPrices, opt => opt.MapFrom(src => src.RoomPrices))
+                .ForMember(dest => dest.RoomImages, opt => opt.MapFrom(src => src.RoomImages.Select(img => img.ImageUrl).ToList()))
+                .ForMember(dest => dest.RoomAmenities, opt => opt.MapFrom(src => src.RoomAmentiesLists));
         }
     }
 }

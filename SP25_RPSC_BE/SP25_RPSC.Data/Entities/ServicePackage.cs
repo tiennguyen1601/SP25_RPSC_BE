@@ -11,6 +11,8 @@ public partial class ServicePackage
 
     public string HighLightTime { get; set; } = null!;
 
+    public int? PriorityTime { get; set; }
+
     public int? MaxPost { get; set; }
 
     public string Label { get; set; } = null!;
