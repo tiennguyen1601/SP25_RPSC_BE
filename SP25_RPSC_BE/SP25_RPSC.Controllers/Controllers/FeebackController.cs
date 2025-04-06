@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SP25_RPSC.Data.Models.FeedbackModel.Request;
 using SP25_RPSC.Data.Models.ResultModel;
+using SP25_RPSC.Data.Models.RoomModel.RequestModel;
 using SP25_RPSC.Services.Service.FeedbackService;
 using System.Net;
 
@@ -96,5 +98,48 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("Create-feedbackRoom")]
+        public async Task<ActionResult> CreateFeedBackRoom(FeedBackRoomRequestModel model)
+
+        {
+            //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _feedbackService.CreateFeedBackRoom(model, token);
+
+            if (result)
+            {
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "FeedBack created successfully"
+                });
+            }
+
+            return BadRequest(new { Message = "FeedBack cannot be created" });
+        }
+
+        [HttpPost]
+        [Route("Create-feedbackCustomer")]
+        public async Task<ActionResult> CreateFeedBackCustomer(FeedBackCustomerRequestModel model)
+
+        {
+            //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _feedbackService.CreateFeedBackCustomer(model, token);
+
+            if (result)
+            {
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "FeedBack created successfully"
+                });
+            }
+
+            return BadRequest(new { Message = "FeedBack cannot be created" });
+        }
     }
 }

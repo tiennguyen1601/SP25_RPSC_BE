@@ -30,7 +30,7 @@ namespace SP25_RPSC.Services.Utils.Email
          </p>
          <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>
            <p style='font-size: 14px;'>This is an automated email, please do not reply.</p>
-             <p style='font-size: 14px;'>Best regards,<br/><strong>Workshopista</strong></p>
+             <p style='font-size: 14px;'>Best regards,<br/><strong>EasyRoomie</strong></p>
      </div>
 </div>";
 
@@ -92,7 +92,7 @@ namespace SP25_RPSC.Services.Utils.Email
          </p>
          <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>
          <p style='font-size: 14px;'>This is an automated email, please do not reply.</p>
-         <p style='font-size: 14px;'>Best regards,<br/><strong>Workshopista</strong></p>
+         <p style='font-size: 14px;'>Best regards,<br/><strong>EasyRoomie</strong></p>
      </div>
 </div>";
 
@@ -374,6 +374,93 @@ namespace SP25_RPSC.Services.Utils.Email
             
             <p style='font-size: 14px;'>{postOwnerName} (người thuê hiện tại) đã chấp nhận {requesterName} làm người ở ghép.</p>
             <p style='font-size: 14px;'>Việc chia sẻ phòng trọ này đã được xác nhận và thực hiện thông qua hệ thống của chúng tôi.</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+        public static string LeaveRoomConfirmationForMember(string memberName, string tenantName, string roomNumber, string roomAddress, string requestDate)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #2196F3; text-align: center;'>Xác nhận yêu cầu rời phòng</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{memberName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi gửi yêu cầu rời phòng của bạn đến <strong>{tenantName}</strong> (người chịu trách nhiệm của phòng).</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #2196F3; margin: 15px 0;'>
+                <p><strong>Số phòng:</strong> {roomNumber}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Ngày gửi yêu cầu:</strong> {requestDate}</p>
+                <p><strong>Trạng thái:</strong> <span style='color: #FF9800; font-weight: bold;'>Đang chờ xử lý</span></p>
+            </div>
+            
+            <p style='font-size: 14px;'>Yêu cầu của bạn đã được gửi. Chúng tôi sẽ thông báo cho bạn ngay khi có xác nhận từ <strong>{tenantName}</strong>.</p>
+            <p style='font-size: 14px;'>Trong thời gian chờ đợi, vui lòng tuân thủ các quy định của hợp đồng thuê phòng hiện tại.</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+        public static string MemberLeaveRoomNotificationForLandlord(string landlordName, string tenantName, string memberName, string roomNumber, string roomAddress, string requestDate)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #FF9800; text-align: center;'>Thông báo yêu cầu rời phòng</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{landlordName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng thành viên ở phòng {roomNumber} đã gửi yêu cầu rời phòng.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #FF9800; margin: 15px 0;'>
+                <p><strong>Thành viên:</strong> {memberName}</p>
+                <p><strong>Số phòng:</strong> {roomNumber}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Ngày yêu cầu:</strong> {requestDate}</p>
+            </div>
+            
+            <p style='font-size: 14px;'>Yêu cầu này đã được gửi cho <strong>{tenantName}</strong> (người chịu trách nhiệm của phòng) để được xử lý.</p>
+            <p style='font-size: 14px;'>Hệ thống của chúng tôi sẽ thông báo đến bạn sau khi <strong>{tenantName}</strong> đã xử lý yêu cầu này.</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+        public static string MemberLeaveRoomNotificationForTenant(string tenantName, string memberName, string roomNumber, string roomAddress, string requestDate)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #FF9800; text-align: center;'>Thông báo yêu cầu rời phòng</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{tenantName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng thành viên ở ghép cùng bạn đã gửi yêu cầu rời phòng.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #FF9800; margin: 15px 0;'>
+                <p><strong>Thành viên:</strong> {memberName}</p>
+                <p><strong>Số phòng:</strong> {roomNumber}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Ngày yêu cầu:</strong> {requestDate}</p>
+            </div>
+            
+            <p style='font-size: 14px;'>Vui lòng đăng nhập vào tài khoản của bạn để xem chi tiết và xử lý yêu cầu này.</p>
+            <p style='font-size: 14px;'>Hệ thống của chúng tôi sẽ thông báo đến <strong>{memberName}</strong> (người gửi yêu cầu) sau khi bạn đã xử lý yêu cầu này.</p>
 
             <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
             <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>

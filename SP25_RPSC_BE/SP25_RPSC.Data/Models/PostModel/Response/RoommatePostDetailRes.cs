@@ -21,6 +21,7 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
     public class RoomInfo
     {
         public string RoomId { get; set; }
+        public string LandlordName { get; set; }
         public string RoomNumber { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
@@ -32,6 +33,15 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
         public int TotalRoomer { get; set; }
         public List<string> RoomImages { get; set; } = new List<string>();
         public List<string> RoomAmenities { get; set; } = new List<string>();
+        public List<RoomServiceInfo> Services { get; set; } = new List<RoomServiceInfo>();
+    }
+
+    public class RoomServiceInfo
+    {
+        public string ServiceId { get; set; }
+        public string ServiceName { get; set; }
+        public string Description { get; set; }
+        public decimal? Price { get; set; }
     }
 
 }
