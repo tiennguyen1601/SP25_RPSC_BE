@@ -456,6 +456,26 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 }
             }
 
+            var roomStay = (await _unitOfWork.RoomStayRepository.Get(
+                        filter: rs => rs.RoomId == rentalRoom.RoomId && rs.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay not found.");
+            }
+
+            var roomStayCusNew = new RoomStayCustomer
+            {
+                RoomStayCustomerId = Guid.NewGuid().ToString(),
+                Type = CustomerTypeEnums.Member.ToString(),
+                Status = StatusEnums.Active.ToString(),
+                RoomStayId = roomStay.RoomStayId,
+                CustomerId = acceptedCustomerId,
+                UpdatedAt = null,
+                LandlordId = landlord.LandlordId
+            };
+            await _unitOfWork.RoomStayCustomerRepository.Add(roomStayCusNew);
+            await _unitOfWork.SaveAsync();
+
             var otherRequests = await _unitOfWork.CustomerRequestRepository.Get(
                 filter: cr => cr.RequestId == roommateRequest.RequestId && cr.CustomerRequestId != requestId && cr.Status == StatusEnums.Pending.ToString(),
                 includeProperties: "Customer.User");
@@ -631,7 +651,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             var memberName = customer.User.FullName ?? "Thành viên";
             var roomNumber = room.RoomNumber ?? "Số phòng";
             var roomAddress = room.Location ?? "Địa chỉ";
-            var dateRequest = DateTime.Now;
+            var dateRequest = DateTime.Now.ToString("dd/MM/yyyy");
 
             var mailLeaveRoomForLandlord = EmailTemplate.MemberLeaveRoomNotificationForLandlord(
                 landlordName,
@@ -818,8 +838,49 @@ namespace SP25_RPSC.Services.Service.CustomerService
             roomStayCustomerMove.Status = StatusEnums.Inactive.ToString();
             await _unitOfWork.RoomStayCustomerRepository.Update(roomStayCustomerMove);
 
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomStay.RoomId);
+            if (room == null)
+            {
+                throw new KeyNotFoundException("Room not found.");
+            }
 
-            //gui mail
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.LandlordId == roomStay.LandlordId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (landlord == null)
+            {
+                throw new KeyNotFoundException("Landlord not found.");
+            }
+
+            var mailLeaveRoomAcceptedForLandlord = EmailTemplate.LeaveRoomAcceptedNotificationForLandlord(
+                landlord.User.FullName,
+                cusMove.User.FullName,     
+                customer.User.FullName,    
+                room.RoomNumber,           
+                room.Location,             
+                DateTime.Now.ToString("dd/MM/yyyy")  
+            );
+
+            var landlordMail = landlord.User.Email;
+            await _emailService.SendEmail(
+                landlordMail,
+                "Thông báo yêu cầu rời phòng của thành viên được xác nhận",
+                mailLeaveRoomAcceptedForLandlord);
+
+
+            var mailLeaveRoomAcceptedForMember = EmailTemplate.LeaveRoomAcceptedNotificationForMember(
+                cusMove.User.FullName, 
+                customer.User.FullName, 
+                room.RoomNumber,
+                room.Location,       
+                DateTime.Now.ToString("dd/MM/yyyy")  
+            );
+
+            var cusMoveMail = cusMove.User.Email;
+            await _emailService.SendEmail(
+                cusMoveMail,
+                "Thông báo yêu cầu rời phòng của bạn đã được xác nhận",
+                mailLeaveRoomAcceptedForMember
+            );
 
             await _unitOfWork.SaveAsync();
             return true;
