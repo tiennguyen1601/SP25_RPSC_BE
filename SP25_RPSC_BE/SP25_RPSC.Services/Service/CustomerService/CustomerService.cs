@@ -456,6 +456,26 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 }
             }
 
+            var roomStay = (await _unitOfWork.RoomStayRepository.Get(
+                        filter: rs => rs.RoomId == rentalRoom.RoomId && rs.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay not found.");
+            }
+
+            var roomStayCusNew = new RoomStayCustomer
+            {
+                RoomStayCustomerId = Guid.NewGuid().ToString(),
+                Type = CustomerTypeEnums.Member.ToString(),
+                Status = StatusEnums.Active.ToString(),
+                RoomStayId = roomStay.RoomStayId,
+                CustomerId = acceptedCustomerId,
+                UpdatedAt = null,
+                LandlordId = landlord.LandlordId
+            };
+            await _unitOfWork.RoomStayCustomerRepository.Add(roomStayCusNew);
+            await _unitOfWork.SaveAsync();
+
             var otherRequests = await _unitOfWork.CustomerRequestRepository.Get(
                 filter: cr => cr.RequestId == roommateRequest.RequestId && cr.CustomerRequestId != requestId && cr.Status == StatusEnums.Pending.ToString(),
                 includeProperties: "Customer.User");
