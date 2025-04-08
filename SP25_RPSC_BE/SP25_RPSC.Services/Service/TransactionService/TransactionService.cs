@@ -42,7 +42,7 @@ namespace SP25_RPSC.Services.Service.TransactionService
         public async Task<Dictionary<string, decimal>> GetTransactionSummaryByMonth(int? year, DateTime? startDate, DateTime? endDate)
         {
             Expression<Func<Transaction, bool>> filter = t =>
-                t.Status == "Active" &&
+                t.Status == "PAID" &&
                 (year == null || t.PaymentDate.HasValue && t.PaymentDate.Value.Year == year) &&
                 (startDate == null || t.PaymentDate.HasValue && t.PaymentDate.Value >= startDate) &&
                 (endDate == null || t.PaymentDate.HasValue && t.PaymentDate.Value <= endDate);

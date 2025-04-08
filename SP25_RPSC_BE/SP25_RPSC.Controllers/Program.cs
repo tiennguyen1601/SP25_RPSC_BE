@@ -99,14 +99,15 @@ builder.Services.AddDbContext<RpscContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy =>
-        {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") 
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); 
+    });
 });
+
 
 
 

@@ -125,10 +125,12 @@ namespace SP25_RPSC.Controllers.Controllers
         public async Task<ActionResult<GetRoomTypeResponseModel>> GetRoomTypesByLandlordId(
         [FromQuery] string searchQuery = "",
         [FromQuery] int pageIndex = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string status = ""
+        )
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            var result = await _roomTypeService.GetRoomTypeByLandlordId(searchQuery, pageIndex, pageSize, token);
+            var result = await _roomTypeService.GetRoomTypeByLandlordId(searchQuery, pageIndex, pageSize, token, status);
 
             if (result.RoomTypes == null || !result.RoomTypes.Any())
             {

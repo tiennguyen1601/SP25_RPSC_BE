@@ -167,6 +167,7 @@ namespace SP25_RPSC.Services.Service.PostService
                 PostOwnerInfo = new PostOwnerInfo
                 {
                     FullName = post.User?.FullName,
+                    UserId = post.User.UserId,
                     Avatar = post.User?.Avatar,
                     Gender = post.User?.Gender,
                     Age = post.User?.Dob.HasValue == true ? CalculateAge(post.User.Dob.Value) : null,

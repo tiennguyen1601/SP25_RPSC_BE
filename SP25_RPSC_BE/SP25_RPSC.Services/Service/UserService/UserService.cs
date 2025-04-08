@@ -161,7 +161,7 @@ namespace SP25_RPSC.Services.Service.UserService
                  c.User.PhoneNumber.Contains(searchQuery));
 
 
-            var res = await _unitOfWork.LandlordRepository.Get(orderBy: q => q.OrderBy(p => p.CreatedDate),
+            var res = await _unitOfWork.LandlordRepository.Get(orderBy: q => q.OrderByDescending(p => p.CreatedDate),
                                                                     includeProperties: "User,BusinessImages", 
                                                                     filter: searchFilter,
                                                                     pageIndex: pageIndex,

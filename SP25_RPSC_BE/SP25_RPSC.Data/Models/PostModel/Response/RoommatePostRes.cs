@@ -21,6 +21,8 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
 
     public class PostOwnerInfo
     {
+
+        public string? UserId { get; set; }
         public string? FullName { get; set; }
         public string? Avatar { get; set; }
         public string? Gender { get; set; }

@@ -43,6 +43,7 @@ namespace SP25_RPSC.Services.Service.PackageService
             {
                 Type = model.Type,
                 HighLightTime = model.HighLightTime,
+                PriorityTime = model.PriorityTime,
                 MaxPost = model.MaxPost,
                 Label = model.Label,
                 Status = StatusEnums.Active.ToString(),

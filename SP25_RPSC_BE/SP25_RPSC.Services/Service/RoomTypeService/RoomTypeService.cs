@@ -133,7 +133,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                 Square = model.Square,
                 Description = model.Description,
                 MaxOccupancy = model.MaxOccupancy,
-                Status = StatusEnums.Pending.ToString(),
+                Status = StatusEnums.Available.ToString(),
                 RoomServices = roomTypeServices,
                 UpdatedAt = DateTime.UtcNow,
                 Landlord = existingUser,
@@ -145,7 +145,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             return true;
         }
 
-        public async Task<GetRoomTypeResponseModel> GetRoomTypeByLandlordId(string searchQuery, int pageIndex, int pageSize, string token)
+        public async Task<GetRoomTypeResponseModel> GetRoomTypeByLandlordId(string searchQuery, int pageIndex, int pageSize, string token, string status)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
@@ -155,16 +155,20 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             {
                 throw new UnauthorizedAccessException("Landlord not found");
             }
+
             Expression<Func<RoomType, bool>> searchFilter = r =>
                 (string.IsNullOrEmpty(searchQuery) ||
-                 r.RoomTypeName.Contains(searchQuery) || 
-                 r.Description.Contains(searchQuery)) &&  
-                r.LandlordId == landlord.LandlordId; 
+                 r.RoomTypeName.Contains(searchQuery) ||
+                 r.Description.Contains(searchQuery)) &&
+                r.LandlordId == landlord.LandlordId &&
+                (string.IsNullOrEmpty(status) || r.Status == status);
+
 
             var roomTypes = await _unitOfWork.RoomTypeRepository.Get(
                 filter: searchFilter,
                 pageIndex: pageIndex,
-                pageSize: pageSize
+                pageSize: pageSize,
+                orderBy: c => c.OrderByDescending(c => c.CreatedAt)
             );
 
             var totalRoomTypes = await _unitOfWork.RoomTypeRepository.CountAsync(searchFilter);
@@ -178,10 +182,11 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
 
             return new GetRoomTypeResponseModel
             {
-                RoomTypes = roomTypeResponses,  
-                TotalRoomTypes = totalRoomTypes 
+                RoomTypes = roomTypeResponses,
+                TotalRoomTypes = totalRoomTypes
             };
         }
+
 
         public async Task<GetRoomTypeDetailResponseModel> GetRoomTypeDetailByRoomTypeId(string roomTypeId)
         {
