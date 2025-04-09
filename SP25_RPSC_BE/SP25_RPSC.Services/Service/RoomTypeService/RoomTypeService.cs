@@ -246,13 +246,13 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             existingRoomType.UpdatedAt = DateTime.UtcNow;
             //existingRoomType.RoomServices = model.ListRoomServices;
 
-            if (existingRoomType.Address == null)
-            {
-                existingRoomType.Address = new Address
-                {
-                    AddressId = Guid.NewGuid().ToString()
-                };
-            }
+            //if (existingRoomType.Address == null)
+            //{
+            //    existingRoomType.Address = new Address
+            //    {
+            //        AddressId = Guid.NewGuid().ToString()
+            //    };
+            //}
 
             existingRoomType.Address.Long = model.Location.Long;
             existingRoomType.Address.Lat = model.Location.Lat;
