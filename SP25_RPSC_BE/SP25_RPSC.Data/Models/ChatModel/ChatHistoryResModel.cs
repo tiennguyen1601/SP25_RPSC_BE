@@ -12,7 +12,8 @@ namespace SP25_RPSC.Data.Models.ChatModel
         public string LatestMessage { get; set; }  
         public DateTime CreatedAt { get; set; } 
 
-        public ChatUserResModel Receiver { get; set; } 
+        public ChatUserResModel Receiver { get; set; }
+        public ChatUserResModel Sender { get; set; }
     }
     public class ChatUserResModel
     {

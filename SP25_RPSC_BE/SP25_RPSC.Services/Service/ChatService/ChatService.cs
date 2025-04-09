@@ -84,9 +84,8 @@ namespace SP25_RPSC.Services.Service.ChatService
                 includeProperties: "Receiver,Sender"
             );
 
-
             var latestChats = chatHistory
-                .GroupBy(chat => chat.Receiver?.UserId) 
+                .GroupBy(chat => new { chat.SenderId, chat.ReceiverId })  
                 .Select(group => group.OrderByDescending(chat => chat.CreateAt).FirstOrDefault())
                 .Where(chat => chat != null)
                 .ToList();
@@ -101,9 +100,17 @@ namespace SP25_RPSC.Services.Service.ChatService
                     Id = chat.Receiver?.UserId.ToString(),
                     Username = chat.Receiver?.FullName ?? "Unknown",
                     Avatar = chat.Receiver?.Avatar ?? "https://via.placeholder.com/40"
+                },
+                Sender = new ChatUserResModel
+                {
+                    Id = chat.Sender?.UserId.ToString(),
+                    Username = chat.Sender?.FullName ?? "Unknown",
+                    Avatar = chat.Sender?.Avatar ?? "https://via.placeholder.com/40"
                 }
             }).ToList();
+
         }
+
 
 
 

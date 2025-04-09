@@ -93,6 +93,31 @@ namespace SP25_RPSC.Controllers.Controllers
                 Data = result
             });
         }
+        [HttpGet("by-customer")]
+        public async Task<IActionResult> GetRoomStayByCustomerId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var result = await _roomStayService.GetRoomStayByCustomerId(token);
+
+            if (result == null || result.RoomStay == null)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "Room stay not found for this customer."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get room stay by customer successfully.",
+                Data = result
+            });
+        }
 
     }
 }

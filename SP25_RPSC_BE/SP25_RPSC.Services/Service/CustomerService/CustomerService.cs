@@ -107,6 +107,15 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 throw new UnauthorizedAccessException("Customer not found.");
             }
 
+            var activeRoomStay = (await _unitOfWork.RoomStayCustomerRepository.Get(
+            filter: rsc => rsc.CustomerId == customer.CustomerId && rsc.Status == "Active"
+                )).FirstOrDefault();
+
+            if (activeRoomStay != null)
+            {
+                throw new InvalidOperationException("You are already staying in a room. You cannot request to share another room.");
+            }
+
             var postId = request.PostId;
             var post = (await _unitOfWork.PostRepository.Get(filter: p => p.PostId == postId,
                    includeProperties: "RentalRoom,User"
