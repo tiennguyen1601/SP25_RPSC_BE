@@ -1,4 +1,5 @@
 ﻿using SP25_RPSC.Data.Models.RoomTypeModel.Request;
+using SP25_RPSC.Data.Models.RoomTypeModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
         Task<bool> CreateRoomType(RoomTypeCreateRequestModel model, string token);
         Task<GetRoomTypeResponseModel> GetRoomTypeByLandlordId(string searchQuery, int pageIndex, int pageSize, string token,string status);
         Task<GetRoomTypeDetailResponseModel> GetRoomTypeDetailByRoomTypeId(string roomTypeId);
+        Task<bool> UpdateRoomTypeAsync(RoomTypeUpdateRequestModel model, string token);
     }
 
 }
