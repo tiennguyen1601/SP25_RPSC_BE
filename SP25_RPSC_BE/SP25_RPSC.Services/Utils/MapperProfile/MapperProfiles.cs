@@ -10,6 +10,7 @@ using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 using SP25_RPSC.Data.Models.RoomStay;
+using SP25_RPSC.Data.Models.RoomStayModel;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.Models.UserModels.Request;
@@ -270,6 +271,61 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.RoomServiceId))
                 .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.RoomServiceName))
                 .ForMember(dest => dest.Cost, opt => opt.MapFrom(src => src.RoomServicePrices.OrderByDescending(rsp => rsp.ApplicableDate).Select(rsp => rsp.Price).FirstOrDefault()));
+
+
+            // Định nghĩa ánh xạ cho RoomStay -> RoomStayDetailsResponseModel
+            CreateMap<RoomStay, RoomStayDetailsResponseModel>()
+                .ForMember(dest => dest.RoomStayId, opt => opt.MapFrom(src => src.RoomStayId))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.Room, opt => opt.MapFrom(src => src.Room));
+
+            // Ánh xạ từ RoomStay -> RoomCusDto
+            CreateMap<Room, RoomCusDto>()
+                .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
+                .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RoomNumber))
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
+                .ForMember(dest => dest.RoomCusImages, opt => opt.MapFrom(src => src.RoomImages)) 
+                .ForMember(dest => dest.RoomCusAmentiesLists, opt => opt.MapFrom(src => src.RoomAmentiesLists)) 
+                .ForMember(dest => dest.Price, opt => opt.Ignore()) 
+                .ForMember(dest => dest.RoomCusServices, opt => opt.MapFrom(src => src.RoomType.RoomServices)) 
+                .ForMember(dest => dest.RoomTypeId, opt => opt.MapFrom(src => src.RoomType.RoomTypeId))
+                .ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomType.RoomTypeName))
+                .ForMember(dest => dest.Deposite, opt => opt.MapFrom(src => src.RoomType.Deposite))
+                .ForMember(dest => dest.Area, opt => opt.MapFrom(src => src.RoomType.Area))
+                .ForMember(dest => dest.Square, opt => opt.MapFrom(src => src.RoomType.Square))
+                .ForMember(dest => dest.RoomTypeDescription, opt => opt.MapFrom(src => src.RoomType.Description))
+                .ForMember(dest => dest.MaxOccupancy, opt => opt.MapFrom(src => src.RoomType.MaxOccupancy));
+
+
+
+            // Ánh xạ cho RoomAmentiesList -> RoomAmentiesListDto
+            CreateMap<RoomAmentiesList, RoomAmentiesCusListDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoomAmenty != null ? src.RoomAmenty.Name : null));
+
+            // Ánh xạ cho RoomService -> RoomServiceDto
+            CreateMap<RoomService, RoomServiceCusDto>()
+                .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.RoomServiceId))
+                .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.RoomServiceName))
+                .ForMember(dest => dest.Cost, opt => opt.MapFrom(src => src.RoomServicePrices.OrderByDescending(rsp => rsp.ApplicableDate).Select(rsp => rsp.Price).FirstOrDefault()));
+
+            // Ánh xạ cho RoomImage -> RoomImageDto
+            CreateMap<RoomImage, RoomImageCusDto>()
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl));
+
+            CreateMap<CustomerContract, CustomerContractDto>()
+                .ForMember(dest => dest.ContractId, opt => opt.MapFrom(src => src.ContractId))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Term, opt => opt.MapFrom(src => src.Term))
+                .ForMember(dest => dest.TenantId, opt => opt.MapFrom(src => src.TenantId))
+                .ForMember(dest => dest.RentalRoomId, opt => opt.MapFrom(src => src.RentalRoomId));
+
 
 
             CreateMap<User, UserRegisterReqModel>().ReverseMap();

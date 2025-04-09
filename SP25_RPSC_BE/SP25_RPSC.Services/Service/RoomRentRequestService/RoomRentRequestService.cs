@@ -41,7 +41,8 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
         public async Task<List<CustomerRequestRes>> GetCustomersByRoomRentRequestsId(string roomRentRequestsId)
         {
             var request = (await _unitOfWork.RoomRentRequestRepository.Get(
-                filter: r => r.RoomRentRequestsId == roomRentRequestsId,
+                filter: r => r.RoomRentRequestsId == roomRentRequestsId &&
+                            r.CustomerRentRoomDetailRequests.Any(c => c.Status == "Pending"), 
                 includeProperties: "CustomerRentRoomDetailRequests.Customer.User"
             )).FirstOrDefault();
 
@@ -50,24 +51,27 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 return new List<CustomerRequestRes>();
             }
 
-            var customers = request.CustomerRentRoomDetailRequests.Select(c => new CustomerRequestRes
-            {
-                CustomerId = c.CustomerId,
-                Status = c.Status,
-                Preferences = c.Customer?.Preferences ?? "N/A",
-                LifeStyle = c.Customer?.LifeStyle ?? "N/A",
-                BudgetRange = c.Customer?.BudgetRange ?? "N/A",
-                PreferredLocation = c.Customer?.PreferredLocation ?? "N/A",
-                Requirement = c.Customer?.Requirement ?? "N/A",
+            var customers = request.CustomerRentRoomDetailRequests
+                .Where(c => c.Status == "Pending")  
+                .Select(c => new CustomerRequestRes
+                {
+                    CustomerId = c.CustomerId,
+                    Status = c.Status,
+                    Preferences = c.Customer?.Preferences ?? "N/A",
+                    LifeStyle = c.Customer?.LifeStyle ?? "N/A",
+                    BudgetRange = c.Customer?.BudgetRange ?? "N/A",
+                    PreferredLocation = c.Customer?.PreferredLocation ?? "N/A",
+                    Requirement = c.Customer?.Requirement ?? "N/A",
 
-                FullName = c.Customer?.User?.FullName ?? "N/A",
-                Email = c.Customer?.User?.Email ?? "N/A",
-                PhoneNumber = c.Customer?.User?.PhoneNumber ?? "N/A",
-                Avatar = c.Customer?.User?.Avatar ?? "N/A",
-                Message = c.Message ?? "",
-                DateWantToRent = c.DateWantToRent,
-                MonthWantRent = c.MonthWantRent ?? 6
-            }).ToList();
+                    FullName = c.Customer?.User?.FullName ?? "N/A",
+                    Email = c.Customer?.User?.Email ?? "N/A",
+                    PhoneNumber = c.Customer?.User?.PhoneNumber ?? "N/A",
+                    Avatar = c.Customer?.User?.Avatar ?? "N/A",
+                    Message = c.Message ?? "",
+                    DateWantToRent = c.DateWantToRent,
+                    MonthWantRent = c.MonthWantRent ?? 6
+                })
+                .ToList();
 
             return customers;
         }

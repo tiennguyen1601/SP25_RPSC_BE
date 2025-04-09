@@ -101,8 +101,35 @@ namespace SP25_RPSC.Controllers.Controllers
                     Error = ex.Message
                 });
             }
-            
 
+        }
+
+        [HttpGet("Get-Post-Roommate-By-CustomerId")]
+        public async Task<ActionResult<RoommatePostDetailRes>> GetPostRoommateByCustomerId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            try
+            {
+                var result = await _postService.GetPostRoommateByCustomerId(token);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get roommate post by customer ID successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while getting roommate post by customer ID",
+                    Error = ex.Message
+                });
+            }
         }
 
     }

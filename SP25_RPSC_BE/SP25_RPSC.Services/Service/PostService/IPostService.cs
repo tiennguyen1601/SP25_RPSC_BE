@@ -1,10 +1,5 @@
-﻿using SP25_RPSC.Data.Models.PostModel.Response;
-using SP25_RPSC.Data.Models.PostModel.Request;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SP25_RPSC.Data.Models.PostModel.Request;
+using SP25_RPSC.Data.Models.PostModel.Response;
 
 namespace SP25_RPSC.Services.Service.PostService
 {
@@ -13,5 +8,6 @@ namespace SP25_RPSC.Services.Service.PostService
         Task<PagedResult<RoommatePostRes>> GetRoommatePosts(string token, RoommatePostSearchReq search);
         Task<RoommatePostDetailRes> GetRoommatePostDetail(string postId);
         Task<RoommatePostRes> CreateRoommatePost(string token, CreateRoommatePostReq request);
+        Task<RoommatePostRes> GetPostRoommateByCustomerId(string token);
     }
 }

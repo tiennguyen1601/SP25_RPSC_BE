@@ -16,6 +16,9 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
         public PostOwnerInfo PostOwnerInfo { get; set; }
+        public string? CustomerName { get; set; }
+        public string? CustomerEmail { get; set; }
+        public string? CustomerPhoneNumber { get; set; }
 
     }
 
@@ -31,6 +34,8 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
         public string? Requirement { get; set; }
         public string? PostOwnerType { get; set; }
     }
+
+
 
     public class RoommatePostSearchReq
     {

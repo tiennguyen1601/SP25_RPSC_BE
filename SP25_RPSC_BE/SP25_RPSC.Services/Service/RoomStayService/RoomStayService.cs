@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using AutoMapper;
-using MailKit.Search;
 using SP25_RPSC.Data.Entities;
-using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.RoomStay;
-using SP25_RPSC.Data.Models.UserModels.Response;
+using SP25_RPSC.Data.Models.RoomStayModel;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 
@@ -196,6 +190,76 @@ namespace SP25_RPSC.Services.Service.RoomStayService
             return response;
 
         }
+
+        public async Task<GetRoomStayByCustomerIdResponseModel> GetRoomStayByCustomerId(string token)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId)).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found");
+            }
+
+            var customerId = customer.CustomerId;
+
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                includeProperties: "RoomStay",
+                filter: rs => rs.CustomerId == customerId
+            )).FirstOrDefault();
+
+            if (roomStayCustomer == null || roomStayCustomer.RoomStay == null)
+            {
+                throw new KeyNotFoundException("RoomStay not found for this customer.");
+            }
+
+            var roomStayId = roomStayCustomer.RoomStayId;
+
+            var roomStay = (await _unitOfWork.RoomStayRepository.Get(
+                includeProperties: "Room,Room.RoomImages,Room.RoomPrices,Room.RoomType,Room.RoomType.RoomServices,Room.RoomType.RoomServices.RoomServicePrices,Room.RoomAmentiesLists,Room.RoomAmentiesLists.RoomAmenty,Landlord.User",
+                filter: rs => rs.RoomStayId == roomStayId
+            )).FirstOrDefault();
+
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("RoomStay not found.");
+            }
+
+            decimal? latestPrice = GetLatestPrice(roomStay.Room.RoomPrices);
+
+            var contract = (await _unitOfWork.CustomerContractRepository.Get(
+                filter: c => c.TenantId == customerId && c.RentalRoomId == roomStay.RoomId
+            )).FirstOrDefault();
+
+            var landlordName = roomStay.Landlord?.User?.FullName;
+            var landlordAva = roomStay.Landlord?.User?.Avatar;
+
+
+            var roomStayResponse = _mapper.Map<RoomStayDetailsResponseModel>(roomStay);
+            roomStayResponse.Room.Price = latestPrice;
+            roomStayResponse.LandlordName = landlordName;
+            roomStayResponse.LandlordAvatar = landlordAva;
+
+
+            var contractDto = _mapper.Map<CustomerContractDto>(contract);
+
+            return new GetRoomStayByCustomerIdResponseModel
+            {
+                RoomStay = roomStayResponse,
+                CustomerContract = contractDto 
+            };
+        }
+
+
+
+
+
 
     }
 

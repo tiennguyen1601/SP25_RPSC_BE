@@ -324,6 +324,62 @@ namespace SP25_RPSC.Services.Service.PostService
 
             return age;
         }
+        public async Task<RoommatePostRes> GetPostRoommateByCustomerId(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User" // Đảm bảo thông tin User được bao gồm
+            )).FirstOrDefault();
+
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var post = (await _unitOfWork.PostRepository.Get(
+                filter: p => p.UserId == userId && p.Status == StatusEnums.Active.ToString(),
+                orderBy: p => p.OrderByDescending(c => c.CreatedAt)
+            )).FirstOrDefault();
+
+            if (post == null)
+            {
+                throw new KeyNotFoundException($"No active post found for the customer with ID {userId}.");
+            }
+
+
+            var customerInfo = new
+            {
+                customerName = customer.User?.FullName,
+                customerEmail = customer.User?.Email,
+                customerPhoneNumber = customer.User?.PhoneNumber
+            };
+
+            var postDetailResponse = new RoommatePostRes
+            {
+                PostId = post.PostId,
+                Title = post.Title,
+                Description = post.Description,
+                Location = post.RentalRoom?.Location,
+                Price = post.Price,
+                Status = post.Status,
+                CreatedAt = post.CreatedAt,
+                CustomerName = customerInfo.customerName,
+                CustomerEmail = customerInfo.customerEmail,
+                CustomerPhoneNumber = customerInfo.customerPhoneNumber
+            };
+
+            return postDetailResponse;
+        }
+
+
 
     }
 }
