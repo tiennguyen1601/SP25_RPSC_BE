@@ -20,7 +20,11 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
         public List<RoomPriceResponseModel> RoomPrices { get; set; }
         public List<string> RoomImages { get; set; }
         public List<RoomAmentyResponseModel> RoomAmenities { get; set; }
+
+        public string PackageLabel { get; set; }
+        public int? PackagePriorityTime { get; set; }
     }
+
 
     public class RoomTypeResModel
     {

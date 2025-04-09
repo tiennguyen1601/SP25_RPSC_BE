@@ -400,7 +400,9 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.Landlord, opt => opt.MapFrom(src => src.RoomType.Landlord))
                 .ForMember(dest => dest.RoomPrices, opt => opt.MapFrom(src => src.RoomPrices))
                 .ForMember(dest => dest.RoomImages, opt => opt.MapFrom(src => src.RoomImages.Select(img => img.ImageUrl).ToList()))
-                .ForMember(dest => dest.RoomAmenities, opt => opt.MapFrom(src => src.RoomAmentiesLists));
+                .ForMember(dest => dest.RoomAmenities, opt => opt.MapFrom(src => src.RoomAmentiesLists))
+                .ForMember(dest => dest.PackageLabel, opt => opt.Ignore())
+                .ForMember(dest => dest.PackagePriorityTime, opt => opt.Ignore());
         }
     }
 }
