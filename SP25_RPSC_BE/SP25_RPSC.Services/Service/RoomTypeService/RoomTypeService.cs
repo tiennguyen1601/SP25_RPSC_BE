@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
+using SP25_RPSC.Data.Models.RoomTypeModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.JWTService;
@@ -220,9 +221,119 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             return roomTypeResponse;
         }
 
+        public async Task<bool> UpdateRoomTypeAsync(RoomTypeUpdateRequestModel model, string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
 
+            var existingRoomType = await _unitOfWork.RoomTypeRepository.GetRoomTypeDetail(model.RoomTypeId);
+            if (existingRoomType == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, $"Room type with ID {model.RoomTypeId} not found");
+            }
 
+            if (existingRoomType.Landlord.UserId != userId)
+            {
+                throw new ApiException(HttpStatusCode.Forbidden, "You don't have permission to update this room type");
+            }
 
+            existingRoomType.RoomTypeName = model.RoomTypeName;
+            existingRoomType.Deposite = model.Deposite;
+            existingRoomType.Area = model.Area;
+            existingRoomType.Square = model.Square;
+            existingRoomType.Description = model.Description;
+            existingRoomType.MaxOccupancy = model.MaxOccupancy;
+            existingRoomType.UpdatedAt = DateTime.UtcNow;
+            //existingRoomType.RoomServices = model.ListRoomServices;
 
+            if (existingRoomType.Address == null)
+            {
+                existingRoomType.Address = new Address
+                {
+                    AddressId = Guid.NewGuid().ToString()
+                };
+            }
+
+            existingRoomType.Address.Long = model.Location.Long;
+            existingRoomType.Address.Lat = model.Location.Lat;
+
+            // Save changes
+            await _unitOfWork.RoomTypeRepository.Update(existingRoomType);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
+        //private async Task UpdateRoomServices(RoomType roomType, ICollection<RoomServiceRequestUpdate> serviceModels)
+        //{
+        //    // Get existing services
+        //    var existingServices = await _unitOfWork.RoomServiceRepository.GetServicesByRoomTypeId(roomType.RoomTypeId);
+        //    var existingServiceIds = existingServices.Select(s => s.RoomServiceId).ToList();
+
+        //    // Services to update (existing services in the update request)
+        //    var servicesToUpdate = serviceModels
+        //        .Where(sm => sm.RoomServiceId.HasValue && existingServiceIds.Contains(sm.RoomServiceId.Value))
+        //        .ToList();
+
+        //    // Services to remove (exist in database but not in update request)
+        //    var serviceIdsToKeep = servicesToUpdate.Select(s => s.RoomServiceId.Value).ToList();
+        //    var servicesToDeactivate = existingServices
+        //        .Where(es => !serviceIdsToKeep.Contains(es.RoomServiceId))
+        //        .ToList();
+
+        //    // Deactivate services not in the update request
+        //    foreach (var service in servicesToDeactivate)
+        //    {
+        //        service.Status = StatusEnums.Inactive.ToString();
+        //        await _unitOfWork.RoomServiceRepository.Update(service);
+        //    }
+
+        //    // Update existing services
+        //    foreach (var serviceModel in servicesToUpdate)
+        //    {
+        //        var existingService = existingServices.First(s => s.RoomServiceId == serviceModel.RoomServiceId);
+        //        existingService.RoomServiceName = serviceModel.RoomServiceName;
+        //        existingService.Description = serviceModel.Description;
+
+        //        // Update price
+        //        if (existingService.Price != null)
+        //        {
+        //            existingService.Price.Price = serviceModel.Price.Price;
+        //        }
+        //        else
+        //        {
+        //            existingService.Price = new RoomServicePrice
+        //            {
+        //                RoomServicePriceId = Guid.NewGuid().ToString(),
+        //                Price = serviceModel.Price.Price
+        //            };
+        //        }
+
+        //        await _unitOfWork.RoomServiceRepository.Update(existingService);
+        //    }
+
+        //    // Add new services
+        //    var newServices = serviceModels
+        //        .Where(sm => !sm.RoomServiceId.HasValue)
+        //        .Select(sm => new RoomService
+        //        {
+        //            RoomServiceId = Guid.NewGuid().ToString(),
+        //            RoomTypeId = roomType.RoomTypeId,
+        //            RoomServiceName = sm.RoomServiceName,
+        //            Description = sm.Description,
+        //            Status = StatusEnums.Active.ToString(),
+        //            Price = new RoomServicePrice
+        //            {
+        //                RoomServicePriceId = Guid.NewGuid().ToString(),
+        //                Price = sm.Price.Price
+        //            }
+        //        })
+        //        .ToList();
+
+        //    foreach (var newService in newServices)
+        //    {
+        //        await _unitOfWork.RoomServiceRepository.Add(newService);
+        //    }
+        //}
     }
 }
