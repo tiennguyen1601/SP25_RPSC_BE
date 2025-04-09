@@ -35,6 +35,7 @@ using SP25_RPSC.Services.Service.Hubs.ChatHub;
 using SP25_RPSC.Services.Service.ContractCustomerService;
 using SP25_RPSC.Services.Service.PostService;
 using SP25_RPSC.Services.Service.AmentyService;
+using SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,6 +82,7 @@ builder.Services.AddScoped<ICustomerContractService, CustomerContractService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IAmentyService, AmentyService>(); 
+builder.Services.AddScoped<ICustomerRentRoomDetailRequestService, CustomerRentRoomDetailRequestService>();
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
