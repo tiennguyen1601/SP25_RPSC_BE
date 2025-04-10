@@ -22,6 +22,8 @@ namespace SP25_RPSC.Data.Repositories.RoomRentRequestRepository
             _context = context;
         }
 
+      
+
         public async Task<List<RoomRentRequest>> GetRoomRentRequestByRoomId(string roomId)
         {
             return await _context.RoomRentRequests.Where(x => x.RoomId == roomId)

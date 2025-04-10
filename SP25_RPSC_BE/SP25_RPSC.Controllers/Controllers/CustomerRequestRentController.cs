@@ -76,8 +76,39 @@ namespace SP25_RPSC.Controllers.Controllers
                 };
                 return StatusCode(response.Code, response);
             }
+            
 
+        }
 
+        [HttpPut("room-rent-request/cancel/{roomRentRequestsId}")]
+        public async Task<IActionResult> CancelRoomRentRequest(string roomRentRequestsId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerRentRoomDetailRequestService.CancelRentRequest(roomRentRequestsId, token);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Room rent request cancelled successfully.",
+                    Data = result
+                };
+
+                return StatusCode(response.Code, response);
+            }
+            catch (Exception ex)
+            {
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = $"Failed to cancel room rent request: {ex.Message}"
+                };
+
+                return StatusCode(response.Code, response);
+            }
         }
     }
 }
