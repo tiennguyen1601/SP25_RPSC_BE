@@ -50,7 +50,7 @@ namespace SP25_RPSC.Controllers.Controllers
           
          }
         [HttpGet("room-rent-request")]
-        public async Task<IActionResult> GetRoomRentRequest([FromQuery] string roomId)
+        public async Task<IActionResult> GetRoomRentRequest([FromQuery] string ?roomId)
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
 
