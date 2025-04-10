@@ -75,7 +75,6 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             return customers;
         }
-
         public async Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
@@ -160,6 +159,15 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                     var failureEmail = EmailTemplate.BookingFailure(fullName, roomAddress, email, "Phòng đã được thuê bởi khách khác.");
                     await _emailService.SendEmail(email, "Thông báo từ chối thuê phòng", failureEmail);
                 }
+            }
+
+            var allRequestsForCustomer = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Get(
+                filter: r => r.CustomerId == selectedCustomerId && r.Status == "Pending" && r.RoomRentRequestsId != roomRentRequestsId
+            );
+
+            foreach (var customerRequest in allRequestsForCustomer)
+            {
+                customerRequest.Status = "Inactive";
             }
 
             request.Status = "Active";

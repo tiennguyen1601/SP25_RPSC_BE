@@ -189,6 +189,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             {
                 throw new UnauthorizedAccessException("Invalid or expired token.");
             }
+
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
 
@@ -215,7 +216,11 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
             foreach (var request in roommateRequests)
             {
-                foreach (var customerRequest in request.CustomerRequests)
+                var filteredCustomerRequests = request.CustomerRequests
+                    .Where(c => c.Status == StatusEnums.Pending.ToString())  
+                    .ToList();
+
+                foreach (var customerRequest in filteredCustomerRequests)
                 {
                     if (customerRequest.Customer != null && customerRequest.Customer.User != null)
                     {
@@ -249,6 +254,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
             return result;
         }
+
 
         public async Task<ListSentRequestSharingRes> GetListSentRequestSharing(string token)
         {
