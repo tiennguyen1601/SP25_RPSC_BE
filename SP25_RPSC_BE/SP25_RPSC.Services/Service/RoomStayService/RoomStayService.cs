@@ -233,30 +233,32 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 
             decimal? latestPrice = GetLatestPrice(roomStay.Room.RoomPrices);
 
+            var tenantCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rs => rs.RoomStayId == roomStayId && rs.Type == "Tenant" && rs.Status == "Active"
+            )).FirstOrDefault();
+
             var contract = (await _unitOfWork.CustomerContractRepository.Get(
-                filter: c => c.TenantId == customerId && c.RentalRoomId == roomStay.RoomId
+                filter: c => c.TenantId == tenantCustomer.CustomerId && c.RentalRoomId == roomStay.RoomId
             )).FirstOrDefault();
 
             var landlordName = roomStay.Landlord?.User?.FullName;
             var landlordAva = roomStay.Landlord?.User?.Avatar;
-
 
             var roomStayResponse = _mapper.Map<RoomStayDetailsResponseModel>(roomStay);
             roomStayResponse.Room.Price = latestPrice;
             roomStayResponse.LandlordName = landlordName;
             roomStayResponse.LandlordAvatar = landlordAva;
 
+            roomStayResponse.RoomStayCustomerType = roomStayCustomer.Type; 
 
             var contractDto = _mapper.Map<CustomerContractDto>(contract);
 
             return new GetRoomStayByCustomerIdResponseModel
             {
                 RoomStay = roomStayResponse,
-                CustomerContract = contractDto 
+                CustomerContract = contractDto
             };
         }
-
-
 
 
 

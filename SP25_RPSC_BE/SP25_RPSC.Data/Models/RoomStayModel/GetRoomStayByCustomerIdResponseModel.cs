@@ -17,6 +17,8 @@ namespace SP25_RPSC.Data.Models.RoomStayModel
     {
         public string? LandlordName { get; set; }
         public string? LandlordAvatar { get; set; }
+        public string? RoomStayCustomerType { get; set; }
+
         public string RoomStayId { get; set; } = null!;
         public string? Status { get; set; }
         public DateTime? StartDate { get; set; }
