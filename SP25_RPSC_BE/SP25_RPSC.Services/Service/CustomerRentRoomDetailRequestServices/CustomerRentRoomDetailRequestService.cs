@@ -29,6 +29,54 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
             _decodeTokenHandler = decodeTokenHandler;
         }
 
+        public async Task<bool> CancelRentRequest(string roomRentRequestsId, string token)
+        {
+            var user = _decodeTokenHandler.decode(token);
+
+            var customer = await _unitOfWork.CustomerRepository.GetCustomerByUserId(user.userid);
+            if (customer == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Customer not found");
+            }
+
+            var roomRentRequest = await _unitOfWork.RoomRentRequestRepository.GetByIDAsync(roomRentRequestsId);
+            if (roomRentRequest == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, $"Rent request with ID {roomRentRequestsId} not found");
+            }
+
+            var detailRequest = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.GetDetailRequestByRoomRentRequestId(roomRentRequestsId);
+
+            if (detailRequest == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Detail request not found");
+            }
+
+            // Kiểm tra xem yêu cầu có thuộc về khách hàng này không
+            if (detailRequest.CustomerId != customer.CustomerId)
+            {
+                throw new ApiException(HttpStatusCode.Forbidden, "You don't have permission to cancel this request");
+            }
+
+            if (detailRequest.Status != StatusEnums.Pending.ToString())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest,
+                    $"Cannot cancel request with status '{detailRequest.Status}'. Only pending requests can be cancelled.");
+            }
+
+            detailRequest.Status = StatusEnums.CANCELLED.ToString();
+            roomRentRequest.Status = StatusEnums.CANCELLED.ToString();
+
+
+            _unitOfWork.CustomerRentRoomDetailRequestRepositories.Update(detailRequest);
+            _unitOfWork.RoomRentRequestRepository.Update(roomRentRequest);
+
+            // Lưu thay đổi
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
         public async Task<RoomRentResponseModel> CreateRentRequest(RoomRentRequestCreateModel model, string token)
         {
             var room = await _unitOfWork.RoomRepository.GetByIDAsync(model.RoomId);

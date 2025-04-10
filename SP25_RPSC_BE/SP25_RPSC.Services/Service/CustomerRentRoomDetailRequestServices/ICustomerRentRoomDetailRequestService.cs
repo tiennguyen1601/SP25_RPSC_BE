@@ -14,7 +14,7 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
         //Task<RoomRentResponseModel> LandlordGetRentRequestByRoomId(string roomId, string token);
 
         //Task<RoomRentResponseModel> CustomerGetRentRequestByUserId(string token);
-
+        Task<bool> CancelRentRequest(string roomRentRequestsId, string token);
         Task<IEnumerable<RoomRentResponseModel>> GetRoomRentRequestsByRoomId(string roomId, string token);
     }
 }
