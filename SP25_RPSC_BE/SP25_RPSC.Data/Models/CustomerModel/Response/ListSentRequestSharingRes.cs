@@ -30,6 +30,7 @@ namespace SP25_RPSC.Data.Models.CustomerModel.Response
         public string PostId { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public decimal? Price { get; set; }
         public string Location { get; set; }
         public string PostOwnerName { get; set; }
         public string PostOwnerAvatar { get; set; }

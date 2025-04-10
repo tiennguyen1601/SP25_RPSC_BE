@@ -299,6 +299,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                         {
                             PostId = post.PostId,
                             Title = post.Title,
+                            Price = post.Price,
                             Description = post.Description,
                             Location = post.RentalRoom?.Location,
                             PostOwnerName = postOwner?.FullName,
