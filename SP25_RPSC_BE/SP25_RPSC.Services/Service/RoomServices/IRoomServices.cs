@@ -16,6 +16,6 @@ namespace SP25_RPSC.Services.Service.RoomServices
         Task<bool> CreateRoom(RoomCreateRequestModel model);
         Task<GetRoomByRoomTypeIdResponseModel> GetRoomDetailByRoomId(string roomId);
         Task<GetRoomByRoomTypeIdResponseModel> GetRoomByRoomTypeId(string roomTypeId, int pageIndex, int pageSize, string searchQuery = "", string status = null);
-        Task<List<RoomResponseModel>> GetAllRoomsAsync();
+        Task<List<RoomResponseModel>> GetAllRoomsAsync(decimal? minPrice = null, decimal? maxPrice = null, string roomTypeName = null, string district = null, List<string> amenityIds = null);
     }
 }

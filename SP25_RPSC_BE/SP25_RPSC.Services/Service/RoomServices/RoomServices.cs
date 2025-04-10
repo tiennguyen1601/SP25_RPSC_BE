@@ -251,10 +251,42 @@ namespace SP25_RPSC.Services.Service.RoomServices
             };
         }
 
-        public async Task<List<RoomResponseModel>> GetAllRoomsAsync()
+        public async Task<List<RoomResponseModel>> GetAllRoomsAsync(
+            decimal? minPrice = null,
+            decimal? maxPrice = null,
+            string roomTypeName = null,
+            string district = null,
+            List<string> amenityIds = null)
         {
-            var rooms = await _unitOfWork.RoomRepository.GetAllRoomsAsync();
-            return _mapper.Map<List<RoomResponseModel>>(rooms);
+            var rooms = await _unitOfWork.RoomRepository.GetFilteredRoomsAsync(
+                minPrice, maxPrice, roomTypeName, district, amenityIds
+            );
+
+            var result = _mapper.Map<List<RoomResponseModel>>(rooms);
+
+            foreach (var room in result)
+            {
+                var roomEntity = rooms.FirstOrDefault(r => r.RoomId == room.RoomId);
+                var contracts = roomEntity?.RoomType?.Landlord?.LandlordContracts;
+
+                if (contracts == null || !contracts.Any())
+                {
+                    Console.WriteLine($"No contracts found for room {room.RoomId}");
+                }
+
+                var activeContract = contracts?
+                    .Where(c => c.Status == "Active")
+                    .OrderByDescending(c => c.CreatedDate)
+                    .FirstOrDefault();
+
+                room.PackageLabel = activeContract?.Package?.Label;
+                room.PackagePriorityTime = activeContract?.Package?.PriorityTime;
+            }
+
+            return result
+                .OrderByDescending(r => r.PackagePriorityTime ?? 0)
+                .ThenByDescending(r => r.UpdatedAt)
+                .ToList();
         }
     }
 }

@@ -141,11 +141,26 @@ namespace SP25_RPSC.Controllers.Controllers
             });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllRooms()
+        [HttpGet("rooms")]
+        public async Task<IActionResult> GetAllRooms(
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice,
+            [FromQuery] string? roomTypeName,
+            [FromQuery] string? district,
+            [FromQuery] List<string>? amenityIds)
         {
-            var rooms = await _roomService.GetAllRoomsAsync();
+            var sanitizedAmenityIds = amenityIds ?? new List<string>();
+
+            var rooms = await _roomService.GetAllRoomsAsync(
+                minPrice,
+                maxPrice,
+                roomTypeName,
+                district,
+                sanitizedAmenityIds
+            );
+
             return Ok(rooms);
         }
+
     }
 }
