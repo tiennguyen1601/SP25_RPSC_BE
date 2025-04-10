@@ -459,6 +459,21 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.RoomAmenities, opt => opt.MapFrom(src => src.RoomAmentiesLists))
                 .ForMember(dest => dest.PackageLabel, opt => opt.Ignore())
                 .ForMember(dest => dest.PackagePriorityTime, opt => opt.Ignore());
+
+            CreateMap<Room, RoomDetailResponseModel>()
+                .IncludeBase<Room, RoomResponseModel>()
+                .ForMember(dest => dest.RoomServices, opt => opt.MapFrom(src => src.RoomType.RoomServices));
+
+            CreateMap<RoomType, RoomTypeResModel>();
+            CreateMap<Address, AddressDTO>();
+            CreateMap<Landlord, LandlordResponseModel>()
+                .ForMember(dest => dest.LandlordId, opt => opt.MapFrom(src => src.LandlordId))
+                .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.User.FullName));
+
+            CreateMap<RoomPrice, RoomPriceResponseModel>();
+            CreateMap<RoomService, RoomServiceResponseModel>()
+                .ForMember(dest => dest.Prices, opt => opt.MapFrom(src => src.RoomServicePrices));
+            CreateMap<RoomServicePrice, RoomServicePriceResponseModel>();
         }
     }
 }

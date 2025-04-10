@@ -162,5 +162,16 @@ namespace SP25_RPSC.Controllers.Controllers
             return Ok(rooms);
         }
 
+        [HttpGet("rooms/{roomId}")]
+        public async Task<IActionResult> GetRoomDetail(string roomId)
+        {
+            var room = await _roomService.GetRoomDetailByIdAsync(roomId);
+
+            if (room == null)
+                return NotFound("Room not found");
+
+            return Ok(room);
+        }
+
     }
 }

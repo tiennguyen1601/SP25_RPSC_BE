@@ -288,5 +288,43 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 .ThenByDescending(r => r.UpdatedAt)
                 .ToList();
         }
+
+        public async Task<RoomDetailResponseModel> GetRoomDetailByIdAsync(string roomId)
+        {
+            var room = await _unitOfWork.RoomRepository.GetRoomByIdAsync(roomId);
+
+            if (room == null) return null;
+
+            var result = _mapper.Map<RoomDetailResponseModel>(room);
+
+            var activeContract = room.RoomType?.Landlord?.LandlordContracts?
+                .Where(c => c.Status == "Active")
+                .OrderByDescending(c => c.CreatedDate)
+                .FirstOrDefault();
+
+            result.PackageLabel = activeContract?.Package?.Label;
+            result.PackagePriorityTime = activeContract?.Package?.PriorityTime;
+
+            result.Landlord = _mapper.Map<LandlordResponseModel>(room.RoomType.Landlord);
+
+            result.RoomServices = room.RoomType.RoomServices.Select(rs => new RoomServiceResponseModel
+            {
+                RoomServiceId = rs.RoomServiceId,
+                RoomServiceName = rs.RoomServiceName,
+                Description = rs.Description,
+                Status = rs.Status,
+                CreatedAt = rs.CreatedAt,
+                UpdatedAt = rs.UpdatedAt,
+                Prices = rs.RoomServicePrices.Select(p => new RoomServicePriceResponseModel
+                {
+                    Price = p.Price,
+                    ApplicableDate = p.ApplicableDate
+                }).ToList()
+            }).ToList();
+
+            return result;
+        }
+
+
     }
 }
