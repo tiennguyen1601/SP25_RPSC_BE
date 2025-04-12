@@ -36,6 +36,7 @@ using SP25_RPSC.Services.Service.ContractCustomerService;
 using SP25_RPSC.Services.Service.PostService;
 using SP25_RPSC.Services.Service.AmentyService;
 using SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices;
+using SP25_RPSC.Services.Service.Hubs.NotificationHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,10 +104,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") 
-              .AllowAnyMethod()
+        policy.AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials(); 
+              .SetIsOriginAllowed(_ => true)
+              .AllowCredentials();
     });
 });
 
@@ -204,5 +205,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
