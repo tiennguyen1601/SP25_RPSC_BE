@@ -28,6 +28,9 @@ using SP25_RPSC.Services.Service.NotificationService;
 using SP25_RPSC.Services.Service.UserService;
 using SP25_RPSC.Services.Service.EmailService;
 using SP25_RPSC.Services.Utils.Email;
+using Microsoft.AspNetCore.SignalR;
+using SP25_RPSC.Services.Service.Hubs.NotificationHub;
+using Newtonsoft.Json;
 
 namespace SP25_RPSC.Services.Service.PaymentService
 {
@@ -44,16 +47,18 @@ namespace SP25_RPSC.Services.Service.PaymentService
         private readonly INotificationService _notificationService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public PaymentService(ILandlordService LandlordService,
             IUnitOfWork unitOfWork,
             IPackageService packageService,
             ILandlordContractService landlordContractService,
             ICloudinaryStorageService cloudinaryStorageService,
-            IPayOSService payOSService, 
+            IPayOSService payOSService,
             ITransactionService transactionService,
             INotificationService notificationService,
             IUserService userService,
+            IHubContext<NotificationHub> hubContext,
             IEmailService emailService)
         {
             _landlordService = LandlordService;
@@ -67,6 +72,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             _notificationService = notificationService;
             _userService = userService;
             _emailService = emailService;
+            _hubContext = hubContext;
         }
 
         public async Task<ResultModel> CreatePaymentPackageRequest(PaymentPackageRequestDTO paymentInfo, HttpContext context)
@@ -170,7 +176,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             };
 
             // add
-             await _transactionService.AddNewTransaction(newTran);
+            await _transactionService.AddNewTransaction(newTran);
 
             // save
             await _unitOfWork.SaveAsync();
@@ -281,7 +287,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             // unpaid trans
             var upTran = await _transactionService.GetUnpaidTransOfRepresentative(response.LandlordId);
 
-            if (upTran != null && upTran.Status.Equals(StatusEnums.Processing.ToString())) 
+            if (upTran != null && upTran.Status.Equals(StatusEnums.Processing.ToString()))
             {
                 string notifyDes = response.IsSuccess ? "Thanh toán thành công" : "Thanh toán thất bại";
 
@@ -296,7 +302,9 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 // update noti to user
                 Landlord.User.Notifications.Add(notification);
                 await _userService.UpdateUser(Landlord.User);
-
+                // send notification
+                await _hubContext.Clients.Group(Landlord.User.UserId.ToString()).SendAsync("ReceiveNotification", JsonConvert.SerializeObject(notification));
+                
                 if (response.IsSuccess)
                 {
                     // update trans
@@ -377,7 +385,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 if (response.IsSuccess)
                 {
                     string subject = "Bạn đã thanh toán thành công";
-                    string html = EmailTemplate.EmailAfterPaymentTemplate(Landlord.User.FullName, upTran.Lcontract.LcontractUrl, subject);            
+                    string html = EmailTemplate.EmailAfterPaymentTemplate(Landlord.User.FullName, upTran.Lcontract.LcontractUrl, subject);
                     // send email
                     _emailService.SendEmail(Landlord.User.Email, subject, html);
                 }

@@ -102,6 +102,15 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
                 throw new ApiException(HttpStatusCode.BadRequest, "Invalid dates. Dates must be in the future");
             }
 
+            var existingRequests = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.GetRoomRentRequestByCustomerId(customer.CustomerId);
+            var hasPendingRequestForSameRoom = existingRequests
+                .Any(r => r.RoomRentRequests.RoomId == model.RoomId &&
+                         r.Status == StatusEnums.Pending.ToString());
+
+            if (hasPendingRequestForSameRoom)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "You already have a pending request for this room");
+            }
 
             var roomRentRequest = new RoomRentRequest
             {
