@@ -79,7 +79,7 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
         [HttpPost("create-roommate-post")]
-        public async Task<IActionResult> Create([FromBody] CreateRoommatePostReq request)
+        public async Task<IActionResult> CreateRoommatePost([FromBody] CreateRoommatePostReq request)
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             try

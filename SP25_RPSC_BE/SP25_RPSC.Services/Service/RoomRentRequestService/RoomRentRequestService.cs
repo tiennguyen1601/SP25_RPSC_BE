@@ -104,6 +104,15 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 throw new ApiException(HttpStatusCode.BadRequest, "Selected customer not found in request");
             }
 
+            var roomStayCustomer = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rs => rs.CustomerId == selectedCustomerId && rs.Status == "Active"
+            );
+
+            if (roomStayCustomer.Any())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "This customer already has an active room stay and cannot be approved for a new room.");
+            }
+
             var room = request.Room;
             if (room == null)
             {
@@ -126,10 +135,14 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             DateTime today = DateTime.UtcNow;
             DateTime startDate = new DateTime(today.Year, today.Month, 1).AddMonths(1);
-            int monthWantRent = selectedCustomerRequest.MonthWantRent ?? 6;
-            DateTime endDate = startDate.AddMonths(monthWantRent);
 
-            DateTime customerRequestedDate = selectedCustomerRequest.DateWantToRent ?? startDate;
+            DateTime customerRequestedDate = selectedCustomerRequest.DateWantToRent.HasValue
+                ? selectedCustomerRequest.DateWantToRent.Value
+                : startDate; 
+
+            DateTime endDate = customerRequestedDate.AddMonths(selectedCustomerRequest.MonthWantRent ?? 6); // Nếu MonthWantRent là null thì mặc định là 6 tháng
+
+
 
             var roomAddress = room.Location ?? "Không xác định";
 
@@ -170,12 +183,27 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 customerRequest.Status = "Inactive";
             }
 
+            var allRoommateRequestsForCustomer = await _unitOfWork.RoommateRequestRepository.Get(
+                filter: r => r.CustomerRequests.Any(c => c.CustomerId == selectedCustomerId)
+            );
+
+            foreach (var roommateRequest in allRoommateRequestsForCustomer)
+            {
+                foreach (var customerRequest in roommateRequest.CustomerRequests)
+                {
+                    if (customerRequest.CustomerId == selectedCustomerId)
+                    {
+                        customerRequest.Status = "Inactive";
+                    }
+                }
+            }
+
             request.Status = "Active";
 
             var newContract = new CustomerContract
             {
                 ContractId = Guid.NewGuid().ToString(),
-                StartDate = startDate,
+                StartDate = customerRequestedDate,
                 EndDate = endDate,
                 Status = "Pending",
                 CreatedDate = DateTime.UtcNow,
@@ -190,6 +218,8 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             return true;
         }
+
+
 
         public async Task<bool> ConfirmContractAndCreateRoomStay(string token, ContractUploadRequest request)
         {

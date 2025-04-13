@@ -52,10 +52,13 @@ namespace SP25_RPSC.Services.Service.PostService
             }
 
             var rentalRoom = (await _unitOfWork.RoomRepository.Get(filter: r => r.RoomId == request.RentalRoomId,
-                includeProperties: "")).FirstOrDefault();
+                includeProperties: "RoomType")).FirstOrDefault();
             if (rentalRoom == null)
             {
                 throw new ArgumentException("Room not found.");
+            }
+            if (rentalRoom.RoomType == null) {
+                throw new ArgumentException("RoomType not found");
             }
 
             var roomStayCustomers = await _unitOfWork.RoomStayCustomerRepository.Get(
@@ -71,6 +74,27 @@ namespace SP25_RPSC.Services.Service.PostService
             if (!isRoomTenant)
             {
                 throw new UnauthorizedAccessException("You must be tenant in this room to create a roommate post.");
+            }
+
+            var currentRoomStay = (await _unitOfWork.RoomStayRepository.Get(
+                    filter: rs => rs.RoomId == request.RentalRoomId &&
+                                 rs.Status == StatusEnums.Active.ToString() &&
+                                 (rs.EndDate == null || rs.EndDate > DateTime.Now))).FirstOrDefault();
+            if (currentRoomStay == null)
+            {
+                throw new ArgumentException("RoomStay not found");
+            }
+
+            var maxOccupancy = rentalRoom.RoomType.MaxOccupancy ?? 0;
+
+            var currentOccupants = await _unitOfWork.RoomStayCustomerRepository.Get(
+                        filter: rsc => rsc.RoomStayId == currentRoomStay.RoomStayId &&
+                                      rsc.Status == StatusEnums.Active.ToString());
+            int currentOccupantCount = currentOccupants.Count();
+
+            if (currentOccupantCount >= maxOccupancy)
+            {
+                throw new InvalidOperationException($"This room has reached its maximum occupancy of {maxOccupancy} people. You cannot post for this room.");
             }
 
             var existingPosts = await _unitOfWork.PostRepository.Get(
@@ -99,6 +123,7 @@ namespace SP25_RPSC.Services.Service.PostService
 
             var postOwnerInfo = new PostOwnerInfo
             {
+                UserId = userId,
                 FullName = customer.User.FullName,
                 Avatar = customer.User.Avatar,
                 Gender = customer.User.Gender,
@@ -114,6 +139,7 @@ namespace SP25_RPSC.Services.Service.PostService
                 Title = newPost.Title,
                 Description = newPost.Description,
                 Location = rentalRoom.Location, 
+                Price = newPost.Price,
                 Status = newPost.Status,
                 CreatedAt = newPost.CreatedAt,
                 PostOwnerInfo = postOwnerInfo
@@ -156,12 +182,18 @@ namespace SP25_RPSC.Services.Service.PostService
                 })
                 .ToList() ?? new List<RoomServiceInfo>();
 
+            var roomPrice = post.RentalRoom.RoomPrices?
+                .Where(rp => rp.ApplicableDate <= postCreationDate)
+                .OrderByDescending(rp => rp.ApplicableDate)
+                .FirstOrDefault()?.Price ?? 0;
+
             var postDetailResponse = new RoommatePostDetailRes
             {
                 PostId = post.PostId,
                 Title = post.Title,
                 Description = post.Description,
                 Location = post.RentalRoom?.Location,
+                PriceShare = post.Price,
                 Status = post.Status,
                 CreatedAt = post.CreatedAt,
                 PostOwnerInfo = new PostOwnerInfo
@@ -184,7 +216,7 @@ namespace SP25_RPSC.Services.Service.PostService
                     Description = post.RentalRoom.Description,
                     Location = post.RentalRoom.Location,
                     RoomTypeName = post.RentalRoom.RoomType.RoomTypeName,
-                    Price = post.Price,
+                    Price = roomPrice, // Su dung gia phong tai thoi diem dang bai
                     Square = post.RentalRoom.RoomType.Square,
                     Area = post.RentalRoom.RoomType.Area,
                     TotalRoomer = totalRoomers,

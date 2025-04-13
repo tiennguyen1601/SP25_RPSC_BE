@@ -112,18 +112,31 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
                 throw new ApiException(HttpStatusCode.BadRequest, "You already have a pending request for this room");
             }
 
-            var roomRentRequest = new RoomRentRequest
+            var existingRoomRentRequest = (await _unitOfWork.RoomRentRequestRepository.Get(
+                filter: r => r.RoomId == model.RoomId && r.Status == StatusEnums.Pending.ToString()
+            )).FirstOrDefault();
+
+            RoomRentRequest roomRentRequest;
+
+            if (existingRoomRentRequest == null)
             {
-                RoomRentRequestsId = Guid.NewGuid().ToString(),
-                RoomId = model.RoomId,
-                Status = StatusEnums.Pending.ToString(),
-                CreatedAt = DateTime.UtcNow
-            };
+                roomRentRequest = new RoomRentRequest
+                {
+                    RoomRentRequestsId = Guid.NewGuid().ToString(),
+                    RoomId = model.RoomId,
+                    Status = StatusEnums.Pending.ToString(),
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.RoomRentRequestRepository.Add(roomRentRequest);
+            }
+            else
+            {
+                roomRentRequest = existingRoomRentRequest;
+            }
 
             var detailRequest = new CustomerRentRoomDetailRequest
             {
                 CustomerRentRoomDetailRequestId = Guid.NewGuid().ToString(),
-                //RoomRequestId = roomRentRequest.RoomRequestId,
                 Message = model.Message,
                 Status = StatusEnums.Pending.ToString(),
                 MonthWantRent = model.MonthWantRent,
@@ -132,7 +145,6 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
                 RoomRentRequests = roomRentRequest,
             };
 
-            await _unitOfWork.RoomRentRequestRepository.Add(roomRentRequest);
             await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Add(detailRequest);
             await _unitOfWork.SaveAsync();
 
@@ -148,8 +160,9 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
                 DateWantToRent = detailRequest.DateWantToRent
             };
 
-        return response;
+            return response;
         }
+
 
         public Task<RoomRentResponseModel> CustomerGetRentRequestByUserId(string token)
         {
