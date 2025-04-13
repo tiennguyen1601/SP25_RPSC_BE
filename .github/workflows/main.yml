@@ -1,0 +1,19 @@
+name: Toi chi muon deploy
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  docker-compose:
+    runs-on: self-hosted
+    environment: docker
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Run 'docker compose'
+      run: docker compose -f compose.yaml up --build -d
+      
