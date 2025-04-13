@@ -12,14 +12,20 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? Location { get; set; }
+        public decimal? Price { get; set; }
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
         public PostOwnerInfo PostOwnerInfo { get; set; }
+        public string? CustomerName { get; set; }
+        public string? CustomerEmail { get; set; }
+        public string? CustomerPhoneNumber { get; set; }
 
     }
 
     public class PostOwnerInfo
     {
+
+        public string? UserId { get; set; }
         public string? FullName { get; set; }
         public string? Avatar { get; set; }
         public string? Gender { get; set; }
@@ -28,6 +34,8 @@ namespace SP25_RPSC.Data.Models.PostModel.Response
         public string? Requirement { get; set; }
         public string? PostOwnerType { get; set; }
     }
+
+
 
     public class RoommatePostSearchReq
     {

@@ -133,11 +133,15 @@ CREATE TABLE Rooms (
     Description NVARCHAR(MAX),
     Status NVARCHAR(50),
     Location NVARCHAR(255),
+	AvailableDateToRent DATETIME,
     UpdatedAt DATETIME,
 	RoomTypeId NVARCHAR(36),
     CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomType(RoomTypeId),
 );
 GO
+
+
+
 
 --Bảng Post
 CREATE TABLE Post (
@@ -229,6 +233,7 @@ CREATE TABLE ServicePackage (
     PackageId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Type NVARCHAR(255) NOT NULL,
     HighLightTime NVARCHAR(255) NOT NULL,
+	PriorityTime INT NULL,
     MaxPost INT NULL,
 	Label NVARCHAR(255) NOT NULL,
     Status NVARCHAR(50)
@@ -382,13 +387,12 @@ CREATE TABLE RoomStayCustomer (
 );
 GO
 
-
-
 --Bảng RoomAmenties
 CREATE TABLE RoomAmenties (
     RoomAmentyId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Name NVARCHAR(255),
     Compensation DECIMAL(18,2),
+	Status NVARCHAR(50),
     LandlordId NVARCHAR(36),
 	CONSTRAINT FK_RoomAmenities_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
 );
@@ -396,6 +400,7 @@ GO
 CREATE TABLE RoomAmentiesList (
     RoomAmenitiesListId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
     Description NVARCHAR(MAX),
+	Status NVARCHAR(50),
     RoomId NVARCHAR(36),
 	RoomAmentyId NVARCHAR(36),
 	CONSTRAINT FK_RoomAmentiesList_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
@@ -454,11 +459,14 @@ CREATE TABLE CustomerRentRoomDetailRequest (
     Message NVARCHAR(MAX),
     RoomRentRequestsId NVARCHAR(36),
     CustomerId NVARCHAR(36),
+	DateWantToRent DATETIME,
 	MonthWantRent INT,
     CONSTRAINT FK_CustomerRequest_RoomRentRequests FOREIGN KEY (RoomRentRequestsId) REFERENCES RoomRentRequests(RoomRentRequestsId),
     CONSTRAINT FK_CustomerRentRoomDetailRequest_Customer FOREIGN KEY (CustomerId) REFERENCES Customer(CustomerId)
 );
 GO
+
+
 
 --Bảng Chat
 CREATE TABLE Chat (

@@ -81,6 +81,7 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
                     var userLoginRes = new UserLoginResModel
                     {
                         UserId = currentUser.UserId,
+                        Avatar = currentUser.Avatar,
                         PhoneNumber = currentUser.PhoneNumber,
                         Email = currentUser.Email,
                         FullName = currentUser.FullName,

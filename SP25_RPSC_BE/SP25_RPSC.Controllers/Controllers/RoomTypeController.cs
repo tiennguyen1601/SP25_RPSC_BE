@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
+using SP25_RPSC.Data.Models.RoomTypeModel.RequestModel;
+using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Services.Service.RoomTypeService;
+using SP25_RPSC.Services.Utils.CustomException;
 using System.Net;
 using System.Security.Claims;
 
@@ -120,5 +123,80 @@ namespace SP25_RPSC.Controllers.Controllers
 
             return BadRequest(new { Message = "Room type cannot be created" });
         }
+        [HttpGet("GetRoomTypesByLandlordId")]
+        public async Task<ActionResult<GetRoomTypeResponseModel>> GetRoomTypesByLandlordId(
+        [FromQuery] string searchQuery = "",
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string status = ""
+        )
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _roomTypeService.GetRoomTypeByLandlordId(searchQuery, pageIndex, pageSize, token, status);
+
+            if (result.RoomTypes == null || !result.RoomTypes.Any())
+            {
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "No room types found for this landlord."
+                });
+            }
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Room types retrieved successfully.",
+                Data = result
+            });
+        }
+        [HttpGet("GetRoomTypeDetailByRoomTypeId")]
+        public async Task<ActionResult<GetRoomTypeDetailResponseModel>> GetRoomTypeDetailByRoomTypeId([FromQuery] string roomTypeId)
+        {
+            if (string.IsNullOrEmpty(roomTypeId))
+            {
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "RoomTypeId is required"
+                });
+            }
+
+            var result = await _roomTypeService.GetRoomTypeDetailByRoomTypeId(roomTypeId);
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "RoomType detail retrieved successfully",
+                Data = result
+            });
+        }
+
+        [HttpPut]
+        [Route("Update-RoomType")]
+        public async Task<IActionResult> UpdateRoomType([FromBody] RoomTypeUpdateRequestModel model)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var result = await _roomTypeService.UpdateRoomTypeAsync(model, token);
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "RoomType updated successfully",
+                    Data = result
+                });
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode((int)ex.StatusCode, new { success = false, message = ex.Message });
+            }
+        }
+
     }
 }

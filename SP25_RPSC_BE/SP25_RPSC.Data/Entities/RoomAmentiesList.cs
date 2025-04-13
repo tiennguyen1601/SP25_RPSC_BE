@@ -9,6 +9,8 @@ public partial class RoomAmentiesList
 
     public string? Description { get; set; }
 
+    public string? Status { get; set; }
+
     public string? RoomId { get; set; }
 
     public string? RoomAmentyId { get; set; }

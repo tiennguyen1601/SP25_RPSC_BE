@@ -31,8 +31,6 @@ public partial class User
 
     public string? RoleId { get; set; }
 
-    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
-
     public virtual ICollection<Chat> ChatReceivers { get; set; } = new List<Chat>();
 
     public virtual ICollection<Chat> ChatSenders { get; set; } = new List<Chat>();
@@ -52,6 +50,8 @@ public partial class User
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<Otp> Otps { get; set; } = new List<Otp>();
+
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 

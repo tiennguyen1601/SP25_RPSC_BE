@@ -34,6 +34,9 @@ using SP25_RPSC.Services.Service.ChatService;
 using SP25_RPSC.Services.Service.Hubs.ChatHub;
 using SP25_RPSC.Services.Service.ContractCustomerService;
 using SP25_RPSC.Services.Service.PostService;
+using SP25_RPSC.Services.Service.AmentyService;
+using SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices;
+using SP25_RPSC.Services.Service.Hubs.NotificationHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +82,8 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerContractService, CustomerContractService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IAmentyService, AmentyService>(); 
+builder.Services.AddScoped<ICustomerRentRoomDetailRequestService, CustomerRentRoomDetailRequestService>();
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
@@ -97,15 +102,15 @@ builder.Services.AddDbContext<RpscContext>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-                      policy =>
-                      {
-                          policy.AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .SetIsOriginAllowed(_ => true)
-                          .AllowCredentials();
-                      });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyMethod()
+              .AllowAnyHeader()
+              .SetIsOriginAllowed(_ => true)
+              .AllowCredentials();
+    });
 });
+
 
 
 
@@ -159,7 +164,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "RPSC API",
         Version = "v1",
-        Description = "API for RPSC Back end from VuKhaideptrai using JWT Bearer authentication"
+        Description = "API for RPSC Back End using JWT Bearer authentication"
     });
 
     options.EnableAnnotations();
@@ -184,13 +189,14 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -199,5 +205,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<ChatHub>("/chatHub");
-app.UseCors("AllowAll");
+app.MapHub<NotificationHub>("/notificationHub");
+
 app.Run();

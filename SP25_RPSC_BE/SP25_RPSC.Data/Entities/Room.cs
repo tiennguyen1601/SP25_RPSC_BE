@@ -17,6 +17,8 @@ public partial class Room
 
     public string? Location { get; set; }
 
+    public DateTime? AvailableDateToRent { get; set; }
+
     public DateTime? UpdatedAt { get; set; }
 
     public string? RoomTypeId { get; set; }

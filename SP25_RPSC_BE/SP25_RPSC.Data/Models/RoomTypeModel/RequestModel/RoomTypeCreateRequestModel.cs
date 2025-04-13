@@ -28,22 +28,27 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.Request
 
         public int MaxOccupancy { get; set; }
        
-        public location location { get; set; }
+        public Location location { get; set; }
 
         public ICollection<RoomServiceRequestCreate> ListRoomServices { get; set; }
     }
 
-    public class location
+    public class Location
     {
         public double Long { get; set; }
 
         public double Lat { get; set; }
+        public string? HouseNumber { get; set; }
+        public string? Street { get; set; }
+        public string? District { get; set; }
+        public string? City { get; set; }
+
     }
     public class RoomServiceRequestCreate
     {
 
         public string RoomServiceName { get; set; }
-        //public string Description { get; set; }
+        public string Description { get; set; }
 
         [JsonIgnore]
         public string status = StatusEnums.Active.ToString();

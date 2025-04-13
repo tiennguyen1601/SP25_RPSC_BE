@@ -4,6 +4,7 @@ using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
 using SP25_RPSC.Data.Repositories.ChatRepository;
 using SP25_RPSC.Data.Repositories.CustomerContractRepository;
+using SP25_RPSC.Data.Repositories.CustomerMoveOutRepository;
 using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
@@ -20,6 +21,7 @@ using SP25_RPSC.Data.Repositories.PricePackageRepository;
 using SP25_RPSC.Data.Repositories.RefreshTokenRepository;
 using SP25_RPSC.Data.Repositories.ReportRepository;
 using SP25_RPSC.Data.Repositories.RoleRepository;
+using SP25_RPSC.Data.Repositories.RoomAmentyListRepository;
 using SP25_RPSC.Data.Repositories.RoomAmentyRepository;
 using SP25_RPSC.Data.Repositories.RoomImageRepository;
 using SP25_RPSC.Data.Repositories.RoommateRequestRepository;
@@ -81,6 +83,8 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IChatRepository _chatRepository;
 
         private IRoomAmentyRepository _roomAmentyRepository;
+        private IRoomAmentyListRepository _roomAmentyListRepository;
+        private ICustomerMoveOutRepository _customerMoveOutRepository;
 
 
         public UnitOfWork(RpscContext context)
@@ -349,6 +353,22 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _roomAmentyRepository ??= new RoomAmentyRepository(_context);
+            }
+        }
+
+        public IRoomAmentyListRepository RoomAmentyListRepository
+        {
+            get
+            {
+                return _roomAmentyListRepository ??= new RoomAmentyListRepository(_context);
+            }
+        }
+
+        public ICustomerMoveOutRepository CustomerMoveOutRepository
+        {
+            get
+            {
+                return _customerMoveOutRepository ??= new CustomerMoveOutRepository(_context);
             }
         }
 

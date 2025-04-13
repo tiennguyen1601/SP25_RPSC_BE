@@ -16,6 +16,7 @@ namespace SP25_RPSC.Data.Repositories.LandlordRepository
         Task<Landlord?> GetAsync(string LandlordId);
 
         Task<Landlord?> GetLandlordByPhoneNumber(string phoneNumber);
+        Task<Landlord> GetLandlordByRentalRoomId(string rentalRoomId);
     }
 
     public class LandlordRepository : GenericRepository<Landlord>, ILandlordRepository
@@ -65,6 +66,17 @@ namespace SP25_RPSC.Data.Repositories.LandlordRepository
         public async Task<Landlord?> GetLandlordByPhoneNumber(string phoneNumber)
         {
             return await _context.Landlords.Where(x => x.User.PhoneNumber.Equals(phoneNumber)).FirstOrDefaultAsync(); ;
+        }
+
+        public async Task<Landlord> GetLandlordByRentalRoomId(string rentalRoomId)
+        {
+            var landlord = await _context.Rooms
+                .Where(rr => rr.RoomId == rentalRoomId)
+                .Include(r => r.RoomType)
+                .Select(r => r.RoomType.Landlord)
+                .FirstOrDefaultAsync();
+
+            return landlord;
         }
     }
 }

@@ -13,6 +13,8 @@ namespace SP25_RPSC.Data.Models.PackageModel
 
         [Required(ErrorMessage = "HighLight không được để trống")]
         public string HighLightTime { get; set; }
+        [Required(ErrorMessage = "PriorityTime không được để trống")]
+        public int? PriorityTime { get; set; }
 
         [Required(ErrorMessage = "MaxPost không được để trống")]
         public int? MaxPost { get; set; }
