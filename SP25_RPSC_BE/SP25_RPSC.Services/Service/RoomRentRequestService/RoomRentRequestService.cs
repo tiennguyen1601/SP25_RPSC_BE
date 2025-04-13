@@ -135,10 +135,14 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             DateTime today = DateTime.UtcNow;
             DateTime startDate = new DateTime(today.Year, today.Month, 1).AddMonths(1);
-            int monthWantRent = selectedCustomerRequest.MonthWantRent ?? 6;
-            DateTime endDate = startDate.AddMonths(monthWantRent);
 
-            DateTime customerRequestedDate = selectedCustomerRequest.DateWantToRent ?? startDate;
+            DateTime customerRequestedDate = selectedCustomerRequest.DateWantToRent.HasValue
+                ? selectedCustomerRequest.DateWantToRent.Value
+                : startDate; 
+
+            DateTime endDate = customerRequestedDate.AddMonths(selectedCustomerRequest.MonthWantRent ?? 6); // Nếu MonthWantRent là null thì mặc định là 6 tháng
+
+
 
             var roomAddress = room.Location ?? "Không xác định";
 
@@ -199,7 +203,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
             var newContract = new CustomerContract
             {
                 ContractId = Guid.NewGuid().ToString(),
-                StartDate = startDate,
+                StartDate = customerRequestedDate,
                 EndDate = endDate,
                 Status = "Pending",
                 CreatedDate = DateTime.UtcNow,

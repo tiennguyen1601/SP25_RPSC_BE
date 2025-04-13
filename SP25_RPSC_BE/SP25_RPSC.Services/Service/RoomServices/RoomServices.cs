@@ -120,6 +120,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
                     TotalRooms = 0
                 };
             }
+
             var roomResponses = rooms.Select(room => new ListRoomRes
             {
                 RoomId = room.RoomId,
@@ -135,20 +136,17 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 Area = room.RoomType?.Area,
                 TotalRentRequests = room.RoomRentRequests
                     .Sum(r => r.CustomerRentRoomDetailRequests.Count(c => c.Status == "Pending")),
-
                 RoomImages = room.RoomImages.Select(img => img.ImageUrl).ToList(),
-
                 Price = room.RoomPrices
                     .OrderByDescending(p => p.ApplicableDate)
                     .Select(p => p.Price)
                     .FirstOrDefault()
-
-            }).Where(room => room.TotalRentRequests > 0).ToList(); 
+            }).Where(room => room.TotalRentRequests > 0).ToList();
 
             return new GetRequiresRoomRentalByLandlordResponseModel
             {
                 Rooms = roomResponses,
-                TotalRooms = totalRooms
+                TotalRooms = roomResponses.Count > 0 ? totalRooms : 0 
             };
         }
 
