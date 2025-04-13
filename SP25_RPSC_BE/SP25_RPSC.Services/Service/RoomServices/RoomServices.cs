@@ -97,18 +97,18 @@ namespace SP25_RPSC.Services.Service.RoomServices
             Expression<Func<Room, bool>> searchFilter = room =>
                 room.RoomType != null &&
                 room.RoomType.LandlordId == landlord.LandlordId &&
+                room.Status == "Available" &&
                 room.RoomRentRequests.Any(r => r.Status == "Pending") &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  room.RoomNumber.Contains(searchQuery) ||
                  room.Title.Contains(searchQuery));
 
             var rooms = await _unitOfWork.RoomRepository.Get(
-                        includeProperties: "RoomType,RoomRentRequests.CustomerRentRoomDetailRequests,RoomImages,RoomPrices",
-                        filter: searchFilter,
-                        pageIndex: pageIndex,
-                        pageSize: pageSize
-                    );
-
+                includeProperties: "RoomType,RoomRentRequests.CustomerRentRoomDetailRequests,RoomImages,RoomPrices",
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
 
             var totalRooms = await _unitOfWork.RoomRepository.CountAsync(searchFilter);
 
@@ -120,7 +120,6 @@ namespace SP25_RPSC.Services.Service.RoomServices
                     TotalRooms = 0
                 };
             }
-
             var roomResponses = rooms.Select(room => new ListRoomRes
             {
                 RoomId = room.RoomId,
@@ -132,19 +131,19 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 Status = room.Status,
                 Location = room.Location,
                 RoomTypeName = room.RoomType?.RoomTypeName ?? "N/A",
-                Square = room.RoomType?.Square, 
+                Square = room.RoomType?.Square,
                 Area = room.RoomType?.Area,
                 TotalRentRequests = room.RoomRentRequests
-                        .Sum(r => r.CustomerRentRoomDetailRequests.Count(c => c.Status == "Pending")),
+                    .Sum(r => r.CustomerRentRoomDetailRequests.Count(c => c.Status == "Pending")),
 
                 RoomImages = room.RoomImages.Select(img => img.ImageUrl).ToList(),
 
                 Price = room.RoomPrices
-                    .OrderByDescending(p => p.ApplicableDate) 
+                    .OrderByDescending(p => p.ApplicableDate)
                     .Select(p => p.Price)
                     .FirstOrDefault()
 
-            }).ToList();
+            }).Where(room => room.TotalRentRequests > 0).ToList(); 
 
             return new GetRequiresRoomRentalByLandlordResponseModel
             {
@@ -152,6 +151,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 TotalRooms = totalRooms
             };
         }
+
+
 
         public async Task<RoomCountResponseModel> GetRoomCountsByLandlordId(string token)
         {

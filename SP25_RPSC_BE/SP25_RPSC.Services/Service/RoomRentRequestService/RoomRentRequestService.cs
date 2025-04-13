@@ -104,6 +104,15 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 throw new ApiException(HttpStatusCode.BadRequest, "Selected customer not found in request");
             }
 
+            var roomStayCustomer = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rs => rs.CustomerId == selectedCustomerId && rs.Status == "Active"
+            );
+
+            if (roomStayCustomer.Any())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "This customer already has an active room stay and cannot be approved for a new room.");
+            }
+
             var room = request.Room;
             if (room == null)
             {
@@ -170,6 +179,21 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 customerRequest.Status = "Inactive";
             }
 
+            var allRoommateRequestsForCustomer = await _unitOfWork.RoommateRequestRepository.Get(
+                filter: r => r.CustomerRequests.Any(c => c.CustomerId == selectedCustomerId)
+            );
+
+            foreach (var roommateRequest in allRoommateRequestsForCustomer)
+            {
+                foreach (var customerRequest in roommateRequest.CustomerRequests)
+                {
+                    if (customerRequest.CustomerId == selectedCustomerId)
+                    {
+                        customerRequest.Status = "Inactive";
+                    }
+                }
+            }
+
             request.Status = "Active";
 
             var newContract = new CustomerContract
@@ -190,6 +214,8 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             return true;
         }
+
+
 
         public async Task<bool> ConfirmContractAndCreateRoomStay(string token, ContractUploadRequest request)
         {

@@ -9,6 +9,7 @@ namespace SP25_RPSC.Data.Models.UserModels.Response
     public class UserLoginResModel
     {
         public string UserId { get; set; }
+        public string Avatar { get; set; }
 
         public string PhoneNumber { get; set; } = null!;
 
