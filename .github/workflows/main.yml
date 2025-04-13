@@ -12,8 +12,8 @@ jobs:
     environment: docker
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Run 'docker compose'
       run: docker compose -f compose.yaml up --build -d
-      
+      working-directory: /home/tien2003/actions-runner/_work/SP25_RPSC_BE/SP25_RPSC_BE/SP25_RPSC_BE/
