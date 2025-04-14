@@ -356,9 +356,15 @@ namespace SP25_RPSC.Services.Service.PaymentService
                         // update
                         upTran.Lcontract.LcontractUrl = contractUrl;
                         upTran.Lcontract.EndDate = upTran.Lcontract.EndDate.Value.AddDays(parsedDuration);
+
                     }
                     else
                     {
+                        var package = await _packageService.GetById(upTran.Lcontract.PackageId);
+                        // **Update Landlord's NumberRoom from MaxPost**
+                        var maxPost = package.MaxPost;
+                        Landlord.NumberRoom = maxPost;
+                        await _unitOfWork.LandlordRepository.Update(Landlord);
                         upTran.Lcontract.Status = StatusEnums.Active.ToString();
                     }
                 }
@@ -384,6 +390,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
 
                 if (response.IsSuccess)
                 {
+
                     string subject = "Bạn đã thanh toán thành công";
                     string html = EmailTemplate.EmailAfterPaymentTemplate(Landlord.User.FullName, upTran.Lcontract.LcontractUrl, subject);
                     // send email
