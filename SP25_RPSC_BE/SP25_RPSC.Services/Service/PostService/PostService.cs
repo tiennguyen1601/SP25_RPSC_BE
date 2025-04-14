@@ -167,20 +167,20 @@ namespace SP25_RPSC.Services.Service.PostService
             // Get room services with prices that were valid at the time the post was created
             var postCreationDate = post.CreatedAt ?? DateTime.Now;
             var roomServices = post.RentalRoom?.RoomType?.RoomServices?
-                .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
-                .Select(rs => new RoomServiceInfo
-                {
-                    ServiceId = rs.RoomServiceId,
-                    ServiceName = rs.RoomServiceName,
-                    Description = rs.Description,
-                    // Get the price that was valid at post creation time
-                    // (the most recent price that was applicable before or on post creation date)
-                    Price = rs.RoomServicePrices?
-                        .Where(rsp => rsp.ApplicableDate <= postCreationDate)
-                        .OrderByDescending(rsp => rsp.ApplicableDate)
-                        .FirstOrDefault()?.Price
-                })
-                .ToList() ?? new List<RoomServiceInfo>();
+    .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
+    .Select(rs => new RoomServiceInfo
+    {
+        ServiceId = rs.RoomServiceId,
+        ServiceName = rs.RoomServiceName,
+        Description = rs.Description,
+        // Lấy giá dịch vụ hợp lệ, nếu có
+        Price = rs.RoomServicePrices?
+            .Where(rsp => rsp.ApplicableDate <= postCreationDate || rsp.ApplicableDate == null) // Check if ApplicableDate is NULL or before the post creation date
+            .OrderByDescending(rsp => rsp.ApplicableDate ?? DateTime.MinValue) // Order by ApplicableDate, using DateTime.MinValue if null
+            .FirstOrDefault()?.Price
+    })
+    .ToList() ?? new List<RoomServiceInfo>();
+
 
             var roomPrice = post.RentalRoom.RoomPrices?
                 .Where(rp => rp.ApplicableDate <= postCreationDate)
