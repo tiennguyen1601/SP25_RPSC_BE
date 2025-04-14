@@ -108,6 +108,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
             {
                 throw new UnauthorizedAccessException("Invalid or expired token.");
             }
+
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
 
@@ -139,14 +140,13 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                         filter: rs => rs.RoomStayId == roomStayId
                     )).FirstOrDefault();
 
-
-            var roommates = (await _unitOfWork.RoomStayCustomerRepository.Get(
+            var allRoommates = (await _unitOfWork.RoomStayCustomerRepository.Get(
                        includeProperties: "Customer,Customer.User",
-                       filter: rsc => rsc.RoomStayId == roomStayId && rsc.CustomerId != customerId && rsc.Status == "Active"
+                       filter: rsc => rsc.RoomStayId == roomStayId && rsc.Status == "Active"
                    )).ToList();
 
             var roommateInfoList = new List<RoommateInfo>();
-            foreach (var roommate in roommates)
+            foreach (var roommate in allRoommates)
             {
                 if (roommate.Customer?.User != null)
                 {
@@ -167,7 +167,8 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                         BudgetRange = roommate.Customer.BudgetRange,
                         PreferredLocation = roommate.Customer.PreferredLocation,
                         Requirement = roommate.Customer.Requirement,
-                        UserId = roommate.Customer.UserId
+                        UserId = roommate.Customer.UserId,
+                        IsCurrentUser = roommate.CustomerId == customerId
                     });
                 }
             }
@@ -184,11 +185,10 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                     Status = roomStay.Status
                 } : null,
                 RoommateList = roommateInfoList,
-                TotalRoomer = 1 + roommates.Count 
+                TotalRoomer = roommateInfoList.Count
             };
 
             return response;
-
         }
 
         public async Task<GetRoomStayByCustomerIdResponseModel> GetRoomStayByCustomerId(string token)
