@@ -445,6 +445,17 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 throw new InvalidOperationException($"Cannot accept request with status {customerRequest.Status}.");
             }
 
+            var customerRentRoom = (await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Get(
+                                        filter: c => c.CustomerId == customerRequest.CustomerId && c.Status.Equals(StatusEnums.Accepted.ToString())
+                                    )).FirstOrDefault();
+            var roomStayCus = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                                        filter: rs => rs.CustomerId == customerRequest.CustomerId && rs.Status.Equals(StatusEnums.Active.ToString())
+                                    )).FirstOrDefault();
+            if (customerRentRoom != null && roomStayCus != null)
+            {
+                throw new InvalidOperationException("This customer maybe has a room, you can not accept he/she to roommate.");
+            }
+
             var rentalRoom = post.RentalRoom;
             var landlord = await _unitOfWork.LandlordRepository.GetLandlordByRentalRoomId(rentalRoom.RoomId);
             var landlordUser = landlord != null ?
@@ -469,6 +480,16 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 {
                     otherRequest.Status = StatusEnums.Inactive.ToString();
                     await _unitOfWork.CustomerRequestRepository.Update(otherRequest);
+                }
+
+                var otherRequestsRentRoomFromSameCustomer = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Get(
+                    filter: cr => cr.CustomerId == acceptedCustomerId
+                               && cr.Status == StatusEnums.Pending.ToString());
+
+                foreach (var otherRentRoomRequest in otherRequestsRentRoomFromSameCustomer)
+                {
+                    otherRentRoomRequest.Status = StatusEnums.Inactive.ToString();
+                    await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Update(otherRentRoomRequest);
                 }
             }
 
