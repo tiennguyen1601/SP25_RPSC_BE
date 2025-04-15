@@ -88,7 +88,7 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
 
-            await _packageService.UpdatePriceAndServiceDetail(priceId, request.NewPrice,request.NewName ,request.NewDuration, request.NewDescription);
+            await _packageService.UpdatePriceAndServiceDetail(priceId, request.NewPrice,request.NewName ,request.NewDuration, request.NewDescription, request.NewStatus);
 
             return Ok(new ResultModel
             {
@@ -97,6 +97,37 @@ namespace SP25_RPSC.Controllers.Controllers
                 Message = "Price package updated successfully."
             });
         }
+        [HttpPut("update-service-package/{packageId}")]
+        public async Task<IActionResult> UpdateServicePackage(string packageId, [FromBody] UpdateServicePackageRequest model)
+        {
+            if (model == null)
+            {
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Invalid request data."
+                });
+            }
+
+            await _packageService.UpdateServicePackage(
+                packageId,
+                model.NewType,
+                model.NewHighLightTime,
+                model.NewPriorityTime,
+                model.NewMaxPost,
+                model.NewLabel,
+                model.NewStatus
+            );
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Service package updated successfully."
+            });
+        }
+
 
 
     }
