@@ -47,6 +47,73 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpDelete("cancel-roommate-request/{requestId}")]
+        public async Task<IActionResult> CancelRoommateRequest(string requestId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerService.CancelRequestRoomSharing(token, requestId);
+                if (result)
+                {
+                    ResultModel response = new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Cancel roommate request successfully.",
+                    };
+                    return StatusCode(response.Code, response);
+                }
+                else
+                {
+                    ResultModel response = new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.InternalServerError,
+                        Message = "Failed to cancel roommate request.",
+                    };
+                    return StatusCode(response.Code, response);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while canceling roommate request: " + ex.Message
+                });
+            }
+        }
+
+
         [HttpGet("get-all-sent-roommate-request")]
         public async Task<IActionResult> GetSentRoommateRequests()
         {

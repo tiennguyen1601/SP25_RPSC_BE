@@ -183,6 +183,59 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
         }
 
+        public async Task<bool> CancelRequestRoomSharing(string token, string requestId)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var customerRequest = (await _unitOfWork.CustomerRequestRepository.Get(
+                filter: cr => cr.CustomerRequestId == requestId && cr.CustomerId == customer.CustomerId,
+                includeProperties: "Request.Post.RentalRoom,Request.Post.User"
+            )).FirstOrDefault();
+
+            if (customerRequest == null)
+            {
+                throw new KeyNotFoundException("Request not found or you don't have permission to cancel it.");
+            }
+
+            if (customerRequest.Status != StatusEnums.Pending.ToString())
+            {
+                throw new InvalidOperationException("Only pending requests can be cancelled.");
+            }
+
+            customerRequest.Status = StatusEnums.CANCELLED.ToString();
+            await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
+
+            // Check if all customer requests for this roommate request are cancelled
+            var allCustomerRequests = (await _unitOfWork.CustomerRequestRepository.Get(
+                filter: cr => cr.RequestId == customerRequest.RequestId
+            )).ToList();
+
+            var allCancelled = allCustomerRequests.All(cr => cr.Status == StatusEnums.CANCELLED.ToString());
+
+            if (allCancelled)
+            {
+                var roommateRequest = customerRequest.Request;
+                roommateRequest.Status = StatusEnums.CANCELLED.ToString();
+                await _unitOfWork.RoommateRequestRepository.Update(roommateRequest);
+            }
+
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
         public async Task<ListRequestSharingRes> GetListRequestSharing(string token)
         {
             if (token == null)
@@ -318,16 +371,17 @@ namespace SP25_RPSC.Services.Service.CustomerService
             return result;
         }
 
-        public async Task<bool> RejectRequestSharing(string token, string requestId)
+        public async Task<bool> RejectRequestSharing(string token, RejectSharingReq rejectSharingReq)
         {
             if (string.IsNullOrEmpty(token))
             {
                 throw new UnauthorizedAccessException("Invalid or expired token.");
             }
 
-            if (string.IsNullOrEmpty(requestId))
+            var reqId = rejectSharingReq.requestId;
+            if (string.IsNullOrEmpty(reqId))
             {
-                throw new ArgumentNullException(nameof(requestId), "Request ID cannot be null or empty.");
+                throw new ArgumentNullException(nameof(reqId), "Request ID cannot be null or empty.");
             }
 
             var tokenModel = _decodeTokenHandler.decode(token);
@@ -349,7 +403,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             var customerRequest = (await _unitOfWork.CustomerRequestRepository.Get(
-                                        filter: cr => cr.CustomerRequestId == requestId,
+                                        filter: cr => cr.CustomerRequestId == reqId,
                                         includeProperties: "Request,Customer.User"
                                     )).FirstOrDefault();
             if (customerRequest == null)
@@ -372,6 +426,9 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
             await _unitOfWork.SaveAsync();
 
+            var rejectReason = "Có vẻ như 2 bạn hơi khác biệt về phong cách sống.";
+            if (!string.IsNullOrEmpty(rejectSharingReq.reason)) { rejectReason = rejectSharingReq.reason; }
+
             if (customerRequest.Customer?.User != null)
             {
                 var requesterEmail = customerRequest.Customer.User.Email;
@@ -384,7 +441,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
                     requesterName,
                     postOwnerName,
                     postTitle,
-                    roomAddress);
+                    roomAddress,
+                    rejectReason);
 
                 await _emailService.SendEmail(
                     requesterEmail,
@@ -1094,5 +1152,6 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
             return true;
         }
+
     }
 }
