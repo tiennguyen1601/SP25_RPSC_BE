@@ -61,6 +61,23 @@ namespace SP25_RPSC.Services.Service.PostService
                 throw new ArgumentException("RoomType not found");
             }
 
+            // lay gia phong
+            var currentRoomPrice = rentalRoom.RoomPrices
+                   .Where(rp => rp.ApplicableDate <= DateTime.Now)
+                   .OrderByDescending(rp => rp.ApplicableDate)
+                   .FirstOrDefault();
+
+            if (currentRoomPrice == null || !currentRoomPrice.Price.HasValue)
+            {
+                throw new ArgumentException("Room price information not found or invalid");
+            }
+
+            // gia sharing kh dc > gia phong
+            if (request.Price > currentRoomPrice.Price)
+            {
+                throw new InvalidOperationException($"Sharing price ({request.Price}) cannot exceed the room's price ({currentRoomPrice.Price}).");
+            }
+
             var roomStayCustomers = await _unitOfWork.RoomStayCustomerRepository.Get(
                 filter: rsc => rsc.CustomerId == customer.CustomerId &&
                                rsc.RoomStay.RoomId == request.RentalRoomId &&

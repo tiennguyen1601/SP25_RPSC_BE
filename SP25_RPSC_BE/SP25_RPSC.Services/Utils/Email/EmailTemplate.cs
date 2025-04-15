@@ -256,7 +256,7 @@ namespace SP25_RPSC.Services.Utils.Email
 
         }
 
-        public static string RoomSharingRejected(string requesterName, string postOwnerName, string postTitle, string roomAddress)
+        public static string RoomSharingRejected(string requesterName, string postOwnerName, string postTitle, string roomAddress, string reason)
         {
             return $@"
     <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
@@ -271,7 +271,8 @@ namespace SP25_RPSC.Services.Utils.Email
             <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
                 <p><strong>Bài đăng:</strong> {postTitle}</p>
                 <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
-                <p><strong>Chủ phòng:</strong> {postOwnerName}</p>
+                <p><strong>Chủ phòng:</strong> {postOwnerName}</p>                
+                <p><strong>Lý do:</strong> {reason}</p
             </div>
             
             <p style='font-size: 14px;'>Đừng nản lòng! Bạn có thể tiếp tục tìm kiếm các lựa chọn phòng ở ghép khác phù hợp hơn trên nền tảng của chúng tôi.</p>
