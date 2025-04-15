@@ -12,6 +12,8 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
         public string NewName { get; set; }
         public string NewDuration { get; set; }
         public string NewDescription { get; set; }
+        public string NewStatus { get; set; }
+
     }
 
 }

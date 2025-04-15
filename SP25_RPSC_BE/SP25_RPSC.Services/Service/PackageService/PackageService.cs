@@ -132,6 +132,12 @@ namespace SP25_RPSC.Services.Service.PackageService
             {
                 throw new ApiException(HttpStatusCode.NotFound, "No ServiceDetails found for the given PackageId");
             }
+
+            var activeLandlordContracts = await _unitOfWork.LandlordContractRepository
+                .Get(filter: lc => lc.PackageId == packageId && lc.Status == StatusEnums.Active.ToString());
+
+            var totalServiceIsUseNow = activeLandlordContracts.Count();
+
             var response = new ServiceDetailReponse
             {
                 PackageId = servicePackage.PackageId,
@@ -140,24 +146,34 @@ namespace SP25_RPSC.Services.Service.PackageService
                 MaxPost = servicePackage.MaxPost,
                 label = servicePackage.Label,
                 Status = servicePackage.Status,
-                ListDetails = servicePackage.ServiceDetails.Select(detail => new ServiceDetailReponse.ListDetailService
-                {
-                    ServiceDetailId = detail.ServiceDetailId,
-                    Name = detail.Name,
-                    Duration = detail.Duration,
-                    Description = detail.Description,
-                    PackageId = detail.PackageId,
-                    PriceId = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.PriceId,
-                    Price = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
-                    ApplicableDate = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate
-                })
-                .OrderBy(x => x.Duration)
-                .OrderBy(x => x.Price)
-                .ToList()
+
+                TotalServiceIsUseNow = totalServiceIsUseNow,
+
+                ListDetails = servicePackage.ServiceDetails
+                        .Select(detail => new ServiceDetailReponse.ListDetailService
+                        {
+                            ServiceDetailId = detail.ServiceDetailId,
+                            Name = detail.Name,
+                            Duration = detail.Duration,  
+                            Description = detail.Description,
+                            PackageId = detail.PackageId,
+                            PriceId = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.PriceId,
+                            Price = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.Price ?? 0,
+                            ApplicableDate = detail.PricePackages?.FirstOrDefault(p => p.Status == StatusEnums.Active.ToString())?.ApplicableDate,
+                            Status = detail.Status
+                        })
+                        .OrderBy(x => int.TryParse(x.Duration, out var duration) ? duration : 0)  
+                        .ThenBy(x => x.Price) 
+                        .ToList()
+
+
             };
 
             return response;
         }
+
+
+
 
 
         public async Task<List<ServicePackageLandlordResponse>> GetServicePackageForLanlord()
@@ -165,7 +181,6 @@ namespace SP25_RPSC.Services.Service.PackageService
             var servicePackages = await _unitOfWork.ServicePackageRepository
                 .Get(includeProperties: "ServiceDetails.PricePackages"
                 , orderBy: c => c.OrderBy(package => package.Type));
-        //orderBy: q => q.OrderBy(), 
 
             if (servicePackages == null || !servicePackages.Any())
             {
@@ -180,7 +195,8 @@ namespace SP25_RPSC.Services.Service.PackageService
                 MaxPost = package.MaxPost,
                 Label = package.Label,
                 Status = package.Status,
-                ListServicePrice = package.ServiceDetails?.Select(serviceDetail => new ServicePriceResponse
+                ListServicePrice = package.ServiceDetails?.Where(serviceDetail => serviceDetail.Status == StatusEnums.Active.ToString()) 
+                .Select(serviceDetail => new ServicePriceResponse
                 {
                     ServiceDetailId = serviceDetail.ServiceDetailId,
                     Name = serviceDetail.Name,
@@ -199,7 +215,8 @@ namespace SP25_RPSC.Services.Service.PackageService
         }
 
 
-        public async Task UpdatePriceAndServiceDetail(string priceId, decimal newPrice, string newName, string newDuration, string newDescription)
+
+        public async Task UpdatePriceAndServiceDetail(string priceId, decimal newPrice, string newName, string newDuration, string newDescription, string newStatus)
         {
             var pricePackage = await _unitOfWork.PricePackageRepository.GetByIDAsync(priceId);
 
@@ -215,9 +232,19 @@ namespace SP25_RPSC.Services.Service.PackageService
                 throw new ApiException(HttpStatusCode.NotFound, "No ServiceDetail found for the given PriceId.");
             }
 
+            var activeContracts = await _unitOfWork.LandlordContractRepository
+        .Get(lc => lc.PackageId == serviceDetail.PackageId && lc.Status == StatusEnums.Active.ToString());
+
+            if (activeContracts.Any())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Cannot update ServiceDetail because it is currently active in a contract.");
+            }
+
             serviceDetail.Name = newName;
             serviceDetail.Duration = newDuration;
             serviceDetail.Description = newDescription;
+            serviceDetail.Status = newStatus;
+
             await _unitOfWork.ServiceDetailRepository.Update(serviceDetail);
 
             pricePackage.Status = StatusEnums.Inactive.ToString();
@@ -294,5 +321,37 @@ namespace SP25_RPSC.Services.Service.PackageService
         {
             return await _unitOfWork.ServicePackageRepository.GetPackageById(packageId);
         }
+
+        public async Task UpdateServicePackage(string packageId, string newType, string newHighLightTime, int? newPriorityTime, int? newMaxPost, string newLabel, string newStatus)
+        {
+            var activeContracts = await _unitOfWork.LandlordContractRepository.Get(
+                lc => lc.PackageId == packageId && lc.Status == StatusEnums.Active.ToString()
+            );
+
+            if (activeContracts.Any())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Cannot update ServicePackage because it is currently active in a contract.");
+            }
+
+            var servicePackage = await _unitOfWork.ServicePackageRepository.GetByIDAsync(packageId);
+
+            if (servicePackage == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "ServicePackage not found");
+            }
+
+            servicePackage.Type = newType;
+            servicePackage.HighLightTime = newHighLightTime;
+            servicePackage.PriorityTime = newPriorityTime;
+            servicePackage.MaxPost = newMaxPost;
+            servicePackage.Label = newLabel;
+            servicePackage.Status = newStatus;
+
+            await _unitOfWork.ServicePackageRepository.Update(servicePackage);
+            await _unitOfWork.SaveAsync();
+        }
+
+
+
     }
 }
