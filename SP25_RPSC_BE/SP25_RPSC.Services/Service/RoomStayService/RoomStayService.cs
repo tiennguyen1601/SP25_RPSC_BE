@@ -216,7 +216,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 
             var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
                 includeProperties: "RoomStay",
-                filter: rs => rs.CustomerId == customerId
+                filter: rs => rs.CustomerId == customerId && rs.Status == "Active"   
             )).FirstOrDefault();
 
             if (roomStayCustomer == null || roomStayCustomer.RoomStay == null)
@@ -239,7 +239,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
             decimal? latestPrice = GetLatestPrice(roomStay.Room.RoomPrices);
 
             var tenantCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
-                filter: rs => rs.RoomStayId == roomStayId && rs.Type == "Tenant" && rs.Type == "Member" && rs.Status == "Active"
+                filter: rs => rs.RoomStayId == roomStayId && rs.Type == "Tenant" && rs.Status == "Active"
             )).FirstOrDefault();
 
             var contract = (await _unitOfWork.CustomerContractRepository.Get(
