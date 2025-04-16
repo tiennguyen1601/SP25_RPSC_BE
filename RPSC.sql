@@ -481,6 +481,19 @@ CREATE TABLE Chat (
 );
 
 
+CREATE TABLE ExtendContractRequest (
+    RequestId NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Status NVARCHAR(50), -- Pending, Approved, Rejected
+    MonthWantToRent INT,
+    MessageCustomer NVARCHAR(MAX),
+    MessageLandlord NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    ContractId NVARCHAR(36),
+    LandlordId NVARCHAR(36),
+    CONSTRAINT FK_ECR_Contract FOREIGN KEY (ContractId) REFERENCES CustomerContracts(ContractId),
+    CONSTRAINT FK_ECR_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
+);
+
 
 INSERT INTO Role (RoleId, RoleName)
 VALUES 
