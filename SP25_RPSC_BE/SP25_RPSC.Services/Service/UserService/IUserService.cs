@@ -1,4 +1,5 @@
 ﻿using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using System;
@@ -22,5 +23,8 @@ namespace SP25_RPSC.Services.Service.UserService
         Task<bool> UpdateLandlordProfile(string landlordId, UpdateLandlordProfileRequest model);
         Task<(int TotalCustomers, int TotalLandlords)> GetTotalUserCounts();
         Task UpdateUser(User user);
+        Task<GetCustomerByUserIdResponseModel> GetCustomerByUserId(string token);
+        Task<bool> UpdateCustomer(string token, UpdateCustomerRequestModel model);
+        Task<bool> UpdateUser(string token, UpdateUserRequestModel model);
     }
 }

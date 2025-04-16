@@ -10,6 +10,8 @@ using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.Email;
 using SP25_RPSC.Services.Service.EmailService;
 using Microsoft.AspNetCore.Http;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
+using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 
 namespace SP25_RPSC.Services.Service.UserService
 {
@@ -19,13 +21,17 @@ namespace SP25_RPSC.Services.Service.UserService
         private readonly IMapper _mapper;
         private readonly ICloudinaryStorageService _cloudinaryStorageService;
         private readonly IEmailService _emailService;
+        private IDecodeTokenHandler _decodeTokenHandler;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService, IEmailService emailService)
+
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService
+            , IEmailService emailService, IDecodeTokenHandler decodeTokenHandler)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cloudinaryStorageService = cloudinaryStorageService;
             _emailService = emailService;
+            _decodeTokenHandler = decodeTokenHandler;
         }
 
         public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status)
@@ -355,6 +361,119 @@ namespace SP25_RPSC.Services.Service.UserService
         {
             await _unitOfWork.UserRepository.Update(user);
         }
+
+        public async Task<GetCustomerByUserIdResponseModel> GetCustomerByUserId(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "User ID is required.");
+            }
+
+            var user = (await _unitOfWork.UserRepository.Get(
+                filter: u => u.UserId == userId,
+                includeProperties: "Customers"
+            )).FirstOrDefault();
+
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            var customer = user.Customers.FirstOrDefault(c => c.UserId == userId);
+
+            if (customer == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Customer not found for this user.");
+            }
+
+            var userResponse = _mapper.Map<UserResponseModel>(user);
+            var customerResponse = _mapper.Map<CustomerResponseModel>(customer);
+
+            return new GetCustomerByUserIdResponseModel
+            {
+                User = userResponse,
+                Customer = customerResponse
+            };
+        }
+        public async Task<bool> UpdateUser(string token, UpdateUserRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var user = (await _unitOfWork.UserRepository.Get(
+                filter: u => u.UserId == userId
+            )).FirstOrDefault();
+
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            if (!string.IsNullOrEmpty(model.FullName))
+                user.FullName = model.FullName;
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+                user.PhoneNumber = model.PhoneNumber;
+
+            if (!string.IsNullOrEmpty(model.Address))
+                user.Address = model.Address;
+
+            if (!string.IsNullOrEmpty(model.Gender))
+                user.Gender = model.Gender;
+
+            if (model.Dob.HasValue)
+                user.Dob = model.Dob;
+
+            if (!string.IsNullOrEmpty(model.Avatar))
+                user.Avatar = model.Avatar;
+
+            user.UpdateAt = DateTime.UtcNow;
+
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+        public async Task<bool> UpdateCustomer(string token, UpdateCustomerRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+            if (customer == null)
+            {
+                
+            }
+            var customerId = customer.CustomerId;
+
+            if (!string.IsNullOrEmpty(model.Preferences))
+                customer.Preferences = model.Preferences;
+
+            if (!string.IsNullOrEmpty(model.LifeStyle))
+                customer.LifeStyle = model.LifeStyle;
+
+            if (!string.IsNullOrEmpty(model.BudgetRange))
+                customer.BudgetRange = model.BudgetRange;
+
+            if (!string.IsNullOrEmpty(model.PreferredLocation))
+                customer.PreferredLocation = model.PreferredLocation;
+
+            if (!string.IsNullOrEmpty(model.Requirement))
+                customer.Requirement = model.Requirement;
+
+            if (!string.IsNullOrEmpty(model.CustomerType))
+                customer.CustomerType = model.CustomerType;
+
+
+            await _unitOfWork.CustomerRepository.Update(customer);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
 
     }
 }

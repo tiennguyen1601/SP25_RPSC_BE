@@ -221,7 +221,7 @@ namespace SP25_RPSC.Controllers.Controllers
         
 
         [HttpPut("reject-roommate-request/{requestId}")]
-        public async Task<IActionResult> RejectRoommateRequest(string requestId)
+        public async Task<IActionResult> RejectRoommateRequest(RejectSharingReq requestId)
         {
             try
             {
@@ -603,5 +603,9 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+
+
+
+
     }
 }

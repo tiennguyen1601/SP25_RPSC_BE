@@ -587,12 +587,13 @@ namespace SP25_RPSC.Services.Service.CustomerService
                     var ownerPostName = customer.User.FullName ?? "Chủ phòng";
                     var titlePost = post.Title ?? "Phòng trọ";
                     var addressRoom = post.RentalRoom?.Location ?? "Không có địa chỉ";
-
                     var rejectMailContent = EmailTemplate.RoomSharingRejected(
                         rejectedRequesterName,
                         ownerPostName,
                         titlePost,
-                        addressRoom);
+                        addressRoom,
+                        reason: "Dc roi nha." 
+                        );
 
                     await _emailService.SendEmail(
                         rejectedRequesterEmail,

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using PdfSharpCore.Pdf.IO;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Models.AmentitiesModel;
 using SP25_RPSC.Data.Models.ChatModel;
 using SP25_RPSC.Data.Models.ContractCustomerModel.ContractCustomerResponse;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.Models.FeedbackModel.Response;
 using SP25_RPSC.Data.Models.LContractModel.Response;
 using SP25_RPSC.Data.Models.PackageModel;
@@ -15,12 +15,6 @@ using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.RoomTypeModel.Response;
 using SP25_RPSC.Data.Models.UserModels.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static SP25_RPSC.Data.Models.PackageServiceModel.ServiceDetailReponse;
 
 namespace SP25_RPSC.Services.Utils.MapperProfile
 {
@@ -28,6 +22,27 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
     {
         public MapperProfiles()
         {
+
+
+            CreateMap<User, UserResponseModel>()
+               .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+               .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+               .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+               .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+               .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Dob))
+               .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+               .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+               .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Avatar));
+
+            CreateMap<Customer, CustomerResponseModel>()
+                .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))
+                .ForMember(dest => dest.Preferences, opt => opt.MapFrom(src => src.Preferences))
+                .ForMember(dest => dest.LifeStyle, opt => opt.MapFrom(src => src.LifeStyle))
+                .ForMember(dest => dest.BudgetRange, opt => opt.MapFrom(src => src.BudgetRange))
+                .ForMember(dest => dest.PreferredLocation, opt => opt.MapFrom(src => src.PreferredLocation))
+                .ForMember(dest => dest.Requirement, opt => opt.MapFrom(src => src.Requirement))
+                .ForMember(dest => dest.CustomerType, opt => opt.MapFrom(src => src.CustomerType));
+
             CreateMap<CustomerContract, CustomerContractResponse>()
                 .ForMember(dest => dest.Room, opt => opt.MapFrom(src => src.RentalRoom))
                 .ForMember(dest => dest.Customer, opt => opt.MapFrom(src => src.Tenant))
