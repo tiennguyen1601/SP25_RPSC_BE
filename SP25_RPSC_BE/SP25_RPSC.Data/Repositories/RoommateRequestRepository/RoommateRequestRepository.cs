@@ -1,4 +1,5 @@
-﻿using SP25_RPSC.Data.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace SP25_RPSC.Data.Repositories.RoommateRequestRepository
 {
     public interface IRoommateRequestRepository : IGenericRepository<RoommateRequest>
     {
-
+        Task<List<RoommateRequest>> GetRoommateRequestsByPostId(string postId); 
     }
 
     public class RoommateRequestRepository : GenericRepository<RoommateRequest>, IRoommateRequestRepository
@@ -20,6 +21,11 @@ namespace SP25_RPSC.Data.Repositories.RoommateRequestRepository
         public RoommateRequestRepository(RpscContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<List<RoommateRequest>> GetRoommateRequestsByPostId(string postId)
+        {
+            return await _context.RoommateRequests.Where(r => r.PostId.Equals(postId)).ToListAsync();
         }
     }
 }

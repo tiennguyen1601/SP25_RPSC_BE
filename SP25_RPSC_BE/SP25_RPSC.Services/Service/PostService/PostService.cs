@@ -428,7 +428,135 @@ namespace SP25_RPSC.Services.Service.PostService
             return postDetailResponse;
         }
 
+        public async Task<RoommatePostRes> UpdateRoommatePost(string token, string postId, UpdateRoommatePostReq request)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
 
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
 
+            var post = await _unitOfWork.PostRepository.GetByIDAsync(postId);
+            if (post == null)
+            {
+                throw new KeyNotFoundException($"Post with ID {postId} not found.");
+            }
+
+            // Check if the user is the owner of the post
+            if (post.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to update this post.");
+            }
+
+            // Check if post has any pending or active requests
+            //var hasRequests = await _unitOfWork.RequestRepository.Exists(
+            //    r => r.PostId == postId &&
+            //         (r.Status == StatusEnums.Pending.ToString() || r.Status == StatusEnums.Active.ToString())
+            //);
+
+            var hasRequests = await _unitOfWork.RoommateRequestRepository.GetRoommateRequestsByPostId(postId);
+
+            if (hasRequests.Count > 0)
+            {
+                throw new InvalidOperationException("This post cannot be updated because it has pending or active requests.");
+            }
+
+            // Update post properties
+            if (!string.IsNullOrWhiteSpace(request.Title))
+            {
+                post.Title = request.Title;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Description))
+            {
+                post.Description = request.Description;
+            }
+
+            //if (request.Price.HasValue && request.Price.Value > 0)
+            //{
+            //    post.Price = request.Price.Value;
+            //}
+
+            post.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.PostRepository.Update(post);
+            await _unitOfWork.SaveAsync();
+
+            // Fetch updated post with relations for response
+            var updatedPost = await _unitOfWork.PostRepository.Get(
+                filter: p => p.PostId == postId,
+                includeProperties: "User,User.Customers,RentalRoom"
+            );
+
+            var postData = updatedPost.FirstOrDefault();
+            var customer = postData.User?.Customers?.FirstOrDefault();
+
+            var response = new RoommatePostRes
+            {
+                PostId = postData.PostId,
+                Title = postData.Title,
+                Description = postData.Description,
+                Location = postData.RentalRoom?.Location,
+                Price = postData.Price,
+                Status = postData.Status,
+                CreatedAt = postData.CreatedAt,
+                PostOwnerInfo = new PostOwnerInfo
+                {
+                    UserId = postData.UserId,
+                    FullName = postData.User?.FullName,
+                    Avatar = postData.User?.Avatar,
+                    Gender = postData.User?.Gender,
+                    Age = postData.User?.Dob.HasValue == true ? CalculateAge(postData.User.Dob.Value) : null,
+                    LifeStyle = customer?.LifeStyle,
+                    Requirement = customer?.Requirement,
+                    PostOwnerType = customer?.CustomerType
+                }
+            };
+
+            return response;
+        }
+
+        public async Task<bool> InactivateRoommatePost(string token, string postId)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null)
+            {
+                throw new KeyNotFoundException($"Post with ID {postId} not found.");
+            }
+
+            // Check if the user is the owner of the post
+            if (post.UserId != userId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to inactivate this post.");
+            }
+
+            // Check if post has any pending or active requests
+
+            var hasRequests = await _unitOfWork.RoommateRequestRepository.GetRoommateRequestsByPostId(postId);
+
+            if (hasRequests.Count > 0)
+            {
+                throw new InvalidOperationException("This post cannot be inactivated because it has pending or active requests.");
+            }
+
+            // Update post status to inactive
+            post.Status = StatusEnums.Inactive.ToString();
+            post.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.PostRepository.Update(post);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }
