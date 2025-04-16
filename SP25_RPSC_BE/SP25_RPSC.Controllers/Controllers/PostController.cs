@@ -132,5 +132,55 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpPut("update-roommate-post/{postId}")]
+        public async Task<IActionResult> UpdateRoommatePost(string postId, [FromBody] UpdateRoommatePostReq request)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.UpdateRoommatePost(token, postId, request);
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Roommate post updated successfully.",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while getting roommate post by customer ID",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPut("inactivate-roommate-post/{postId}")]
+        public async Task<IActionResult> InactivateRoommatePost(string postId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.InactivateRoommatePost(token, postId);
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "An error occurred while updating the roommate post."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while inactivating the roommate post",
+                    Error = ex.Message
+                });
+            }
+        }
     }
 }
