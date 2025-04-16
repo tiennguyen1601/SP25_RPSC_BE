@@ -51,8 +51,9 @@ namespace SP25_RPSC.Services.Service.PostService
                 throw new UnauthorizedAccessException("Customer not found.");
             }
 
-            var rentalRoom = (await _unitOfWork.RoomRepository.Get(filter: r => r.RoomId == request.RentalRoomId,
-                includeProperties: "RoomType")).FirstOrDefault();
+            var rentalRoom = (await _unitOfWork.RoomRepository.Get(
+                                filter: r => r.RoomId == request.RentalRoomId,
+                                includeProperties: "RoomType,RoomPrices")).FirstOrDefault();
             if (rentalRoom == null)
             {
                 throw new ArgumentException("Room not found.");
@@ -69,7 +70,14 @@ namespace SP25_RPSC.Services.Service.PostService
 
             if (currentRoomPrice == null || !currentRoomPrice.Price.HasValue)
             {
-                throw new ArgumentException("Room price information not found or invalid");
+                currentRoomPrice = rentalRoom.RoomPrices
+                    .OrderByDescending(rp => rp.ApplicableDate)
+                    .FirstOrDefault();
+
+                if (currentRoomPrice == null || !currentRoomPrice.Price.HasValue)
+                {
+                    throw new ArgumentException("Room price information not found or invalid");
+                }
             }
 
             // gia sharing kh dc > gia phong
@@ -341,6 +349,7 @@ namespace SP25_RPSC.Services.Service.PostService
                 Location = x.Post.RentalRoom?.Location,
                 PostOwnerInfo = new PostOwnerInfo
                 {
+                    UserId = x.User.UserId,
                     FullName = x.User.FullName,
                     Avatar = x.User.Avatar,
                     Gender = x.User.Gender,

@@ -476,7 +476,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             var post = (await _unitOfWork.PostRepository.Get(filter: p => p.UserId == userId && p.Status == StatusEnums.Active.ToString(),
-                   includeProperties: "RentalRoom,User"
+                   includeProperties: "RentalRoom,User,RentalRoom.RoomType"
                )).FirstOrDefault();
             if (post == null)
             {
@@ -522,8 +522,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
             customerRequest.Status = StatusEnums.Accepted.ToString();
             await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
 
-            post.Status = StatusEnums.Inactive.ToString();
-            await _unitOfWork.PostRepository.Update(post);
+            //post.Status = StatusEnums.Inactive.ToString();
+            //await _unitOfWork.PostRepository.Update(post);
 
             var acceptedCustomerId = customerRequest.CustomerId;
             if (!string.IsNullOrEmpty(acceptedCustomerId))
@@ -571,9 +571,12 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.RoomStayCustomerRepository.Add(roomStayCusNew);
             await _unitOfWork.SaveAsync();
 
+            /*
             var otherRequests = await _unitOfWork.CustomerRequestRepository.Get(
                 filter: cr => cr.RequestId == roommateRequest.RequestId && cr.CustomerRequestId != requestId && cr.Status == StatusEnums.Pending.ToString(),
                 includeProperties: "Customer.User");
+
+            var rejectReason = "Người đăng bài đã tìm được bạn ở ghép phù hợp.";
 
             foreach (var otherRequest in otherRequests)
             {
@@ -592,7 +595,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                         ownerPostName,
                         titlePost,
                         addressRoom,
-                        reason: "Dc roi nha." 
+                        reason: rejectReason
                         );
 
                     await _emailService.SendEmail(
@@ -605,6 +608,56 @@ namespace SP25_RPSC.Services.Service.CustomerService
             roommateRequest.Status = StatusEnums.Completed.ToString();
             await _unitOfWork.RoommateRequestRepository.Update(roommateRequest);
             await _unitOfWork.SaveAsync();
+            */
+
+            var currentMemberCount = await _unitOfWork.RoomStayCustomerRepository.Get(
+                        filter: rsc => rsc.RoomStayId == roomStay.RoomStayId && rsc.Status == StatusEnums.Active.ToString()
+                    );
+
+            int maxCapacity = rentalRoom.RoomType?.MaxOccupancy ?? 0;
+            if (currentMemberCount.Count() >= maxCapacity)
+            {
+                post.Status = StatusEnums.Inactive.ToString();
+                await _unitOfWork.PostRepository.Update(post);
+
+                roommateRequest.Status = StatusEnums.Completed.ToString();
+                await _unitOfWork.RoommateRequestRepository.Update(roommateRequest);
+                await _unitOfWork.SaveAsync();
+
+                var remainingRequests = await _unitOfWork.CustomerRequestRepository.Get(
+                    filter: cr => cr.RequestId == roommateRequest.RequestId
+                              && cr.Status == StatusEnums.Pending.ToString(),
+                    includeProperties: "Customer.User");
+
+                foreach (var remainingRequest in remainingRequests)
+                {
+                    remainingRequest.Status = StatusEnums.Rejected.ToString();
+                    await _unitOfWork.CustomerRequestRepository.Update(remainingRequest);
+
+                    if (remainingRequest.Customer?.User != null)
+                    {
+                        var rejectedEmail = remainingRequest.Customer.User.Email;
+                        var rejectedName = remainingRequest.Customer.User.FullName ?? "Người dùng";
+                        var ownerName = customer.User.FullName ?? "Chủ phòng";
+                        var titlePost = post.Title ?? "Phòng trọ";
+                        var addressRoom = post.RentalRoom?.Location ?? "Không có địa chỉ";
+                        var rejectReason = "Phòng trọ đã đủ người ở ghép.";
+
+                        var rejectContent = EmailTemplate.RoomSharingRejected(
+                            rejectedName,
+                            ownerName,
+                            titlePost,
+                            addressRoom,
+                            reason: rejectReason
+                        );
+
+                        await _emailService.SendEmail(
+                            rejectedEmail,
+                            "Thông báo từ chối yêu cầu chia sẻ phòng trọ",
+                            rejectContent);
+                    }
+                }
+            }
 
             var acceptedRequesterEmail = customerRequest.Customer.User.Email;
             var acceptedRequesterName = customerRequest.Customer.User.FullName ?? "Người dùng";
@@ -824,7 +877,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             var leaveRoomListRequest = await _unitOfWork.CustomerMoveOutRepository.Get(
-                    filter: cmo => cmo.RoomStayId == roomStayCustomer.RoomStayId && cmo.Status == 0,
+                    filter: cmo => cmo.RoomStayId == roomStayCustomer.RoomStayId && cmo.Status == 0
+                    && cmo.UserMoveId != userId,
                     includeProperties: "UserMove");
             if (leaveRoomListRequest == null || !leaveRoomListRequest.Any())
             {
