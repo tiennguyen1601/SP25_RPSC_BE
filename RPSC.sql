@@ -253,10 +253,14 @@ CREATE TABLE LandlordContracts (
 	LandlordSignatureUrl NVARCHAR(MAX),
     PackageId NVARCHAR(36),
     LandlordId NVARCHAR(36),
+	ServiceDetailId NVARCHAR(36),
     CONSTRAINT FK_LandlordContracts_Package FOREIGN KEY (PackageId) REFERENCES ServicePackage(PackageId),
-    CONSTRAINT FK_LandlordContracts_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId)
-);
+    CONSTRAINT FK_LandlordContracts_Landlord FOREIGN KEY (LandlordId) REFERENCES Landlord(LandlordId),
+	CONSTRAINT FK_LandlordContracts_ServiceDetail FOREIGN KEY (ServiceDetailId) REFERENCES ServiceDetail(ServiceDetailId));
 GO
+
+
+
 
 -- Bảng Transaction
 CREATE TABLE [Transaction] (

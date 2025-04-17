@@ -15,6 +15,7 @@ namespace SP25_RPSC.Data.Repositories.LandlordContractRepository
     {
         Task RevokeExpirePackages(string LandlordId);
         Task<List<LandlordContract>> GetContractByLandlordId(string LandlordId);
+        Task<List<LandlordContract>> GetContractExpiredByLandlordId(string LandlordId);
     }
 
     public class LandlordContractRepository : GenericRepository<LandlordContract>, ILandlordContractRepository
@@ -38,6 +39,7 @@ namespace SP25_RPSC.Data.Repositories.LandlordContractRepository
             {
                 uni.Status = StatusEnums.Expired.ToString();
                  _context.LandlordContracts.Update(uni);
+
             }
         }
 
@@ -47,6 +49,17 @@ namespace SP25_RPSC.Data.Repositories.LandlordContractRepository
                                     .Where(up => up.LandlordId == LandlordId
                                             && up.EndDate > DateTime.Now
                                             && up.Status.Equals(StatusEnums.Active.ToString()))
+                                    .Include(up => up.Package)
+                                    .ThenInclude(up => up.ServiceDetails)
+                                    .Include(t => t.Transactions)
+                                    .ToListAsync();
+        }
+        public async Task<List<LandlordContract>> GetContractExpiredByLandlordId(string LandlordId)
+        {
+            return await _context.LandlordContracts
+                                    .Where(up => up.LandlordId == LandlordId
+                                            && up.EndDate < DateTime.Now
+                                            && up.Status.Equals(StatusEnums.Expired.ToString()))
                                     .Include(up => up.Package)
                                     .ThenInclude(up => up.ServiceDetails)
                                     .Include(t => t.Transactions)

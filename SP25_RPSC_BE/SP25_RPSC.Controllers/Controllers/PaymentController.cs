@@ -34,7 +34,7 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
         [HttpPost("package/extend")]
-        [Authorize(Roles = "REPRESENTATIVE")]
+        //[Authorize(Roles = "REPRESENTATIVE")]
         public async Task<IActionResult> CreateExtendRequestUrl([FromForm] PaymentExtendPackageRequestDTO request)
         {
             // call payment service

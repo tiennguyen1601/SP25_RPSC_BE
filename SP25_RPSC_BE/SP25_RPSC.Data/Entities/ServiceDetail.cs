@@ -17,6 +17,8 @@ public partial class ServiceDetail
 
     public string? PackageId { get; set; }
 
+    public virtual ICollection<LandlordContract> LandlordContracts { get; set; } = new List<LandlordContract>();
+
     public virtual ServicePackage? Package { get; set; }
 
     public virtual ICollection<PricePackage> PricePackages { get; set; } = new List<PricePackage>();
