@@ -657,6 +657,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
                             rejectContent);
                     }
                 }
+
+                await _unitOfWork.SaveAsync();
             }
 
             var acceptedRequesterEmail = customerRequest.Customer.User.Email;
@@ -1036,6 +1038,20 @@ namespace SP25_RPSC.Services.Service.CustomerService
             return true;
         }
 
+
+        public async Task<bool> CheckLeaveRoomRequest(string userId, string roomStayId)
+        {
+            var leaveRoomListRequest = await _unitOfWork.CustomerMoveOutRepository.Get(
+                    filter: cmo => cmo.RoomStayId == roomStayId && cmo.Status == 0
+                    && cmo.UserMoveId != userId,
+                    includeProperties: "UserMove");
+            if (leaveRoomListRequest == null || !leaveRoomListRequest.Any())
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<bool> RequestLeaveRoomByTenant(string token, TenantRoomLeavingReq request)
         {
             if (string.IsNullOrEmpty(token))
@@ -1082,6 +1098,12 @@ namespace SP25_RPSC.Services.Service.CustomerService
             if (roomStay == null)
             {
                 throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+            var checkLeaveRoomReq = await CheckLeaveRoomRequest(userId, roomStay.RoomStayId);
+            if (checkLeaveRoomReq)
+            {
+                throw new ArgumentException("You must process your roommate's request to leave first.");
             }
 
             // Get all active members in the room
