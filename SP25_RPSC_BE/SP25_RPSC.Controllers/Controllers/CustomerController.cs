@@ -47,7 +47,7 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
-        [HttpDelete("cancel-roommate-request/{requestId}")]
+        [HttpPut("cancel-roommate-request/{requestId}")]
         public async Task<IActionResult> CancelRoommateRequest(string requestId)
         {
             try
@@ -605,7 +605,80 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
 
-
+        [HttpPut("kick-roommate-by-tenant")]
+        public async Task<IActionResult> KickRoommateByTenant([FromForm] KickRoommateReq request)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _customerService.KickRoommateByTenant(token, request);
+                if (result)
+                {
+                    ResultModel response = new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Roommate has been kicked out successfully.",
+                    };
+                    return StatusCode(response.Code, response);
+                }
+                else
+                {
+                    ResultModel response = new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.InternalServerError,
+                        Message = "Failed to kick out roommate.",
+                    };
+                    return StatusCode(response.Code, response);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while processing kick roommate request: " + ex.Message
+                });
+            }
+        }
 
     }
 }

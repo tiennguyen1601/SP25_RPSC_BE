@@ -18,6 +18,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
         Task<ListLeaveRoomRes> GetListLeaveRoomRequest(string token);
         Task<bool> AcceptLeaveRoomRequest(string token, string requestId);
         Task<bool> RequestLeaveRoomByTenant(string token, TenantRoomLeavingReq request);
+        Task<bool> KickRoommateByTenant(string token, KickRoommateReq kickRoommateReq);
 
 
     }
