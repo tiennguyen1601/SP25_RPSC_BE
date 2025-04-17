@@ -426,7 +426,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
             await _unitOfWork.SaveAsync();
 
-            var rejectReason = "Có vẻ như 2 bạn hơi khác biệt về phong cách sống.";
+            var rejectReason = ReasonEnums.RejectSharingReason.ToString();
             if (!string.IsNullOrEmpty(rejectSharingReq.reason)) { rejectReason = rejectSharingReq.reason; }
 
             if (customerRequest.Customer?.User != null)
