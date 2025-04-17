@@ -483,10 +483,10 @@ namespace SP25_RPSC.Services.Service.PostService
                 post.Description = request.Description;
             }
 
-            //if (request.Price.HasValue && request.Price.Value > 0)
-            //{
-            //    post.Price = request.Price.Value;
-            //}
+            if (request.Price.HasValue && request.Price.Value > 0)
+            {
+                post.Price = request.Price.Value;
+            }
 
             post.UpdatedAt = DateTime.UtcNow;
 
