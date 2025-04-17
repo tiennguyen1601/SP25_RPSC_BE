@@ -22,7 +22,17 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
     {
         public MapperProfiles()
         {
-
+            CreateMap<Landlord, LandlordResponseUptModel>()
+            .ForMember(dest => dest.LandlordId, opt => opt.MapFrom(src => src.LandlordId))
+            .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
+            .ForMember(dest => dest.NumberRoom, opt => opt.MapFrom(src => src.NumberRoom))
+            .ForMember(dest => dest.LicenseNumber, opt => opt.MapFrom(src => src.LicenseNumber))
+            .ForMember(dest => dest.BankName, opt => opt.MapFrom(src => src.BankName))
+            .ForMember(dest => dest.BankNumber, opt => opt.MapFrom(src => src.BankNumber))
+            .ForMember(dest => dest.Template, opt => opt.MapFrom(src => src.Template))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
+            .ForMember(dest => dest.UpdatedDate, opt => opt.MapFrom(src => src.UpdatedDate));
 
             CreateMap<User, UserResponseModel>()
                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
@@ -418,6 +428,22 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl))
                 .ReverseMap();
+
+
+            CreateMap<LandlordContract, LandlordContractDetailRes>()
+            .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type)) 
+            .ForMember(dest => dest.ServiceDetailName, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().Name)) 
+                .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().PricePackages.FirstOrDefault().Price))
+                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().Duration))
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+            .ForMember(dest => dest.LcontractId, opt => opt.MapFrom(src => src.LcontractId))
+            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate)) 
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status)) 
+            .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl)); 
+
+
+
 
             //---------------------------Feedback-------------------------------
             CreateMap<Feedback, ListFeedbackRoomeRes>()

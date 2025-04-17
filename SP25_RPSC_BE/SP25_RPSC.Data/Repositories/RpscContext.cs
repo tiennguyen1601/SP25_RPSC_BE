@@ -459,6 +459,7 @@ public partial class RpscContext : DbContext
             entity.Property(e => e.LandlordId).HasMaxLength(36);
             entity.Property(e => e.LcontractUrl).HasColumnName("LContractUrl");
             entity.Property(e => e.PackageId).HasMaxLength(36);
+            entity.Property(e => e.ServiceDetailId).HasMaxLength(36);
             entity.Property(e => e.SignedDate).HasColumnType("datetime");
             entity.Property(e => e.StartDate).HasColumnType("datetime");
             entity.Property(e => e.Status).HasMaxLength(50);
@@ -471,6 +472,10 @@ public partial class RpscContext : DbContext
             entity.HasOne(d => d.Package).WithMany(p => p.LandlordContracts)
                 .HasForeignKey(d => d.PackageId)
                 .HasConstraintName("FK_LandlordContracts_Package");
+
+            entity.HasOne(d => d.ServiceDetail).WithMany(p => p.LandlordContracts)
+                .HasForeignKey(d => d.ServiceDetailId)
+                .HasConstraintName("FK_LandlordContracts_ServiceDetail");
         });
 
         modelBuilder.Entity<Notification>(entity =>

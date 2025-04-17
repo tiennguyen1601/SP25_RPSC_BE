@@ -12,6 +12,8 @@ using SP25_RPSC.Services.Service.EmailService;
 using Microsoft.AspNetCore.Http;
 using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
+using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 
 namespace SP25_RPSC.Services.Service.UserService
 {
@@ -407,6 +409,10 @@ namespace SP25_RPSC.Services.Service.UserService
                 filter: u => u.UserId == userId
             )).FirstOrDefault();
 
+            var landlord = (await _unitOfWork.LandlordRepository.Get(
+                includeProperties: "User,BusinessImages",
+                filter: c => c.UserId == user.UserId)).FirstOrDefault();
+
             if (user == null)
             {
                 throw new ApiException(HttpStatusCode.NotFound, "User not found.");
@@ -427,8 +433,12 @@ namespace SP25_RPSC.Services.Service.UserService
             if (model.Dob.HasValue)
                 user.Dob = model.Dob;
 
-            if (!string.IsNullOrEmpty(model.Avatar))
-                user.Avatar = model.Avatar;
+            if (model.Avatar != null)
+            {
+                var avatarList = new List<IFormFile> { model.Avatar };
+                var uploadedUrls = await _cloudinaryStorageService.UploadImageAsync(avatarList);
+                user.Avatar = uploadedUrls.FirstOrDefault();
+            }
 
             user.UpdateAt = DateTime.UtcNow;
 
@@ -469,6 +479,86 @@ namespace SP25_RPSC.Services.Service.UserService
 
 
             await _unitOfWork.CustomerRepository.Update(customer);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+        public async Task<GetLandlordByUserIdResponseModel> GetLandlordByUserId(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "User ID is required.");
+            }
+
+            var user = (await _unitOfWork.UserRepository.Get(
+                filter: u => u.UserId == userId,
+                includeProperties: "Landlords.BusinessImages"  
+            )).FirstOrDefault();
+
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            var landlord = user.Landlords.FirstOrDefault(l => l.UserId == userId);
+
+            if (landlord == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found for this user.");
+            }
+
+            var userResponse = _mapper.Map<UserResponseModel>(user);
+            var landlordResponse = _mapper.Map<LandlordResponseUptModel>(landlord);
+
+            landlordResponse.BusinessImages = landlord.BusinessImages.Select(bi => bi.ImageUrl).ToList();
+
+            return new GetLandlordByUserIdResponseModel
+            {
+                User = userResponse,
+                Landlord = landlordResponse
+            };
+        }
+
+
+        public async Task<bool> UpdateLandlord(string token, UpdateLandlordRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found.");
+            }
+
+            if (!string.IsNullOrEmpty(model.CompanyName))
+                landlord.CompanyName = model.CompanyName;
+
+            //if (model.NumberRoom.HasValue)
+            //    landlord.NumberRoom = model.NumberRoom;
+
+            if (!string.IsNullOrEmpty(model.LicenseNumber))
+                landlord.LicenseNumber = model.LicenseNumber;
+
+            if (!string.IsNullOrEmpty(model.BankName))
+                landlord.BankName = model.BankName;
+
+            if (!string.IsNullOrEmpty(model.BankNumber))
+                landlord.BankNumber = model.BankNumber;
+
+            if (!string.IsNullOrEmpty(model.Template))
+                landlord.Template = model.Template;
+
+            if (!string.IsNullOrEmpty(model.Status))
+                landlord.Status = model.Status;
+
+            landlord.UpdatedDate = DateTime.UtcNow;
+
+            await _unitOfWork.LandlordRepository.Update(landlord);
             await _unitOfWork.SaveAsync();
 
             return true;

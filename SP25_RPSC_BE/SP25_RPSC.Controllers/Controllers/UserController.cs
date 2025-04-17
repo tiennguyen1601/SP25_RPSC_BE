@@ -297,7 +297,7 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpPut]
         [Route("Update-User-Profile")]
-        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserRequestModel model)
+        public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateUserRequestModel model)
         {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             try
@@ -334,6 +334,73 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+
+        [HttpGet]
+        [Route("Get-Landlord-By-UserId")]
+        public async Task<IActionResult> GetLandlordByUserId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.GetLandlordByUserId(token);
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Landlord information retrieved successfully.",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving landlord information: " + ex.Message
+                });
+            }
+        }
+
+        [HttpPut]
+        [Route("Edit-Landlord-Profile")]
+        public async Task<IActionResult> UpdateLandlordProfile([FromBody] UpdateLandlordRequestModel model)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.UpdateLandlord(token, model);
+
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Landlord profile updated successfully."
+                    });
+                }
+                else
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Failed to update landlord profile."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while updating landlord profile: " + ex.Message
+                });
+            }
+        }
 
 
 
