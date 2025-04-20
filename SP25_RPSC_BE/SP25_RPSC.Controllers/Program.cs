@@ -84,6 +84,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IAmentyService, AmentyService>(); 
 builder.Services.AddScoped<ICustomerRentRoomDetailRequestService, CustomerRentRoomDetailRequestService>();
+builder.Services.AddHostedService<ContractExpiryCheckService>();
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>
