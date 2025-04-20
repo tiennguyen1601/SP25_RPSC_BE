@@ -12,6 +12,7 @@ namespace SP25_RPSC.Services.Service.LandlordService
     {
         Task<Landlord?> GetLandlordById(string id);
         Task<ListTenantLeaveRoomRes> GetListTenantLeaveRoomRequest(string token);
+        Task<DetailTenantLeaveRoomRes> GetDetailTenantLeaveRoomRequest(string cmoId);
         Task<bool> AcceptTenantLeaveRoomRequest(string token, string requestId);
 
     }
