@@ -361,6 +361,70 @@ namespace SP25_RPSC.Services.Service.RoomServices
             return result;
         }
 
+        public async Task<List<UserPastRoomRes>> GetUserPastRooms(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var currentCustomer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User"
+            )).FirstOrDefault();
+
+            if (currentCustomer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var roomStayCustomers = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == currentCustomer.CustomerId,
+                includeProperties: "RoomStay,RoomStay.Room,RoomStay.Room.RoomType,RoomStay.Room.RoomImages,RoomStay.Room.RoomType.Address"
+            );
+
+            var pastRoomStayCustomers = roomStayCustomers
+                .Where(rsc => !rsc.Status.Equals(StatusEnums.Active.ToString()) && !rsc.Status.Equals(StatusEnums.Pending.ToString()))
+                .ToList();
+
+
+
+            var response = new List<UserPastRoomRes>();
+
+            foreach (var roomStayCustomer in pastRoomStayCustomers)
+            {
+                var roomStay = roomStayCustomer.RoomStay;
+                var room = roomStay?.Room;
+                var roomType = room?.RoomType;
+
+                if (roomStay == null || room == null || roomType == null) continue;
+
+                var roomImages = room.RoomImages
+                   .Where(ri => !string.IsNullOrEmpty(ri.ImageUrl))
+                   .Select(ri => ri.ImageUrl)
+                   .ToList();
+
+
+                var pastRoomInfo = new UserPastRoomRes
+                {
+                    RoomId = room.RoomId,
+                    RoomNumber = room.RoomNumber,
+                    Title = room.Title,
+                    Description = room.Description,
+                    RoomTypeName = roomType.RoomTypeName,
+                    Address = room.Location,
+                    Images = roomImages,
+                };
+
+                response.Add(pastRoomInfo);
+            }
+
+            return response;
+        }
+
 
     }
 }

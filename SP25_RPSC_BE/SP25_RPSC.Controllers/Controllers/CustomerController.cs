@@ -680,5 +680,40 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+
+        [HttpGet("get-past-roommates")]
+        public async Task<IActionResult> GetPastRoommates()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Authorization token is required" });
+                }
+
+                var pastRoommates = await _customerService.GetPastRoommates(token);
+                return Ok(new
+                {
+                    isSuccess = true,
+                    message = "Past roommates retrieved successfully",
+                    data = pastRoommates
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { isSuccess = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { isSuccess = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { isSuccess = false, message = "An error occurred while retrieving past roommates", error = ex.Message });
+            }
+        }
+
+
     }
 }

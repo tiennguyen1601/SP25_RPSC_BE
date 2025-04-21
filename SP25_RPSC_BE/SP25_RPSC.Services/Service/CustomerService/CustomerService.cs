@@ -24,7 +24,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
 {
 
 
-    public class CustomerService : ICustomerService 
+    public class CustomerService : ICustomerService
     {
 
         private readonly IUnitOfWork _unitOfWork;
@@ -1373,5 +1373,84 @@ namespace SP25_RPSC.Services.Service.CustomerService
             return true;
         }
 
+        public async Task<List<PastRoommateRes>> GetPastRoommates(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var currentCustomer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User"
+            )).FirstOrDefault();
+
+            if (currentCustomer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var customerRoomStays = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == currentCustomer.CustomerId,
+                includeProperties: "RoomStay"
+            );
+
+            var roomStayIds = customerRoomStays.Select(rsc => rsc.RoomStayId).ToList();
+
+            var pastRoommates = new List<Customer>();
+
+            foreach (var roomStayId in roomStayIds)
+            {
+                var roommatesInRoomStay = await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: rsc => rsc.RoomStayId == roomStayId && rsc.CustomerId != currentCustomer.CustomerId,
+                    includeProperties: "Customer,Customer.User"
+                );
+
+                foreach (var roommate in roommatesInRoomStay)
+                {
+                    if (roommate.Customer != null && !pastRoommates.Any(c => c.CustomerId == roommate.Customer.CustomerId))
+                    {
+                        pastRoommates.Add(roommate.Customer);
+                    }
+                }
+            }
+
+            var currentRoomStays = customerRoomStays
+                .Where(rsc => rsc.Status.Equals(StatusEnums.Active.ToString()) || rsc.Status.Equals(StatusEnums.Pending.ToString()))
+                .Select(rsc => rsc.RoomStayId)
+                .ToList();
+
+            var currentRoommates = new List<string>();
+
+            foreach (var roomStayId in currentRoomStays)
+            {
+                var roommatesInRoomStay = await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: rsc => rsc.RoomStayId == roomStayId &&
+                                   rsc.CustomerId != currentCustomer.CustomerId &&
+                                   (rsc.Status.Equals(StatusEnums.Active.ToString()) || rsc.Status.Equals(StatusEnums.Pending.ToString()))
+                );
+
+                currentRoommates.AddRange(roommatesInRoomStay.Select(r => r.CustomerId).ToList());
+            }
+
+            var pastRoommatesFiltered = pastRoommates
+                .Where(pr => !currentRoommates.Contains(pr.CustomerId))
+                .ToList();
+
+            var response = pastRoommatesFiltered.Select(pr => new PastRoommateRes
+            {
+                CustomerId = pr.CustomerId,
+                UserId = pr.UserId,
+                FullName = pr.User?.FullName,
+                Email = pr.User?.Email,
+                PhoneNumber = pr.User?.PhoneNumber,
+                AvatarUrl = pr.User?.Avatar,
+            }).ToList();
+
+            return response;
+        }
     }
 }
