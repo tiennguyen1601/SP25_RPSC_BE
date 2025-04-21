@@ -7,6 +7,7 @@ using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Data.Models.FeedbackModel.Request;
 using Newtonsoft.Json.Linq;
+using SP25_RPSC.Data.Enums;
 
 namespace SP25_RPSC.Services.Service.FeedbackService
 {
@@ -116,23 +117,102 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             return true;
         }
 
-        public async Task<bool> CreateFeedBackCustomer(FeedBackCustomerRequestModel model, string token)
+        public async Task<bool> CreateFeedBackRoommate(FeedBackRoommateRequestModel request, string token)
         {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
+
+            var reviewer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (reviewer == null)
+            {
+                throw new UnauthorizedAccessException("Reviewer not found.");
+            }
+
+            if (string.IsNullOrEmpty(request.RevieweeId))
+            {
+                throw new InvalidOperationException("Reviewee ID is required.");
+            }
+            var revieweeUserId = request.RevieweeId;
+
+            var reviewee = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == revieweeUserId,
+                includeProperties: "User")).FirstOrDefault();
+            if (reviewer == null)
+            {
+                throw new KeyNotFoundException("Reviewee not found.");
+            }
+
+            var feedbackCheck = (await _unitOfWork.FeedbackRepository.Get(
+                filter: fb => fb.ReviewerId == userId && 
+                        fb.RevieweeId == reviewee.User.UserId &&
+                        fb.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (feedbackCheck != null)
+            {
+                throw new InvalidOperationException("You have already given feedback about this roommate.");
+            }
+
+
+            var sharedRoomStays = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == reviewer.CustomerId,
+                includeProperties: "RoomStay"
+            );
+
+            var sharedRoomStayIds = sharedRoomStays
+                .Select(rsc => rsc.RoomStayId)
+                .ToList();
+
+            var revieweeInSharedRoomStays = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == reviewee.CustomerId &&
+                              sharedRoomStayIds.Contains(rsc.RoomStayId)
+            );
+
+            if (!revieweeInSharedRoomStays.Any())
+            {
+                throw new InvalidOperationException("You are not roommate.");
+            }
+
+
+            // Check xem co dang o cung nhau hay khong
+            var currentReviewerRoomStays = await _unitOfWork.RoomStayCustomerRepository.Get(
+                       filter: rsc => rsc.CustomerId == reviewer.CustomerId &&
+                                     (rsc.Status == "Active" || rsc.Status == "Pending"),
+                       includeProperties: "RoomStay"
+                   );
+
+            var currentReviewerRoomStayIds = currentReviewerRoomStays
+                .Select(rsc => rsc.RoomStayId)
+                .ToList();
+
+            var currentlySharing = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == reviewee.CustomerId &&
+                              currentReviewerRoomStayIds.Contains(rsc.RoomStayId) &&
+                              (rsc.Status == "Active" || rsc.Status == "Pending")
+            );
+
+            if (currentlySharing.Any())
+            {
+                throw new InvalidOperationException("You are still in sharing room.");
+            }
 
             var feedback = new Feedback()
             {
                 FeedbackId = Guid.NewGuid().ToString(),
-                Description = model.Description,
-                RevieweeId = model.RevieweeId,
+                Description = request.Description,
+                Type = FeedbackTypeEnums.Roommate.ToString(),
+                Status = StatusEnums.Active.ToString(),
+                Rating = request.Rating,
+                RevieweeId = request.RevieweeId,
                 ReviewerId = userId,
-                Rating = model.Rating,
                 CreatedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
             };
 
-            var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
+            var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(request.Images);
             foreach (var link in downloadUrl)
             {
                 var Image = new ImageRf
@@ -148,6 +228,21 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             return true;
         }
 
+
+        public async Task<bool> UpdateFeedbackRoommate(UpdateFeedbackRoommateReq request, string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(request.FeedbackId);
+            if (feedback == null)
+            {
+                throw new KeyNotFoundException("Feedback not found.");
         public async Task<bool> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model, string token)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
@@ -162,6 +257,35 @@ namespace SP25_RPSC.Services.Service.FeedbackService
 
             if (feedback.ReviewerId != userId)
             {
+                throw new UnauthorizedAccessException("You are not authorized to update this feedback.");
+            }
+
+            var fbCreatedDate = feedback.CreatedDate;
+            var nowDate = DateTime.Now;
+            var checkDate = nowDate - fbCreatedDate;
+
+            if (checkDate.HasValue && checkDate.Value.TotalDays > 3)
+            {
+                throw new InvalidOperationException("Feedback can only be updated within 3 days of creation.");
+            }
+
+            feedback.Description = request.Description;
+            feedback.Rating = request.Rating;
+            feedback.UpdatedDate = DateTime.Now;
+
+            // Handle image updates if provided
+            if (request.Images != null && request.Images.Any())
+            {
+                    var existingImages = await _unitOfWork.ImageRfRepository.Get(
+                        filter: i => i.FeedbackId == feedback.FeedbackId
+                    );
+
+                    foreach (var image in existingImages)
+                    {
+                        _unitOfWork.ImageRfRepository.Delete(image);
+                    }
+
+                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(request.Images);
                 return false;
             }
 
@@ -190,10 +314,23 @@ namespace SP25_RPSC.Services.Service.FeedbackService
                     {
                         ImageRfid = Guid.NewGuid().ToString(),
                         ImageRfurl = link,
-                        FeedbackId = feedbackId
+                        FeedbackId = feedback.FeedbackId
                     };
                     await _unitOfWork.ImageRfRepository.Add(image);
                 }
+            }
+
+            _unitOfWork.FeedbackRepository.Update(feedback);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteFeedbackRoommate(string feedbackId, string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
             }
 
             await _unitOfWork.FeedbackRepository.Update(feedback);
@@ -207,6 +344,9 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             var userId = tokenModel.userid;
 
             var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+            if (feedback == null)
+            {
+                throw new KeyNotFoundException("Feedback not found.");
 
             if (feedback == null)
             {
@@ -215,6 +355,24 @@ namespace SP25_RPSC.Services.Service.FeedbackService
 
             if (feedback.ReviewerId != userId)
             {
+                throw new UnauthorizedAccessException("You are not authorized to delete this feedback.");
+            }
+
+            var fbCreatedDate = feedback.CreatedDate;
+            var nowDate = DateTime.Now;
+            var checkDate = nowDate - fbCreatedDate;
+
+            if (checkDate.HasValue && checkDate.Value.TotalDays > 3)
+            {
+                throw new InvalidOperationException("Feedback can only be deleted within 3 days of creation.");
+            }
+
+            feedback.Status = StatusEnums.Inactive.ToString();
+            feedback.UpdatedDate = DateTime.Now;
+
+            _unitOfWork.FeedbackRepository.Update(feedback);
+            await _unitOfWork.SaveAsync();
+
                 return false;
             }
 
