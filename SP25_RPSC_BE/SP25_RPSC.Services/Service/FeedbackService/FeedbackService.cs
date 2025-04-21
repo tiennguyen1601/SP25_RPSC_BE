@@ -229,6 +229,92 @@ namespace SP25_RPSC.Services.Service.FeedbackService
         }
 
 
+        public async Task<bool> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model, string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+
+            if (feedback == null)
+            {
+                return false;
+            }
+
+            if (feedback.ReviewerId != userId)
+            {
+                return false;
+            }
+
+            if ((DateTime.Now - feedback.CreatedDate.Value).TotalDays > 3)
+            {
+                return false;
+            }
+
+            feedback.Description = model.Description;
+            feedback.Rating = model.Rating;
+            feedback.UpdatedDate = DateTime.Now;
+
+            if (model.Images != null && model.Images.Any())
+            {
+                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
+
+                var existingImages = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
+                foreach (var image in existingImages)
+                {
+                    await _unitOfWork.ImageRfRepository.Delete(image);
+                }
+
+                foreach (var link in downloadUrl)
+                {
+                    var image = new ImageRf
+                    {
+                        ImageRfid = Guid.NewGuid().ToString(),
+                        ImageRfurl = link,
+                        FeedbackId = feedbackId
+                    };
+                    await _unitOfWork.ImageRfRepository.Add(image);
+                }
+            }
+
+            await _unitOfWork.FeedbackRepository.Update(feedback);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteFeedbackRoom(string feedbackId, string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
+
+            if (feedback == null)
+            {
+                return false;
+            }
+
+            if (feedback.ReviewerId != userId)
+            {
+                return false;
+            }
+
+            if ((DateTime.Now - feedback.CreatedDate.Value).TotalDays > 3)
+            {
+                return false;
+            }
+
+            var images = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
+            foreach (var image in images)
+            {
+                await _unitOfWork.ImageRfRepository.Delete(image);
+            }
+
+            await _unitOfWork.FeedbackRepository.Delete(feedback);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+
         public async Task<bool> UpdateFeedbackRoommate(UpdateFeedbackRoommateReq request, string token)
         {
             if (string.IsNullOrEmpty(token))
@@ -243,16 +329,6 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             if (feedback == null)
             {
                 throw new KeyNotFoundException("Feedback not found.");
-        public async Task<bool> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model, string token)
-        {
-            var tokenModel = _decodeTokenHandler.decode(token);
-            var userId = tokenModel.userid;
-
-            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
-
-            if (feedback == null)
-            {
-                return false;
             }
 
             if (feedback.ReviewerId != userId)
@@ -276,38 +352,16 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             // Handle image updates if provided
             if (request.Images != null && request.Images.Any())
             {
-                    var existingImages = await _unitOfWork.ImageRfRepository.Get(
-                        filter: i => i.FeedbackId == feedback.FeedbackId
-                    );
+                var existingImages = await _unitOfWork.ImageRfRepository.Get(
+                    filter: i => i.FeedbackId == feedback.FeedbackId
+                );
 
-                    foreach (var image in existingImages)
-                    {
-                        _unitOfWork.ImageRfRepository.Delete(image);
-                    }
-
-                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(request.Images);
-                return false;
-            }
-
-            if ((DateTime.Now - feedback.CreatedDate.Value).TotalDays > 3)
-            {
-                return false;
-            }
-
-            feedback.Description = model.Description;
-            feedback.Rating = model.Rating;
-            feedback.UpdatedDate = DateTime.Now;
-
-            if (model.Images != null && model.Images.Any())
-            {
-                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
-
-                var existingImages = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
                 foreach (var image in existingImages)
                 {
-                   await _unitOfWork.ImageRfRepository.Delete(image);
+                    _unitOfWork.ImageRfRepository.Delete(image);
                 }
 
+                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(request.Images);
                 foreach (var link in downloadUrl)
                 {
                     var image = new ImageRf
@@ -333,13 +387,6 @@ namespace SP25_RPSC.Services.Service.FeedbackService
                 throw new UnauthorizedAccessException("Invalid or expired token.");
             }
 
-            await _unitOfWork.FeedbackRepository.Update(feedback);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
-
-        public async Task<bool> DeleteFeedbackRoom(string feedbackId, string token)
-        {
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
 
@@ -347,10 +394,6 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             if (feedback == null)
             {
                 throw new KeyNotFoundException("Feedback not found.");
-
-            if (feedback == null)
-            {
-                return false;
             }
 
             if (feedback.ReviewerId != userId)
@@ -373,23 +416,9 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             _unitOfWork.FeedbackRepository.Update(feedback);
             await _unitOfWork.SaveAsync();
 
-                return false;
-            }
-
-            if ((DateTime.Now - feedback.CreatedDate.Value).TotalDays > 3)
-            {
-                return false;
-            }
-
-            var images = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
-            foreach (var image in images)
-            {
-               await _unitOfWork.ImageRfRepository.Delete(image);
-            }
-
-            await _unitOfWork.FeedbackRepository.Delete(feedback);
-            await _unitOfWork.SaveAsync();
             return true;
         }
+
+
     }
 }
