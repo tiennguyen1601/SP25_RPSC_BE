@@ -141,5 +141,83 @@ namespace SP25_RPSC.Controllers.Controllers
 
             return BadRequest(new { Message = "FeedBack cannot be created" });
         }
+
+        [HttpPut("update-feedbackroom/{feedbackId}")]
+        public async Task<IActionResult> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _feedbackService.UpdateFeedbackRoom(feedbackId, model, token);
+
+                if (result)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Cập nhật feedback thành công."
+                    });
+                }
+                else
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Không thể cập nhật feedback. Vui lòng kiểm tra quyền hạn hoặc thời gian chỉnh sửa (chỉ được phép trong vòng 3 ngày)."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "Đã xảy ra lỗi khi xử lý yêu cầu.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+        [HttpDelete("delete-feedbackroom/{feedbackId}")]
+        public async Task<IActionResult> DeleteFeedbackRoom(string feedbackId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _feedbackService.DeleteFeedbackRoom(feedbackId, token);
+
+                if (result)
+                {
+                    return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Xóa feedback thành công."
+                    });
+                }
+                else
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Không thể xóa feedback. Vui lòng kiểm tra quyền hạn hoặc thời gian xóa (chỉ được phép trong vòng 3 ngày)."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "Đã xảy ra lỗi khi xử lý yêu cầu.",
+                    Data = ex.Message
+                });
+            }
+        }
     }
 }

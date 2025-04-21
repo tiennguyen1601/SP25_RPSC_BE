@@ -12,9 +12,9 @@ namespace SP25_RPSC.Services.Service.FeedbackService
     {
         Task<ViewFeedbackResponseDTO> GetFeedbacksRoomByLandlord(string token, string searchQuery, int pageIndex, int pageSize);
         Task<FeedbackDetailResDTO> GetFeedbackDetailById(string feedbackId);
-
         Task<bool> CreateFeedBackRoom(FeedBackRoomRequestModel model, string token);
-
+        Task<bool> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model, string token);
+        Task<bool> DeleteFeedbackRoom(string feedbackId, string token);
         Task<bool> CreateFeedBackCustomer(FeedBackCustomerRequestModel model, string token);
     }
 }
