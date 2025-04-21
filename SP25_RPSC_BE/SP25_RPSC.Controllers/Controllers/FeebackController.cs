@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using SP25_RPSC.Data.Models.FeedbackModel.Request;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Data.Models.RoomModel.RequestModel;
@@ -13,10 +14,12 @@ namespace SP25_RPSC.Controllers.Controllers
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
+        private readonly ILogger<FeedbackController> _logger;
 
-        public FeedbackController(IFeedbackService feedbackService)
+        public FeedbackController(IFeedbackService feedbackService, ILogger<FeedbackController> logger)
         {
             _feedbackService = feedbackService;
+            _logger = logger;
         }
 
         [HttpGet("landlord/feedbacks")]
@@ -121,25 +124,180 @@ namespace SP25_RPSC.Controllers.Controllers
         }
 
         [HttpPost]
-        [Route("Create-feedbackCustomer")]
-        public async Task<ActionResult> CreateFeedBackCustomer(FeedBackCustomerRequestModel model)
-
+        [Route("create-feedback-roommate")]
+        public async Task<ActionResult> CreateFeedbackRoommate([FromForm] FeedBackRoommateRequestModel model)
         {
-            //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
-            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            var result = await _feedbackService.CreateFeedBackCustomer(model, token);
-
-            if (result)
+            try
             {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _feedbackService.CreateFeedBackRoommate(model, token);
+
                 return Ok(new ResultModel
                 {
                     IsSuccess = true,
                     Code = (int)HttpStatusCode.OK,
-                    Message = "FeedBack created successfully"
+                    Message = "Feedback created successfully",
+                    Data = result
                 });
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"Authorization error: {ex.Message}");
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning($"Resource not found: {ex.Message}");
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Invalid operation: {ex.Message}");
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error creating feedback: {ex.Message}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while processing your request."
+                });
+            }
+        }
 
-            return BadRequest(new { Message = "FeedBack cannot be created" });
+
+        [HttpPut]
+        [Route("update-feedback-roommate")]
+        public async Task<ActionResult> UpdateFeedbackRoommate([FromForm] UpdateFeedbackRoommateReq request)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _feedbackService.UpdateFeedbackRoommate(request, token);
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Feedback updated successfully",
+                    Data = result
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"Authorization error: {ex.Message}");
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning($"Resource not found: {ex.Message}");
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Invalid operation: {ex.Message}");
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating feedback: {ex.Message}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while updating the feedback."
+                });
+            }
+        }
+
+        [HttpPut]
+        [Route("delete-feedback-roommate/{feedbackId}")]
+        public async Task<ActionResult> DeleteFeedbackRoommate(string feedbackId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _feedbackService.DeleteFeedbackRoommate(feedbackId, token);
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Feedback deleted successfully"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"Authorization error: {ex.Message}");
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning($"Resource not found: {ex.Message}");
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Invalid operation: {ex.Message}");
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error deleting feedback: {ex.Message}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while deleting the feedback."
+                });
+            }
         }
 
         [HttpPut("update-feedbackroom/{feedbackId}")]
