@@ -88,6 +88,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IRoomAmentyListRepository RoomAmentyListRepository { get; }
         ICustomerMoveOutRepository CustomerMoveOutRepository { get; }
         IExtendContractRequestRepository ExtendContractRequestRepository { get; }
+        IExtendCcontractRepository ExtendCcontractRepository { get; }
 
         Task<IDbContextTransaction> BeginTransactionAsync();
 

@@ -41,7 +41,7 @@ namespace SP25_RPSC.Services.Service.UserService
             Expression<Func<Customer, bool>> searchFilter = c =>
                 (string.IsNullOrEmpty(searchQuery) ||
                  c.User.Email.Contains(searchQuery) ||
-                 c.User.PhoneNumber.Contains(searchQuery)) 
+                 c.User.PhoneNumber.Contains(searchQuery))
                 &&
                 (string.IsNullOrEmpty(status) || c.Status == status)
                 &&

@@ -798,6 +798,91 @@ namespace SP25_RPSC.Services.Utils.Email
     </div>
 </div>";
         }
+        public static string ExtendContractRejected(string customerName, string contractId, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 25px;'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src='{logoUrl}' alt='EasyRoomie Logo' style='max-width: 180px;' />
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Yêu cầu gia hạn hợp đồng bị từ chối</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{customerName}</strong>,</p>
+        <p style='font-size: 14px;'>Rất tiếc, yêu cầu gia hạn hợp đồng mã số <strong>{contractId}</strong> của bạn đã bị từ chối bởi chủ trọ.</p>
+        
+        <div style='background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; border-left: 5px solid #dc3545; margin: 20px 0;'>
+            <strong>Lý do từ chối:</strong>
+            <p style='margin: 8px 0 0;'>{reason}</p>
+        </div>
+
+        <p style='font-size: 14px;'>Nếu bạn có thắc mắc hoặc cần trao đổi thêm, hãy liên hệ trực tiếp với chủ trọ.</p>
+        <p style='font-size: 14px;'>Chúng tôi luôn sẵn sàng hỗ trợ bạn trong việc tìm kiếm và duy trì nơi ở lý tưởng.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 30px 0;'/>
+        <p style='font-size: 12px; color: #777;'>Đây là email tự động, vui lòng không phản hồi trực tiếp. Mọi thắc mắc xin gửi về: 
+            <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #007bff;'>easyroomie.rpsc@gmail.com</a>
+        </p>
+        <p style='font-size: 12px; color: #777;'>Trân trọng, <br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+        public static string NotifyLandlordForExtendRequest(string landlordName, string customerName, string contractId, int months, string message)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+    <div style='background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 25px;'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src='{logoUrl}' alt='EasyRoomie Logo' style='max-width: 180px;' />
+        </div>
+        <h2 style='color: #007bff; text-align: center;'>Yêu cầu gia hạn hợp đồng</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{landlordName}</strong>,</p>
+        <p style='font-size: 14px;'>Người thuê <strong>{customerName}</strong> đã gửi yêu cầu gia hạn hợp đồng với mã số <strong>{contractId}</strong>.</p>
+
+        <div style='background-color: #f1f1f1; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+            <p><strong>Số tháng muốn gia hạn:</strong> {months} tháng</p>
+            <p><strong>Lời nhắn từ khách thuê:</strong></p>
+            <p style='font-style: italic; color: #555;'>{message}</p>
+        </div>
+
+        <p style='font-size: 14px;'>Vui lòng đăng nhập hệ thống để xem và xử lý yêu cầu này.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 30px 0;'/>
+        <p style='font-size: 12px; color: #777;'>Đây là email tự động, vui lòng không phản hồi. Mọi thắc mắc xin gửi về: 
+            <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #007bff;'>easyroomie.rpsc@gmail.com</a>
+        </p>
+        <p style='font-size: 12px; color: #777;'>Trân trọng, <br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+        public static string ExtendContractApproved(string fullname, string contractId, string newEndDate)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+    <div style='background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); padding: 25px;'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src='{logoUrl}' alt='EasyRoomie Logo' style='max-width: 180px;' />
+        </div>
+        <h2 style='color: #28a745; text-align: center; margin-bottom: 10px;'>Yêu cầu gia hạn được chấp thuận</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{fullname}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi rất vui thông báo rằng yêu cầu gia hạn hợp đồng của bạn (Mã hợp đồng: <strong>{contractId}</strong>) đã được <strong>chủ nhà</strong> chấp nhận.</p>
+
+        <div style='background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+            <p><strong>Ngày kết thúc mới của hợp đồng:</strong></p>
+            <p style='font-size: 16px; font-weight: bold; color: #2e7d32;'>{newEndDate}</p>
+        </div>
+
+        <p style='font-size: 14px;'>Bạn có thể đăng nhập vào hệ thống EasyRoomie để xem chi tiết hợp đồng, cập nhật thông tin, hoặc liên hệ với chủ nhà nếu cần.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 30px 0;' />
+        <p style='font-size: 12px; color: #777;'>Đây là email tự động, vui lòng không phản hồi. Mọi thắc mắc xin gửi về: 
+            <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #007bff;'>easyroomie.rpsc@gmail.com</a>
+        </p>
+        <p style='font-size: 12px; color: #777;'>Trân trọng, <br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+
 
     }
 }

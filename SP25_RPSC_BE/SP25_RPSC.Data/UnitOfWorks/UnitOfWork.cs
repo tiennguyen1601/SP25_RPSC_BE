@@ -86,7 +86,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomAmentyRepository _roomAmentyRepository;
         private IRoomAmentyListRepository _roomAmentyListRepository;
         private ICustomerMoveOutRepository _customerMoveOutRepository;
-
+        private IExtendCcontractRepository _extendCcontractRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -94,7 +94,13 @@ namespace SP25_RPSC.Data.UnitOfWorks
         }
 
         public IChatRepository ChatRepository { get { return _chatRepository ??= new ChatRepository(_context); } }
-
+        public IExtendCcontractRepository ExtendCcontractRepository
+        {
+            get
+            {
+                return _extendCcontractRepository ??= new ExtendCcontractRepository(_context);
+            }
+        }
         public IAddressRepository AddressRepository
         {
             get

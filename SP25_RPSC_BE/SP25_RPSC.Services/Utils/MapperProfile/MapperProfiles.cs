@@ -224,6 +224,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.FullName : null))
                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.Email : null))
                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.Address : null))
+               .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.Avatar : null))
                .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))
                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type))
                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
