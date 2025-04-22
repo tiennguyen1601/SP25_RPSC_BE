@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,8 @@ namespace SP25_RPSC.Data.Repositories.RoommateRequestRepository
 
         public async Task<List<RoommateRequest>> GetRoommateRequestsByPostId(string postId)
         {
-            return await _context.RoommateRequests.Where(r => r.PostId.Equals(postId)).ToListAsync();
+            return await _context.RoommateRequests.Where(r => r.PostId.Equals(postId) && 
+                                                            r.Status.Equals(StatusEnums.Pending.ToString())).ToListAsync();
         }
     }
 }
