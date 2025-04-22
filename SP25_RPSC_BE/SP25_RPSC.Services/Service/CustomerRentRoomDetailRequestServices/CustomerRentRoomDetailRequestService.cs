@@ -97,9 +97,14 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
                 throw new ApiException(HttpStatusCode.NotFound, "Customer not found");
             }
 
-            if (model.MonthWantRent < DateTime.UtcNow.Month || model.DateWantToRent < DateTime.UtcNow)
+            if (model.MonthWantRent < 3)
             {
-                throw new ApiException(HttpStatusCode.BadRequest, "Invalid dates. Dates must be in the future");
+                throw new ApiException(HttpStatusCode.BadRequest, "Minimum rental term is 3 months.");
+            }
+
+            if (model.DateWantToRent < room.AvailableDateToRent)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "Check-in time must be after room availability date to rent.");
             }
 
             var existingRequests = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.GetRoomRentRequestByCustomerId(customer.CustomerId);

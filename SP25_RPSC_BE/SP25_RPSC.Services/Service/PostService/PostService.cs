@@ -14,6 +14,7 @@ using SP25_RPSC.Data.Models.PostModel.Request;
 using Newtonsoft.Json.Linq;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using Microsoft.Extensions.Hosting;
+using SP25_RPSC.Services.Utils.Email;
 
 namespace SP25_RPSC.Services.Service.PostService
 {
@@ -527,7 +528,7 @@ namespace SP25_RPSC.Services.Service.PostService
             return response;
         }
 
-        public async Task<bool> InactivateRoommatePost(string token, string postId)
+        public async Task<bool> InactivateRoommatePostByTenant(string token, string postId)
         {
             if (token == null)
             {
@@ -550,19 +551,26 @@ namespace SP25_RPSC.Services.Service.PostService
             }
 
             // Check if post has any pending or active requests
+            var roommateRequests = (await _unitOfWork.RoommateRequestRepository.Get(
+                                            filter: r => r.Status == StatusEnums.Pending.ToString() &&
+                                                r.PostId == postId)).FirstOrDefault();
 
-            var hasRequests = await _unitOfWork.RoommateRequestRepository.GetRoommateRequestsByPostId(postId);
+            if (roommateRequests != null) {
+                var hasRequests = await _unitOfWork.CustomerRequestRepository.Get(
+                    filter: cr =>
+                        cr.Status == StatusEnums.Pending.ToString() &&
+                        cr.RequestId == roommateRequests.RequestId);
 
-            if (hasRequests.Count > 0)
-            {
-                throw new InvalidOperationException("This post cannot be inactivated because it has pending or active requests.");
+                if (hasRequests != null || hasRequests.Any())
+                {
+                    throw new InvalidOperationException("This post cannot be inactivated because it has room sharing requests.");
+                }
             }
 
-            // Update post status to inactive
             post.Status = StatusEnums.Inactive.ToString();
             post.UpdatedAt = DateTime.UtcNow;
 
-            _unitOfWork.PostRepository.Update(post);
+            await _unitOfWork.PostRepository.Update(post);
             await _unitOfWork.SaveAsync();
 
             return true;
@@ -577,9 +585,91 @@ namespace SP25_RPSC.Services.Service.PostService
             return _mapper.Map<IEnumerable<PostViewModel>>(posts);
         }
 
-        public async Task<bool> InactivatePostAsync(string postId)
+        public async Task<bool> InactivateRoommatePostByLandlord(string token, string postId)
         {
-            return await _unitOfWork.PostRepository.InactivatePostAsync(postId);
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var currentLandlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.Status == StatusEnums.Active.ToString() &&
+                                                l.UserId == userId)).FirstOrDefault();
+            if (currentLandlord == null) {
+                throw new UnauthorizedAccessException("(Landlord not found) This is inactivate roommate post API for landlord.");
+            }
+
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null)
+            {
+                throw new KeyNotFoundException($"Post with ID {postId} not found.");
+            }
+
+            var roommateRequests = (await _unitOfWork.RoommateRequestRepository.Get(
+                                            filter: r => r.Status == StatusEnums.Pending.ToString() &&
+                                                r.PostId == postId)).FirstOrDefault();
+
+            if (roommateRequests != null)
+            {
+                roommateRequests.Status = StatusEnums.Inactive.ToString();
+                await _unitOfWork.RoommateRequestRepository.Update(roommateRequests);
+
+                var customerRequest = (await _unitOfWork.CustomerRequestRepository.Get(
+                                            filter: c => c.Status == StatusEnums.Pending.ToString() &&
+                                            c.RequestId == roommateRequests.RequestId,
+                                            includeProperties: "Customer.User")).ToList();
+
+                foreach (var cr in customerRequest)
+                {
+                    cr.Status = StatusEnums.Rejected.ToString();
+                    await _unitOfWork.CustomerRequestRepository.Update(cr);
+                    if (cr.Customer?.User != null)
+                    {
+                        var cancelRequestEmail = cr.Customer.User.Email;
+                        var customerName = cr.Customer.User.FullName ?? "Người dùng";
+                        var titlePost = post.Title ?? "Phòng trọ";
+                        var addressRoom = post.RentalRoom?.Location ?? "Không có địa chỉ";
+                        var cancelReason = ReasonEnums.InactivateRoommatePostReasonForRequest.ToString();
+                        var cancelRequest = EmailTemplate.CancelRoommateRequestDueToInactivePost(
+                            customerName,
+                            titlePost,
+                            addressRoom,
+                            cancelReason
+                        );
+                        await _emailService.SendEmail(
+                            cancelRequestEmail,
+                            "Thông báo hủy yêu cầu ở ghép",
+                            cancelRequest);
+                    }
+                }
+            }
+
+            var cancelRequestOwnerEmail = post.User.Email;
+            var ownerPostName = post.User.FullName ?? "Người dùng";
+            var postTitle = post.Title ?? "Phòng trọ";
+            var roomAddress = post.RentalRoom?.Location ?? "Không có địa chỉ";
+            var inactivateReason = ReasonEnums.InactivateRoommatePostReason.ToString();
+
+            var inactivatePost = EmailTemplate.InactivateRoommatePostByLandlord(
+                ownerPostName,
+                postTitle,
+                roomAddress,
+                inactivateReason
+            );
+
+            await _emailService.SendEmail(
+                cancelRequestOwnerEmail,
+                "Thông báo vô hiệu hóa bài đăng tìm người ở ghép",
+                inactivatePost);
+
+            post.Status = StatusEnums.Inactive.ToString();
+            post.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.PostRepository.Update(post);
+            await _unitOfWork.SaveAsync();
+
+            return true;
         }
     }
 }

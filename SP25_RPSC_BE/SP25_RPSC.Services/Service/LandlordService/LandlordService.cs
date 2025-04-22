@@ -333,7 +333,7 @@ namespace SP25_RPSC.Services.Service.LandlordService
             roomStayCustomerMove.Status = StatusEnums.Inactive.ToString();
             roomStayCustomerMove.UpdatedAt = DateTime.Now;
             await _unitOfWork.RoomStayCustomerRepository.Update(roomStayCustomerMove);
-
+            await _unitOfWork.SaveAsync();
 
 
             if (!string.IsNullOrEmpty(customerMoveOut.UserDepositeId))
@@ -367,11 +367,13 @@ namespace SP25_RPSC.Services.Service.LandlordService
                             designatedRoomStayCustomer.Type = CustomerTypeEnums.Tenant.ToString();
                             designatedRoomStayCustomer.UpdatedAt = DateTime.Now;
                             await _unitOfWork.RoomStayCustomerRepository.Update(designatedRoomStayCustomer);
+                            await _unitOfWork.SaveAsync();
 
                             //Update Tenant ID for customer contract
                             customerContract.TenantId = designatedCustomer.CustomerId;
                             customerContract.UpdatedDate = DateTime.Now;
                             await _unitOfWork.CustomerContractRepository.Update(customerContract);
+                            await _unitOfWork.SaveAsync();
                         }
                     }
                 }
@@ -388,6 +390,9 @@ namespace SP25_RPSC.Services.Service.LandlordService
             {
                 room.Status = StatusEnums.Available.ToString();
                 await _unitOfWork.RoomRepository.Update(room);
+
+                roomStay.Status = StatusEnums.Inactive.ToString();
+                await _unitOfWork.RoomStayRepository.Update(roomStay);
             }
 
 
