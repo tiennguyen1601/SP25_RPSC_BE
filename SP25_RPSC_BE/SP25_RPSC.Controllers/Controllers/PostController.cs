@@ -182,5 +182,23 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+
+        [HttpGet("posts/landlord/customer-roommate")]
+        public async Task<IActionResult> GetCustomerRoommatePosts()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _postService.GetPostsByLandlordAsync(token);
+            return Ok(result);
+        }
+
+        [HttpPut("posts/landlord/inactivate/{postId}")]
+        public async Task<IActionResult> InactivatePost(string postId)
+        {
+            var result = await _postService.InactivatePostAsync(postId);
+            if (!result)
+                return NotFound(new { Message = "Post not found or already inactive." });
+
+            return Ok(new { Message = "Post successfully inactivated." });
+        }
     }
 }

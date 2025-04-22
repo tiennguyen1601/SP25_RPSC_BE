@@ -173,5 +173,23 @@ namespace SP25_RPSC.Controllers.Controllers
             return Ok(room);
         }
 
+        [HttpGet("landlord/rooms")]
+        public async Task<IActionResult> GetRoomsByLandlordToken([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var rooms = await _roomService.GetRoomsByLandlordAsync(token, pageNumber, pageSize);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get room by landlord successfully",
+                Data = rooms
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
     }
 }

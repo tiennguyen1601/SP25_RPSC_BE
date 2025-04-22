@@ -12,6 +12,8 @@ namespace SP25_RPSC.Data.Repositories.PostRepository
     public interface IPostRepository : IGenericRepository<Post>
     {
         Task<Post> GetById(string PostId);
+        Task<IEnumerable<Post>> GetPostsByLandlordUserIdAsync(string landlordId);
+        Task<bool> InactivatePostAsync(string postId);
     }
 
     public class PostRepository : GenericRepository<Post>, IPostRepository
@@ -35,5 +37,29 @@ namespace SP25_RPSC.Data.Repositories.PostRepository
                 .Include(r => r.RentalRoom).ThenInclude(rs => rs.RoomStays).ThenInclude(a => a.RoomStayCustomers)
                 .FirstOrDefaultAsync();
         }
+        public async Task<IEnumerable<Post>> GetPostsByLandlordUserIdAsync(string landlordId)
+        {
+            return await _context.Posts
+                .Include(p => p.RentalRoom)
+                    .ThenInclude(r => r.RoomStays)
+                        .ThenInclude(rs => rs.Landlord)
+                .Include(p => p.User)
+                .Where(p => p.Status == "Active" &&
+                            p.RentalRoom != null &&
+                            p.RentalRoom.RoomStays.Any(rs => rs.Landlord != null &&
+                                                             rs.Landlord.UserId == landlordId))
+                .ToListAsync();
+        }
+
+        public async Task<bool> InactivatePostAsync(string postId)
+        {
+            var post = await _context.Posts.FirstOrDefaultAsync(p => p.PostId == postId);
+            if (post == null) return false;
+
+            post.Status = "Inactive";
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

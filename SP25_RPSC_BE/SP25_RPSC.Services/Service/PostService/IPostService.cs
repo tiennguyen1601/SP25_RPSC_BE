@@ -11,5 +11,7 @@ namespace SP25_RPSC.Services.Service.PostService
         Task<RoommatePostRes> GetPostRoommateByCustomerId(string token);
         Task<RoommatePostRes> UpdateRoommatePost(string token, string postId, UpdateRoommatePostReq request);
         Task<bool> InactivateRoommatePost(string token, string postId);
+        Task<IEnumerable<PostViewModel>> GetPostsByLandlordAsync(string token);
+        Task<bool> InactivatePostAsync(string postId);
     }
 }

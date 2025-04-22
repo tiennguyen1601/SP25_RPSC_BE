@@ -567,5 +567,19 @@ namespace SP25_RPSC.Services.Service.PostService
 
             return true;
         }
+
+        public async Task<IEnumerable<PostViewModel>> GetPostsByLandlordAsync(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var landlordId = tokenModel.userid;
+
+            var posts = await _unitOfWork.PostRepository.GetPostsByLandlordUserIdAsync(landlordId);
+            return _mapper.Map<IEnumerable<PostViewModel>>(posts);
+        }
+
+        public async Task<bool> InactivatePostAsync(string postId)
+        {
+            return await _unitOfWork.PostRepository.InactivatePostAsync(postId);
+        }
     }
 }

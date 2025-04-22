@@ -13,6 +13,7 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.DecodeTokenModel;
 using SP25_RPSC.Data.Models.RoomModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
+using SP25_RPSC.Data.Models.RoomStay;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
@@ -361,6 +362,41 @@ namespace SP25_RPSC.Services.Service.RoomServices
             return result;
         }
 
+        public async Task<List<RoomDto>> GetRoomsByLandlordAsync(string token, int pageNumber, int pageSize)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new Exception("Landlord not found");
+            }
+
+            var allRooms = await _unitOfWork.RoomRepository.GetRoomsByLandlordIdAsync(landlord.LandlordId);
+
+            var pagedRooms = allRooms
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var roomDtos = _mapper.Map<List<RoomDto>>(pagedRooms);
+
+            foreach (var dto in roomDtos)
+            {
+                var room = pagedRooms.First(r => r.RoomId == dto.RoomId);
+                var latestPrice = room.RoomPrices
+                    .Where(p => p.ApplicableDate <= DateTime.Now)
+                    .OrderByDescending(p => p.ApplicableDate)
+                    .FirstOrDefault();
+
+                dto.Price = latestPrice?.Price ?? 0;
+            }
+
+            return roomDtos;
+        }
 
     }
 }

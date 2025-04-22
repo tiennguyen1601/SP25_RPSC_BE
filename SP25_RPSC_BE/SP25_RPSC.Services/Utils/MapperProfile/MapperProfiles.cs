@@ -8,6 +8,7 @@ using SP25_RPSC.Data.Models.FeedbackModel.Response;
 using SP25_RPSC.Data.Models.LContractModel.Response;
 using SP25_RPSC.Data.Models.PackageModel;
 using SP25_RPSC.Data.Models.PackageServiceModel;
+using SP25_RPSC.Data.Models.PostModel.Response;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 using SP25_RPSC.Data.Models.RoomStay;
 using SP25_RPSC.Data.Models.RoomStayModel;
@@ -515,6 +516,14 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             CreateMap<RoomService, RoomServiceResponseModel>()
                 .ForMember(dest => dest.Prices, opt => opt.MapFrom(src => src.RoomServicePrices));
             CreateMap<RoomServicePrice, RoomServicePriceResponseModel>();
+
+
+            CreateMap<Post, PostViewModel>()
+           .ForMember(dest => dest.RoomTitle, opt => opt.MapFrom(src => src.RentalRoom!.Title))
+           .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User!.Email))
+           .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.User!.FullName))
+           .ForMember(dest => dest.CustomerPhone, opt => opt.MapFrom(src => src.User!.PhoneNumber))
+           .ForMember(dest => dest.CustomerAvatar, opt => opt.MapFrom(src => src.User!.Avatar));
         }
     }
 }
