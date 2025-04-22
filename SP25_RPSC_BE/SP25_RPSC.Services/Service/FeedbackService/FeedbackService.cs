@@ -95,8 +95,11 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             {
                 FeedbackId = Guid.NewGuid().ToString(),
                 Description = model.Description,
+                Type = FeedbackTypeEnums.Room.ToString(),
+                Status = StatusEnums.Active.ToString(),
                 Rating = model.Rating,
                 ReviewerId = userId,
+                RentalRoomId = model.RentalRoomId,
                 CreatedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
             };

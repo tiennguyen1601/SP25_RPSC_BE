@@ -106,7 +106,6 @@ namespace SP25_RPSC.Controllers.Controllers
         public async Task<ActionResult> CreateFeedBackRoom(FeedBackRoomRequestModel model)
 
         {
-            //var email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             var result = await _feedbackService.CreateFeedBackRoom(model, token);
 

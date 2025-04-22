@@ -11,15 +11,9 @@ namespace SP25_RPSC.Data.Models.FeedbackModel.Request
     {
         public string Description { get; set; }
 
-        public string Type { get; set; }
-
-        public string Status { get; set; }
-
         public int Rating { get; set; }
 
         public string RentalRoomId { get; set; }
-
-        public string reviewerId { get; set; }
 
         public required List<IFormFile> Images { get; set; }
     }
