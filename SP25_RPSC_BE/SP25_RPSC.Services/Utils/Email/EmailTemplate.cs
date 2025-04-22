@@ -882,7 +882,61 @@ namespace SP25_RPSC.Services.Utils.Email
 </div>";
         }
 
+        public static string InactivateRoommatePostByLandlord(string ownerName, string postTitle, string roomAddress, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo vô hiệu hóa bài đăng tìm người ở ghép</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{ownerName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi thông báo rằng bài đăng tìm người ở ghép của bạn đã bị vô hiệu hóa bởi chủ nhà.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Bài đăng:</strong> {postTitle}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Lý do:</strong> {reason}</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Khi bài đăng bị vô hiệu hóa, nó sẽ không hiển thị cho người dùng khác và mọi yêu cầu ở ghép đến bài đăng này sẽ bị hủy.</p>
+        <p style='font-size: 14px;'>Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ với chủ nhà hoặc đội ngũ hỗ trợ của chúng tôi.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
 
+        public static string CancelRoommateRequestDueToInactivePost(string customerName, string postTitle, string roomAddress, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo hủy yêu cầu ở ghép</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{customerName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi lấy làm tiếc thông báo rằng yêu cầu ở ghép của bạn đã bị hủy do bài đăng không còn hoạt động.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Bài đăng:</strong> {postTitle}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Lý do:</strong> {reason}</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Bài đăng này đã bị vô hiệu hóa bởi chủ nhà, vì vậy tất cả các yêu cầu ở ghép liên quan đều bị hủy.</p>
+        <p style='font-size: 14px;'>Đừng lo, vẫn còn rất nhiều cơ hội ở ghép khác cho bạn trên nền tảng EasyRoomie.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
 
     }
 }
