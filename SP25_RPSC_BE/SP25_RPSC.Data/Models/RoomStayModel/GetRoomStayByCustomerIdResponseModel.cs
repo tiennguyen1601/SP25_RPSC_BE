@@ -16,8 +16,12 @@ namespace SP25_RPSC.Data.Models.RoomStayModel
     public class RoomStayDetailsResponseModel
     {
         public string? LandlordName { get; set; }
+        public string? LandlordId { get; set; }
+
         public string? LandlordAvatar { get; set; }
         public string? RoomStayCustomerType { get; set; }
+
+        public string? statusOfMaxRoom  { get; set; }
 
         public string RoomStayId { get; set; } = null!;
         public string? Status { get; set; }
@@ -35,6 +39,7 @@ namespace SP25_RPSC.Data.Models.RoomStayModel
         public string? Term { get; set; }
         public string? TenantId { get; set; }
         public string? RentalRoomId { get; set; }
+        public string? RoomStayId { get; set; }
     }
 
     public class RoomCusDto

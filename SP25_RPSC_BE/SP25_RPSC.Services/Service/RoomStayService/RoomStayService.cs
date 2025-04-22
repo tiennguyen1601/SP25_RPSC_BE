@@ -60,7 +60,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
         public async Task<GetRoomStayCustomersResponseModel> GetRoomStaysCustomerByRoomStayId(string roomStayId)
         {
             var roomStayCustomers = (await _unitOfWork.RoomStayCustomerRepository
-                    .Get(filter: rsc => rsc.RoomStayId == roomStayId, includeProperties: "Customer.User")
+                    .Get(filter: rsc => rsc.RoomStayId == roomStayId && rsc.Status == "Active", includeProperties: "Customer.User")
                     ).ToList();
 
             if (!roomStayCustomers?.Any() ?? true)
@@ -70,7 +70,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 
             var roomStay = (await _unitOfWork.RoomStayRepository.Get(
                         includeProperties: "Room,Room.RoomImages,Room.RoomPrices,Room.RoomType,Room.RoomType.RoomServices,Room.RoomType.RoomServices.RoomServicePrices,Room.RoomAmentiesLists,Room.RoomAmentiesLists.RoomAmenty",
-                        filter: rs => rs.RoomStayId == roomStayId
+                        filter: rs => rs.RoomStayId == roomStayId && rs.Status == "Active"
                     )).FirstOrDefault();
 
             if (roomStay == null)
@@ -216,7 +216,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 
             var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
                 includeProperties: "RoomStay",
-                filter: rs => rs.CustomerId == customerId && rs.Status == "Active"   
+                filter: rs => rs.CustomerId == customerId && rs.Status == "Active"
             )).FirstOrDefault();
 
             if (roomStayCustomer == null || roomStayCustomer.RoomStay == null)
@@ -248,13 +248,30 @@ namespace SP25_RPSC.Services.Service.RoomStayService
 
             var landlordName = roomStay.Landlord?.User?.FullName;
             var landlordAva = roomStay.Landlord?.User?.Avatar;
+            var landlordId = roomStay.Landlord?.LandlordId;
+
 
             var roomStayResponse = _mapper.Map<RoomStayDetailsResponseModel>(roomStay);
             roomStayResponse.Room.Price = latestPrice;
             roomStayResponse.LandlordName = landlordName;
             roomStayResponse.LandlordAvatar = landlordAva;
+            roomStayResponse.LandlordId = landlordId;
 
-            roomStayResponse.RoomStayCustomerType = roomStayCustomer.Type; 
+            roomStayResponse.RoomStayCustomerType = roomStayCustomer.Type;
+
+            //var activeCustomers = roomStay.RoomStayCustomers.Get;
+            var activeCustomers = (await _unitOfWork.RoomStayCustomerRepository.Get(
+     rsc => rsc.RoomStayId == roomStayId && rsc.Status == "Active"
+ )).ToList();  
+
+            var numberOfGuests = activeCustomers.Count;
+
+
+
+            var maxOccupancy = roomStay.Room?.RoomType.MaxOccupancy ?? 0;
+
+            roomStayResponse.statusOfMaxRoom = numberOfGuests < maxOccupancy ? "NotEnough" : "Enough";
+
 
             var contractDto = _mapper.Map<CustomerContractDto>(contract);
 
@@ -264,6 +281,7 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                 CustomerContract = contractDto
             };
         }
+
     }
 
 }

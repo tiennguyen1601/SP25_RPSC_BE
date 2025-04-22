@@ -23,6 +23,7 @@ namespace SP25_RPSC.Data.Enums
         CANCELLED,
         Buyed,
         PAID,
+        Reject,
         EXTEND
     }
 }

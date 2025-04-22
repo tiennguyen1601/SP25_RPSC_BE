@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Models.CustomerModel.Response
 {
-    public class ListTenantLeaveRoomRes
+    public class DetailTenantLeaveRoomRes
     {
-        public List<TenantMoveOutRes> LeaveRoomRequestList { get; set; } = new();
+        public DetailTenantMoveOutRes DetailTenantMoveOutRes { get; set; } = new();
     }
 
-    public class TenantMoveOutRes
+    public class DetailTenantMoveOutRes
     {
         public string Cmoid { get; set; } = null!;
         public string? UserMoveId { get; set; }
@@ -19,29 +19,37 @@ namespace SP25_RPSC.Data.Models.CustomerModel.Response
         public string? RoomStayId { get; set; }
         public DateTime? DateRequest { get; set; }
         public int? Status { get; set; }
-        public TenantInfo TenantInfo { get; set; }
-        public DesignatedInfo DesignatedInfo { get; set; }
+        public DetailTenantInfo DetailTenantInfo { get; set; }
+        public DetailDesignatedInfo DetailDesignatedInfo { get; set; }
     }
 
-    public class TenantInfo
+    public class DetailTenantInfo
     {
         public string? UserId { get; set; }
         public string? CustomerId { get; set; }
         public string Email { get; set; } = null!;
         public string? FullName { get; set; }
         public DateOnly? Dob { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Gender { get; set; }
         public string? Avatar { get; set; }
         public string RoomId { get; set; } = null!;
         public string? RoomNumber { get; set; }
         public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string? Status { get; set; }
+        public string? Location { get; set; }
     }
 
-    public class DesignatedInfo 
+    public class DetailDesignatedInfo
     {
         public string? DesignatedId { get; set; }
         public string? CustomerId { get; set; }
         public string Email { get; set; } = null!;
         public string? FullName { get; set; }
+        public DateOnly? Dob { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Gender { get; set; }
         public string? Avatar { get; set; }
     }
 }

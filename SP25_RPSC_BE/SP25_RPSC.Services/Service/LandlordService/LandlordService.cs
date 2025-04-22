@@ -109,15 +109,10 @@ namespace SP25_RPSC.Services.Service.LandlordService
                                         Email = memberInfo.User.Email,
                                         FullName = memberInfo.User.FullName,
                                         Dob = memberInfo.User.Dob,
-                                        PhoneNumber = memberInfo.User.PhoneNumber,
-                                        Gender = memberInfo.User.Gender,
                                         Avatar = memberInfo.User.Avatar,
                                         RoomId = roomStay.RoomId ?? string.Empty,
                                         RoomNumber = roomStay.Room?.RoomNumber,
                                         Title = roomStay.Room?.Title,
-                                        Description = roomStay.Room?.Description,
-                                        Status = roomStay.Room?.Status,
-                                        Location = roomStay.Room?.Location
                                     };
 
                                     DesignatedInfo designatedInfo = new DesignatedInfo();
@@ -140,9 +135,6 @@ namespace SP25_RPSC.Services.Service.LandlordService
                                                 CustomerId = designatedMember.CustomerId,
                                                 Email = designatedMember.User.Email,
                                                 FullName = designatedMember.User.FullName,
-                                                Dob = designatedMember.User.Dob,
-                                                PhoneNumber = designatedMember.User.PhoneNumber,
-                                                Gender = designatedMember.User.Gender,
                                                 Avatar = designatedMember.User.Avatar
                                             };
                                         }
@@ -169,6 +161,104 @@ namespace SP25_RPSC.Services.Service.LandlordService
                 }
             }
 
+            return result;
+        }
+
+        public async Task<DetailTenantLeaveRoomRes> GetDetailTenantLeaveRoomRequest(string cmoId)
+        {
+            if (string.IsNullOrEmpty(cmoId))
+            {
+                throw new ArgumentException("Customer Move Out ID cannot be null or empty.");
+            }
+
+            var moveOutRequest = (await _unitOfWork.CustomerMoveOutRepository.Get(
+                filter: cmo => cmo.Cmoid == cmoId,
+                includeProperties: "UserMove,UserDeposite")).FirstOrDefault();
+
+            if (moveOutRequest == null)
+            {
+                throw new KeyNotFoundException($"Move out request with ID {cmoId} not found.");
+            }
+
+            var result = new DetailTenantLeaveRoomRes();
+            var detailMoveOutRes = new DetailTenantMoveOutRes
+            {
+                Cmoid = moveOutRequest.Cmoid,
+                UserMoveId = moveOutRequest.UserMoveId,
+                UserDepositeId = moveOutRequest.UserDepositeId,
+                RoomStayId = moveOutRequest.RoomStayId,
+                DateRequest = moveOutRequest.DateRequest,
+                Status = moveOutRequest.Status
+            };
+
+            var roomStay = (await _unitOfWork.RoomStayRepository.Get(
+                filter: rs => rs.RoomStayId == moveOutRequest.RoomStayId,
+                includeProperties: "Room")).FirstOrDefault();
+
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException($"Room stay with ID {moveOutRequest.RoomStayId} not found.");
+            }
+
+            if (moveOutRequest.UserMove != null)
+            {
+                var userMove = moveOutRequest.UserMove;
+
+                var memberCustomer = await _unitOfWork.CustomerRepository.Get(
+                    filter: c => c.UserId == userMove.UserId,
+                    includeProperties: "User");
+
+                var memberInfo = memberCustomer.FirstOrDefault();
+
+                if (memberInfo != null && memberInfo.User != null)
+                {
+                    detailMoveOutRes.DetailTenantInfo = new DetailTenantInfo
+                    {
+                        UserId = userMove.UserId,
+                        CustomerId = memberInfo.CustomerId,
+                        Email = memberInfo.User.Email,
+                        FullName = memberInfo.User.FullName,
+                        Dob = memberInfo.User.Dob,
+                        PhoneNumber = memberInfo.User.PhoneNumber,
+                        Gender = memberInfo.User.Gender,
+                        Avatar = memberInfo.User.Avatar,
+                        RoomId = roomStay.RoomId ?? string.Empty,
+                        RoomNumber = roomStay.Room?.RoomNumber,
+                        Title = roomStay.Room?.Title,
+                        Description = roomStay.Room?.Description,
+                        Status = roomStay.Room?.Status,
+                        Location = roomStay.Room?.Location
+                    };
+                }
+            }
+
+            if (moveOutRequest.UserDeposite != null)
+            {
+                var userDeposite = moveOutRequest.UserDeposite;
+
+                var designatedCustomer = await _unitOfWork.CustomerRepository.Get(
+                    filter: c => c.UserId == userDeposite.UserId,
+                    includeProperties: "User");
+
+                var designatedMember = designatedCustomer.FirstOrDefault();
+
+                if (designatedMember != null && designatedMember.User != null)
+                {
+                    detailMoveOutRes.DetailDesignatedInfo = new DetailDesignatedInfo
+                    {
+                        DesignatedId = userDeposite.UserId,
+                        CustomerId = designatedMember.CustomerId,
+                        Email = designatedMember.User.Email,
+                        FullName = designatedMember.User.FullName,
+                        Dob = designatedMember.User.Dob,
+                        PhoneNumber = designatedMember.User.PhoneNumber,
+                        Gender = designatedMember.User.Gender,
+                        Avatar = designatedMember.User.Avatar
+                    };
+                }
+            }
+
+            result.DetailTenantMoveOutRes = detailMoveOutRes;
             return result;
         }
 
@@ -244,8 +334,19 @@ namespace SP25_RPSC.Services.Service.LandlordService
             roomStayCustomerMove.UpdatedAt = DateTime.Now;
             await _unitOfWork.RoomStayCustomerRepository.Update(roomStayCustomerMove);
 
+
+
             if (!string.IsNullOrEmpty(customerMoveOut.UserDepositeId))
             {
+                var customerContract = (await _unitOfWork.CustomerContractRepository.Get(filter: cc =>
+                    cc.TenantId == cusMove.CustomerId &&
+                    cc.RentalRoomId == room.RoomId &&
+                    cc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+                if (customerContract == null)
+                {
+                    throw new KeyNotFoundException("Customer contract not found.");
+                }
+
                 var designatedCustomer = (await _unitOfWork.CustomerRepository.Get(
                     filter: c => c.UserId == customerMoveOut.UserDepositeId,
                     includeProperties: "User")).FirstOrDefault();
@@ -266,6 +367,11 @@ namespace SP25_RPSC.Services.Service.LandlordService
                             designatedRoomStayCustomer.Type = CustomerTypeEnums.Tenant.ToString();
                             designatedRoomStayCustomer.UpdatedAt = DateTime.Now;
                             await _unitOfWork.RoomStayCustomerRepository.Update(designatedRoomStayCustomer);
+
+                            //Update Tenant ID for customer contract
+                            customerContract.TenantId = designatedCustomer.CustomerId;
+                            customerContract.UpdatedDate = DateTime.Now;
+                            await _unitOfWork.CustomerContractRepository.Update(customerContract);
                         }
                     }
                 }
@@ -283,6 +389,8 @@ namespace SP25_RPSC.Services.Service.LandlordService
                 room.Status = StatusEnums.Available.ToString();
                 await _unitOfWork.RoomRepository.Update(room);
             }
+
+
 
             // Get designated deposit person information for email
             string designatedPersonName = "";
@@ -350,5 +458,6 @@ namespace SP25_RPSC.Services.Service.LandlordService
             await _unitOfWork.SaveAsync();
             return true;
         }
+
     }
 }

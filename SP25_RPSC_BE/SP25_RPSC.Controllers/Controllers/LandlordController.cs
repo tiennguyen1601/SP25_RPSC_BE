@@ -39,6 +39,28 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpGet("detail-tenant-leave-room-request/{cmoId}")]
+        public async Task<IActionResult> GetTenantLeaveRoomRequestDetail(string cmoId)
+        {
+            try
+            {
+                var result = await _landlordService.GetDetailTenantLeaveRoomRequest(cmoId);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { message = ex.Message });
+            }
+        }
+
 
         [HttpPut("accept-tenant-leave-room-request/{requestId}")]
         public async Task<IActionResult> AcceptTenantLeaveRoomRequest(string requestId)
