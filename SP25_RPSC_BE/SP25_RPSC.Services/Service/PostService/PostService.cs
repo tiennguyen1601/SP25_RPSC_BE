@@ -832,6 +832,14 @@ namespace SP25_RPSC.Services.Service.PostService
                 score += 5;
             }
 
+            if (currentUser.User?.Gender != null && postOwner.User?.Gender != null)
+            {
+                if (currentUser.User.Gender.Equals(postOwner.User.Gender, StringComparison.OrdinalIgnoreCase))
+                {
+                    score += 10; 
+                }
+            }
+
             return score;
         }
 
