@@ -299,6 +299,44 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("my-feedbacks")]
+        public async Task<ActionResult> GetMyFeedbacks()
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _feedbackService.GetMyFeedbacks(token);
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Data = result,
+                    Message = "Feedbacks retrieved successfully"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"Authorization error: {ex.Message}");
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error retrieving feedbacks: {ex.Message}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving the feedbacks."
+                });
+            }
+        }
+
         [HttpPut("update-feedbackroom/{feedbackId}")]
         public async Task<IActionResult> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model)
         {

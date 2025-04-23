@@ -8,6 +8,7 @@ using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Data.Models.FeedbackModel.Request;
 using Newtonsoft.Json.Linq;
 using SP25_RPSC.Data.Enums;
+using System.Linq;
 
 namespace SP25_RPSC.Services.Service.FeedbackService
 {
@@ -422,6 +423,84 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             return true;
         }
 
+        public async Task<MyFeedbackRes> GetMyFeedbacks(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
 
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var feedbacks = await _unitOfWork.FeedbackRepository.Get(
+                filter: f => f.ReviewerId == userId,
+                includeProperties: "ImageRves,Reviewee,RentalRoom,RentalRoom.RoomType,RentalRoom.RoomImages"
+            );
+
+            var result = new MyFeedbackRes
+            {
+                TotalFeedback = feedbacks.Count(),
+                MyFeedbacks = new List<MyFeedbackInfo>()
+            };
+
+            foreach (var feedback in feedbacks)
+            {
+                var feedbackInfo = new MyFeedbackInfo
+                {
+                    FeedbackId = feedback.FeedbackId,
+                    Description = feedback.Description,
+                    Rating = feedback.Rating,
+                    Type = feedback.Type,
+                    CreatedDate = feedback.CreatedDate,
+                    Status = feedback.Status,
+                    ImageRves = feedback.ImageRves.Select(img => new ImageRf
+                    {
+                        ImageRfid = img.ImageRfid,
+                        ImageRfurl = img.ImageRfurl,
+                        FeedbackId = img.FeedbackId
+                    }).ToList()
+                };
+
+                if (feedback.Reviewee != null)
+                {
+                    feedbackInfo.RevieweeInfo = new RevieweeInfo
+                    {
+                        RevieweeId = feedback.RevieweeId,
+                        Email = feedback.Reviewee.Email,
+                        FullName = feedback.Reviewee.FullName,
+                        Avatar = feedback.Reviewee.Avatar
+                    };
+                }
+
+                if (feedback.RentalRoom != null)
+                {
+                    var roomImages = feedback.RentalRoom.RoomImages
+                        .Select(img => img.ImageUrl)
+                        .Where(url => !string.IsNullOrEmpty(url))
+                        .Take(5)
+                        .ToList();
+
+                    feedbackInfo.RentalRoomInfo = new RentalRoomInfo
+                    {
+                        RoomId = feedback.RentalRoom.RoomId,
+                        RoomNumber = feedback.RentalRoom.RoomNumber ?? string.Empty,
+                        Title = feedback.RentalRoom.Title ?? string.Empty,
+                        Description = feedback.RentalRoom.Description ?? string.Empty,
+                        RoomTypeName = feedback.RentalRoom.RoomType?.RoomTypeName ?? string.Empty,
+                        Address = feedback.RentalRoom.Location ?? string.Empty,
+                        Images = roomImages
+                    };
+                }
+
+                result.MyFeedbacks.Add(feedbackInfo);
+            }
+
+            result.MyFeedbacks = result.MyFeedbacks
+                   .OrderByDescending(f => f.CreatedDate)
+                   .ToList();
+
+            return result;
+        }
     }
 }
