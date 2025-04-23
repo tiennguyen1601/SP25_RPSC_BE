@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using Microsoft.Extensions.Hosting;
 using SP25_RPSC.Services.Utils.Email;
+using CloudinaryDotNet;
 
 namespace SP25_RPSC.Services.Service.PostService
 {
@@ -671,5 +672,176 @@ namespace SP25_RPSC.Services.Service.PostService
 
             return true;
         }
+
+
+        public async Task<PagedResult<RoommatePostRes>> GetRecommendedRoommatePosts(string token, int pageNumber = 1, int pageSize = 10)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User"))
+                .FirstOrDefault();
+
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer profile not found.");
+            }
+
+            var allPosts = await _unitOfWork.PostRepository.Get(
+                filter: p => p.Status == StatusEnums.Active.ToString() && p.UserId != userId,
+                includeProperties: "User,RentalRoom");
+
+            var postOwnerIds = allPosts.Select(p => p.UserId).Distinct().ToList();
+            var postOwners = await _unitOfWork.CustomerRepository.Get(
+                filter: c => postOwnerIds.Contains(c.UserId),
+                includeProperties: "User");
+
+            // Join posts with their owners
+            var postsWithOwners = allPosts.Join(
+                postOwners,
+                post => post.UserId,
+                owner => owner.UserId,
+                (post, owner) => new { Post = post, Owner = owner })
+                .ToList();
+
+            // Calculate compatibility score for each post
+            var scoredPosts = postsWithOwners.Select(po => new
+            {
+                PostWithOwner = po,
+                Score = CalculateCompatibilityScore(customer, po.Owner, po.Post)
+            })
+            .OrderByDescending(item => item.Score)
+            .ToList();
+
+            var totalCount = scoredPosts.Count;
+            var pagedItems = scoredPosts
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var result = new PagedResult<RoommatePostRes>
+            {
+                Items = new List<RoommatePostRes>(),
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            foreach (var item in pagedItems)
+            {
+                var post = item.PostWithOwner.Post;
+                var owner = item.PostWithOwner.Owner;
+                var user = owner.User;
+
+                result.Items.Add(new RoommatePostRes
+                {
+                    PostId = post.PostId,
+                    Title = post.Title,
+                    Description = post.Description,
+                    Location = post.RentalRoom?.Location,
+                    Price = post.Price,
+                    Status = post.Status,
+                    CreatedAt = post.CreatedAt,
+                    PostOwnerInfo = new PostOwnerInfo
+                    {
+                        UserId = owner.UserId,
+                        FullName = user?.FullName,
+                        Avatar = user?.Avatar,
+                        Gender = user?.Gender,
+                        Age = user?.Dob.HasValue == true ? CalculateAge(user.Dob.Value) : null,
+                        LifeStyle = owner.LifeStyle,
+                        Requirement = owner.Requirement,
+                        PostOwnerType = owner.CustomerType
+                    },
+                    CustomerName = user?.FullName,
+                    CustomerEmail = user?.Email,
+                    CustomerPhoneNumber = user?.PhoneNumber
+                });
+            }
+
+            return result;
+        }
+
+        private int CalculateCompatibilityScore(Customer currentUser, Customer postOwner, Post post)
+        {
+            int score = 0;
+            score += 10;
+
+            // Match lifestyle preferences if they exist
+            if (!string.IsNullOrEmpty(currentUser.LifeStyle) && !string.IsNullOrEmpty(postOwner.LifeStyle))
+            {
+                var userLifestyles = currentUser.LifeStyle.Split(',').Select(l => l.Trim().ToLower()).ToList();
+                var ownerLifestyles = postOwner.LifeStyle.Split(',').Select(l => l.Trim().ToLower()).ToList();
+
+                // Calculate matching lifestyle elements
+                var matchingLifestyles = userLifestyles.Intersect(ownerLifestyles).Count();
+                score += matchingLifestyles * 5;
+            }
+
+            // Match requirements if they exist
+            if (!string.IsNullOrEmpty(currentUser.Requirement) && !string.IsNullOrEmpty(postOwner.Requirement))
+            {
+                // Parse requirements (assuming comma-separated values)
+                var userRequirements = currentUser.Requirement.Split(',').Select(r => r.Trim().ToLower()).ToList();
+                var ownerRequirements = postOwner.Requirement.Split(',').Select(r => r.Trim().ToLower()).ToList();
+
+                // Calculate matching requirement elements
+                var matchingRequirements = userRequirements.Intersect(ownerRequirements).Count();
+                score += matchingRequirements * 5;
+            }
+
+            // Consider preferred location if specified
+            if (!string.IsNullOrEmpty(currentUser.PreferredLocation) && !string.IsNullOrEmpty(post.RentalRoom?.Location))
+            {
+                var userLocations = currentUser.PreferredLocation.Split(',').Select(l => l.Trim().ToLower()).ToList();
+                var postLocation = post.RentalRoom.Location.ToLower();
+
+                // Check if the post location contains any of the user's preferred locations
+                if (userLocations.Any(loc => postLocation.Contains(loc)))
+                {
+                    score += 5;
+                }
+            }
+
+            // So sanh gia
+            if (!string.IsNullOrEmpty(currentUser.BudgetRange) && post.Price.HasValue)
+            {
+                if (decimal.TryParse(currentUser.BudgetRange, out decimal budget))
+                {
+                    if (post.Price <= budget)
+                    {
+                        score += 5;
+                    }
+                }
+            }
+
+
+
+            // So sanh type 
+            if (!string.IsNullOrEmpty(currentUser.CustomerType) &&
+                !string.IsNullOrEmpty(postOwner.CustomerType) &&
+                currentUser.CustomerType.Equals(postOwner.CustomerType, StringComparison.OrdinalIgnoreCase))
+            {
+                score += 5;
+            }
+
+            if (currentUser.User?.Gender != null && postOwner.User?.Gender != null)
+            {
+                if (currentUser.User.Gender.Equals(postOwner.User.Gender, StringComparison.OrdinalIgnoreCase))
+                {
+                    score += 10; 
+                }
+            }
+
+            return score;
+        }
+
     }
 }
