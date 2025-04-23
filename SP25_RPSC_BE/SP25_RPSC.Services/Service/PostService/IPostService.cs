@@ -5,6 +5,7 @@ namespace SP25_RPSC.Services.Service.PostService
 {
     public interface IPostService
     {
+        Task<PagedResult<RoommatePostRes>> GetRecommendedRoommatePosts(string token, int pageNumber = 1, int pageSize = 10);
         Task<PagedResult<RoommatePostRes>> GetRoommatePosts(string token, RoommatePostSearchReq search);
         Task<RoommatePostDetailRes> GetRoommatePostDetail(string postId);
         Task<RoommatePostRes> CreateRoommatePost(string token, CreateRoommatePostReq request);
