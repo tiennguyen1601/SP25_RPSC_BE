@@ -810,32 +810,26 @@ namespace SP25_RPSC.Services.Service.PostService
                 }
             }
 
-            // Consider budget range if specified
-            //if (!string.IsNullOrEmpty(currentUser.BudgetRange) && post.Price.HasValue)
-            //{
-            //    var budgetParts = currentUser.BudgetRange.Split('-');
-            //    if (budgetParts.Length == 2 &&
-            //        decimal.TryParse(budgetParts[0], out decimal minBudget) &&
-            //        decimal.TryParse(budgetParts[1], out decimal maxBudget))
-            //    {
-            //        if (post.Price >= minBudget && post.Price <= maxBudget)
-            //        {
-            //            score += 15;
-            //        }
-            //        else if (post.Price < minBudget)
-            //        {
-            //            // If cheaper than min budget, still a good match
-            //            score += 10;
-            //        }
-            //    }
-            //}
+            // So sanh gia
+            if (!string.IsNullOrEmpty(currentUser.BudgetRange) && post.Price.HasValue)
+            {
+                if (decimal.TryParse(currentUser.BudgetRange, out decimal budget))
+                {
+                    if (post.Price <= budget)
+                    {
+                        score += 5;
+                    }
+                }
+            }
 
-            // Bonus for matching customer type (e.g., student with student)
+
+
+            // So sanh type 
             if (!string.IsNullOrEmpty(currentUser.CustomerType) &&
                 !string.IsNullOrEmpty(postOwner.CustomerType) &&
                 currentUser.CustomerType.Equals(postOwner.CustomerType, StringComparison.OrdinalIgnoreCase))
             {
-                score += 10;
+                score += 5;
             }
 
             return score;
