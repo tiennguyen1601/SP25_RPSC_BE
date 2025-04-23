@@ -20,6 +20,43 @@ namespace SP25_RPSC.Controllers.Controllers
             _postService = postService;
         }
 
+        [HttpGet]
+        [Route("recommended-roommate-posts")]
+        public async Task<IActionResult> GetRecommendedRoommatePosts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.GetRecommendedRoommatePosts(token, pageNumber, pageSize);
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Data = result,
+                    Message = "Recommended roommate posts retrieved successfully"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving recommended roommate posts."
+                });
+            }
+        }
+
         [HttpGet("Get-All-Roommate-Post")]
         public async Task<ActionResult<PagedResult<RoommatePostRes>>> GetAllRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
         {
