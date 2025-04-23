@@ -337,45 +337,64 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
-        [HttpPut("update-feedbackroom/{feedbackId}")]
-        public async Task<IActionResult> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model)
+        [HttpPut]
+        [Route("update-feedback-room")]
+        public async Task<IActionResult> UpdateFeedbackRoom([FromForm] UpdateFeedbackRoomRequestModel model)
         {
             try
             {
                 string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-                var result = await _feedbackService.UpdateFeedbackRoom(feedbackId, model, token);
+                var result = await _feedbackService.UpdateFeedbackRoom(model, token);
 
-                if (result)
+                return Ok(new ResultModel
                 {
-                    return StatusCode((int)HttpStatusCode.OK, new ResultModel
-                    {
-                        IsSuccess = true,
-                        Code = (int)HttpStatusCode.OK,
-                        Message = "Cập nhật feedback thành công."
-                    });
-                }
-                else
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Feedback updated successfully",
+                    Data = result
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"Authorization error: {ex.Message}");
+                return Unauthorized(new ResultModel
                 {
-                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
-                    {
-                        IsSuccess = false,
-                        Code = (int)HttpStatusCode.BadRequest,
-                        Message = "Không thể cập nhật feedback. Vui lòng kiểm tra quyền hạn hoặc thời gian chỉnh sửa (chỉ được phép trong vòng 3 ngày)."
-                    });
-                }
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning($"Resource not found: {ex.Message}");
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Invalid operation: {ex.Message}");
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Error updating feedback: {ex.Message}");
                 return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
                 {
                     IsSuccess = false,
                     Code = (int)HttpStatusCode.InternalServerError,
-                    Message = "Đã xảy ra lỗi khi xử lý yêu cầu.",
-                    Data = ex.Message
+                    Message = "An error occurred while updating the feedback."
                 });
             }
         }
-
         [HttpDelete("delete-feedbackroom/{feedbackId}")]
         public async Task<IActionResult> DeleteFeedbackRoom(string feedbackId)
         {

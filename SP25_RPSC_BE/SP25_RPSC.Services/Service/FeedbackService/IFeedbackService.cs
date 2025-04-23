@@ -14,7 +14,7 @@ namespace SP25_RPSC.Services.Service.FeedbackService
         Task<FeedbackDetailResDTO> GetFeedbackDetailById(string feedbackId);
         Task<MyFeedbackRes> GetMyFeedbacks(string token);
         Task<bool> CreateFeedBackRoom(FeedBackRoomRequestModel model, string token);
-        Task<bool> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model, string token);
+        Task<bool> UpdateFeedbackRoom(UpdateFeedbackRoomRequestModel model, string token);
         Task<bool> DeleteFeedbackRoom(string feedbackId, string token);
 
         Task<bool> CreateFeedBackRoommate(FeedBackRoommateRequestModel request, string token);

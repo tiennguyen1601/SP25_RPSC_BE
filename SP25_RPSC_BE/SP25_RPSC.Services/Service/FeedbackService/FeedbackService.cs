@@ -233,26 +233,34 @@ namespace SP25_RPSC.Services.Service.FeedbackService
         }
 
 
-        public async Task<bool> UpdateFeedbackRoom(string feedbackId, UpdateFeedbackRoomRequestModel model, string token)
+        public async Task<bool> UpdateFeedbackRoom(UpdateFeedbackRoomRequestModel model, string token)
         {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
 
-            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(feedbackId);
-
+            var feedback = await _unitOfWork.FeedbackRepository.GetByIDAsync(model.FeedbackId);
             if (feedback == null)
             {
-                return false;
+                throw new KeyNotFoundException("Feedback not found.");
             }
 
             if (feedback.ReviewerId != userId)
             {
-                return false;
+                throw new UnauthorizedAccessException("You are not authorized to update this feedback.");
             }
 
-            if ((DateTime.Now - feedback.CreatedDate.Value).TotalDays > 3)
+            var fbCreatedDate = feedback.CreatedDate;
+            var nowDate = DateTime.Now;
+            var checkDate = nowDate - fbCreatedDate;
+
+            if (checkDate.HasValue && checkDate.Value.TotalDays > 3)
             {
-                return false;
+                throw new InvalidOperationException("Feedback can only be updated within 3 days of creation.");
             }
 
             feedback.Description = model.Description;
@@ -261,28 +269,32 @@ namespace SP25_RPSC.Services.Service.FeedbackService
 
             if (model.Images != null && model.Images.Any())
             {
-                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
+                var existingImages = await _unitOfWork.ImageRfRepository.Get(
+                    filter: i => i.FeedbackId == feedback.FeedbackId
+                );
 
-                var existingImages = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
                 foreach (var image in existingImages)
                 {
-                    await _unitOfWork.ImageRfRepository.Delete(image);
+                    _unitOfWork.ImageRfRepository.Remove(image);
                 }
 
+                var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
                 foreach (var link in downloadUrl)
                 {
                     var image = new ImageRf
                     {
                         ImageRfid = Guid.NewGuid().ToString(),
                         ImageRfurl = link,
-                        FeedbackId = feedbackId
+                        FeedbackId = feedback.FeedbackId
                     };
                     await _unitOfWork.ImageRfRepository.Add(image);
                 }
             }
 
-            await _unitOfWork.FeedbackRepository.Update(feedback);
+
+            _unitOfWork.FeedbackRepository.Update(feedback);
             await _unitOfWork.SaveAsync();
+
             return true;
         }
 
@@ -311,7 +323,7 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             var images = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
             foreach (var image in images)
             {
-                await _unitOfWork.ImageRfRepository.Delete(image);
+                await _unitOfWork.ImageRfRepository.Remove(image);
             }
 
             await _unitOfWork.FeedbackRepository.Delete(feedback);
@@ -362,7 +374,7 @@ namespace SP25_RPSC.Services.Service.FeedbackService
 
                 foreach (var image in existingImages)
                 {
-                    _unitOfWork.ImageRfRepository.Delete(image);
+                    _unitOfWork.ImageRfRepository.Remove(image);
                 }
 
                 var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(request.Images);
@@ -414,6 +426,12 @@ namespace SP25_RPSC.Services.Service.FeedbackService
                 throw new InvalidOperationException("Feedback can only be deleted within 3 days of creation.");
             }
 
+            var images = await _unitOfWork.ImageRfRepository.Get(filter: img => img.FeedbackId == feedbackId);
+            foreach (var image in images)
+            {
+                await _unitOfWork.ImageRfRepository.Remove(image);
+            }
+
             feedback.Status = StatusEnums.Inactive.ToString();
             feedback.UpdatedDate = DateTime.Now;
 
@@ -434,7 +452,7 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             var userId = tokenModel.userid;
 
             var feedbacks = await _unitOfWork.FeedbackRepository.Get(
-                filter: f => f.ReviewerId == userId,
+                filter: f => f.ReviewerId == userId && f.Status == "Active",
                 includeProperties: "ImageRves,Reviewee,RentalRoom,RentalRoom.RoomType,RentalRoom.RoomImages"
             );
 
