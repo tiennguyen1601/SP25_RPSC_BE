@@ -260,8 +260,8 @@ namespace SP25_RPSC.Services.Service.PaymentService
 
             object response = await _payOSService.CreatePaymentUrl(new PayOSReqModel
             {
-                CancleUrl = "http://localhost:5173/landlord/confirmpayment",
-                RedirectUrl = "http://localhost:5173/landlord/confirmpayment",
+                CancleUrl = "https://easyroomie.vercel.app/landlord/confirmpayment",
+                RedirectUrl = "https://easyroomie.vercel.app/landlord/confirmpayment",
                 PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == extendInfo.ServiceDetailId).Name + package!.Type,
                 Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == extendInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             });

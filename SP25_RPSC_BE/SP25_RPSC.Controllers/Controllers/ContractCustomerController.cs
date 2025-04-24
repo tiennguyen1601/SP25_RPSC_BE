@@ -66,5 +66,30 @@ namespace SP25_RPSC.Controllers.Controllers
             });
         }
 
+        [HttpGet("Get-Contract-Term")]
+        public async Task<ActionResult> GetContractTermByRentalRoomId([FromQuery] string rentalRoomId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var contractTerm = await _customerContractService.GetContractTermByRoomId(token, rentalRoomId);
+
+            if (contractTerm == null)
+            {
+                return NotFound(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = "No contract found for the given RentalRoomId"
+                });
+            }
+
+            return Ok(new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get contract term successfully",
+                Data = contractTerm
+            });
+        }
+
     }
 }

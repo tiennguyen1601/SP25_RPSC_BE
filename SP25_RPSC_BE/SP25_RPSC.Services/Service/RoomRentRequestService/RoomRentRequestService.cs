@@ -16,6 +16,7 @@ using SP25_RPSC.Services.Service.JWTService;
 using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using SP25_RPSC.Services.Utils.Email;
+using SP25_RPSC.Services.Utils.PdfGenerator;
 
 namespace SP25_RPSC.Services.Service.RoomRentRequestService
 {
@@ -26,6 +27,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
         private readonly IEmailService _emailService;
         private readonly IDecodeTokenHandler _decodeTokenHandler;
         private readonly ICloudinaryStorageService _cloudinaryStorageService;
+        private readonly HttpClient _httpClient;
 
 
 
@@ -37,6 +39,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
             _emailService = emailService;
             _decodeTokenHandler = decodeTokenHandler;
             _cloudinaryStorageService = cloudinaryStorageService;
+            _httpClient = new HttpClient();
         }
         public async Task<List<CustomerRequestRes>> GetCustomersByRoomRentRequestsId(string roomRentRequestsId)
         {
@@ -75,20 +78,29 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             return customers;
         }
-        public async Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId)
+        public async Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId, HttpContext context)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
             var userId = tokenModel.userid;
 
-            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+            var landlord = (await _unitOfWork.LandlordRepository.Get(
+                filter: l => l.UserId == userId,
+                includeProperties: "User" 
+            )).FirstOrDefault();
+
             if (landlord == null)
             {
                 throw new ApiException(HttpStatusCode.NotFound, "Landlord not found");
             }
 
+            if (landlord.User == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord user information not found");
+            }
+
             var request = (await _unitOfWork.RoomRentRequestRepository.Get(
                 filter: r => r.RoomRentRequestsId == roomRentRequestsId,
-                includeProperties: "CustomerRentRoomDetailRequests.Customer,Room"
+                includeProperties: "CustomerRentRoomDetailRequests.Customer,Room,Room.RoomPrices"
             )).FirstOrDefault();
 
             if (request == null || request.CustomerRentRoomDetailRequests == null || !request.CustomerRentRoomDetailRequests.Any())
@@ -102,6 +114,16 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
             if (selectedCustomerRequest == null)
             {
                 throw new ApiException(HttpStatusCode.BadRequest, "Selected customer not found in request");
+            }
+
+            var selectedCustomer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.CustomerId == selectedCustomerId,
+                includeProperties: "User"
+            )).FirstOrDefault();
+
+            if (selectedCustomer == null || selectedCustomer.User == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Selected customer details not found");
             }
 
             var roomStayCustomer = await _unitOfWork.RoomStayCustomerRepository.Get(
@@ -125,8 +147,8 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
             }
 
             bool roomOccupied = (await _unitOfWork.RoomStayRepository.Get(
-                                 filter: rs => rs.RoomId == room.RoomId && rs.Status == "Active"
-                             )).Any();
+                               filter: rs => rs.RoomId == room.RoomId && rs.Status == "Active"
+                           )).Any();
 
             if (roomOccupied)
             {
@@ -138,11 +160,9 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             DateTime customerRequestedDate = selectedCustomerRequest.DateWantToRent.HasValue
                 ? selectedCustomerRequest.DateWantToRent.Value
-                : startDate; 
+                : startDate;
 
             DateTime endDate = customerRequestedDate.AddMonths(selectedCustomerRequest.MonthWantRent ?? 6); // Nếu MonthWantRent là null thì mặc định là 6 tháng
-
-
 
             var roomAddress = room.Location ?? "Không xác định";
 
@@ -200,6 +220,25 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             request.Status = "Active";
 
+            var signedDate = DateTime.Now;
+
+            // Get the current room price
+            decimal currentPrice = 0;
+            if (room.RoomPrices != null && room.RoomPrices.Any())
+            {
+                // Get the most recent price that is applicable before the requested date
+                var latestPrice = room.RoomPrices
+                    .Where(rp => rp.ApplicableDate <= customerRequestedDate)
+                    .OrderByDescending(rp => rp.ApplicableDate)
+                    .FirstOrDefault();
+
+                if (latestPrice != null)
+                {
+                    currentPrice = latestPrice.Price ?? 0;
+                }
+            }
+
+            // Create the contract first
             var newContract = new CustomerContract
             {
                 ContractId = Guid.NewGuid().ToString(),
@@ -208,10 +247,42 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 Status = "Pending",
                 CreatedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow,
-                Term = "",
                 TenantId = selectedCustomerId,
                 RentalRoomId = room.RoomId
             };
+
+            // Chuẩn bị dữ liệu cho hợp đồng
+            var contractRequestDTO = new CustomerContractRequestDTO
+            {
+                ContractId = newContract.ContractId,
+                StartDate = customerRequestedDate,
+                Duration = selectedCustomerRequest.MonthWantRent ?? 6,
+                LandlordName = landlord.User.FullName,
+                LandlordAddress = landlord.User.Address ?? "Không có địa chỉ",
+                LandlordPhone = landlord.User.PhoneNumber ?? "Không có SĐT",
+                CustomerName = selectedCustomer.User.FullName,
+                CustomerAddress = selectedCustomer.User.Address ?? "Không có địa chỉ",
+                CustomerPhone = selectedCustomer.User.PhoneNumber ?? "Không có SĐT",
+                RoomAddress = roomAddress,
+                RoomDescription = room.Description ?? "Không có mô tả",
+                Price = currentPrice,
+                PriceInWords = currentPrice + " đồng",
+                PaymentMethod = "Cash",
+                PaymentDate = "05",
+                LandlordSignatureUrl = "https://res.cloudinary.com/dzoxs1sd7/image/upload/v1745523686/easyroomie-sign.png",
+                CustomerSignatureUrl = "https://res.cloudinary.com/dzoxs1sd7/image/upload/v1745523686/easyroomie-sign.png"
+            };
+
+            var contractPdf = await CustomerContractPdfGenerator.GenerateCustomerContractPdf(contractRequestDTO, _httpClient);
+
+            if (contractPdf == null)
+            {
+                throw new ApiException(HttpStatusCode.InternalServerError, "Lỗi khi tạo hợp đồng PDF");
+            }
+
+            var contractUrl = await _cloudinaryStorageService.UploadPdf(contractPdf);
+
+            newContract.Term = contractUrl;
             await _unitOfWork.CustomerContractRepository.Add(newContract);
 
             await _unitOfWork.SaveAsync();

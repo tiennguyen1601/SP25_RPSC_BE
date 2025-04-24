@@ -11,5 +11,6 @@ namespace SP25_RPSC.Services.Service.ContractCustomerService
     {
         Task<GetContractsByLandlordResponseModel> GetContractsByLandlordId(string token, string status, string term, int pageIndex, int pageSize);
         Task<CustomerContractResponse> GetContractDetailByContractId(string token, string contractId);
+        Task<CustomerContractTermResponse?> GetContractTermByRoomId(string token, string rentalRoomId);
     }
 }

@@ -97,6 +97,34 @@ namespace SP25_RPSC.Services.Service.ContractCustomerService
         }
 
 
+        public async Task<CustomerContractTermResponse?> GetContractTermByRoomId(string token, string rentalRoomId)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+            if (landlord == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found");
+            }
+
+            var contract = (await _unitOfWork.CustomerContractRepository.Get(
+                filter: c => c.RentalRoomId == rentalRoomId && c.RentalRoom.RoomType.LandlordId == landlord.LandlordId,
+                includeProperties: "RentalRoom.RoomType"
+            ))
+            .OrderByDescending(c => c.StartDate)
+            .FirstOrDefault();
+
+            if (contract == null)
+            {
+                return null;
+            }
+
+            return new CustomerContractTermResponse
+            {
+                Term = contract.Term,
+            };
+        }
 
 
     }

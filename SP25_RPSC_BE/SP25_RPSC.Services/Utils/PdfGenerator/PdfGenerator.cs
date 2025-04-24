@@ -166,7 +166,7 @@ Phương thức thanh toán: CHUYỂN KHOẢN.";
             // Upload signatures
             try
             {
-                var signatureCusBytes = await client.GetByteArrayAsync("https://res.cloudinary.com/dzoxs1sd7/image/upload/v1741244678/easyroomie-sign.png");
+                var signatureCusBytes = await client.GetByteArrayAsync("https://res.cloudinary.com/dzoxs1sd7/image/upload/v1745523686/easyroomie-sign.png");
 
                 // read image
                 using (var ms = new MemoryStream(signatureCusBytes))
