@@ -585,5 +585,38 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             return true;
         }
+
+        public async Task<bool> InactiveRoom(string roomId, string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                           .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomId);
+            if (room == null)
+            {
+                throw new Exception("Room not found.");
+            }
+
+            if (landlord.LandlordId != room.RoomType.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to inactive this room. Only the landlord can update their rooms.");
+
+            }
+
+            room.Status = StatusEnums.Inactive.ToString();
+
+            await _unitOfWork.RoomRepository.Update(room);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }

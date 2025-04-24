@@ -271,5 +271,53 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+
+        [HttpPut]
+        [Route("Inactive-Room/{roomId}")]
+        public async Task<ActionResult> Inactive(string roomId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Authorization token is required" });
+                }
+
+
+                var result = await _roomService.InactiveRoom(roomId, token);
+
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Inactive room successfully"
+                    });
+                }
+
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Room could not be updated"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { isSuccess = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = ex.Message
+                });
+            }
+        }
     }
 }
