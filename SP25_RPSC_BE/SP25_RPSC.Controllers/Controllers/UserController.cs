@@ -70,9 +70,9 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpGet]
         [Route("Get-Landlord-Regis")]
-        public async Task<ActionResult> GetLanlordRegis(int pageIndex, int pageSize, string searchQuery = null)
+        public async Task<ActionResult> GetLanlordRegis(int pageIndex, int pageSize, string searchQuery = null, string status = null)
         {
-            var landlords = await _userService.GetRegisLandLord(searchQuery, pageIndex, pageSize);
+            var landlords = await _userService.GetRegisLandLord(searchQuery,status ,pageIndex, pageSize);
             ResultModel response = new ResultModel
             {
                 IsSuccess = true,

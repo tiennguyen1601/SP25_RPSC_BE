@@ -160,27 +160,30 @@ namespace SP25_RPSC.Services.Service.UserService
         }
 
 
-        public async Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, int pageIndex, int pageSize)
+        public async Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, string status, int pageIndex, int pageSize)
         {
             Expression<Func<Landlord, bool>> searchFilter = c =>
-                c.Status == StatusEnums.Pending.ToString() &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  c.User.Email.Contains(searchQuery) ||
-                 c.User.PhoneNumber.Contains(searchQuery));
+                 c.User.PhoneNumber.Contains(searchQuery)) &&
+                (string.IsNullOrEmpty(status) || c.Status == status);
 
-
-            var res = await _unitOfWork.LandlordRepository.Get(orderBy: q => q.OrderByDescending(p => p.CreatedDate),
-                                                                    includeProperties: "User,BusinessImages", 
-                                                                    filter: searchFilter,
-                                                                    pageIndex: pageIndex,
-                                                                    pageSize: pageSize);
-
+            var res = await _unitOfWork.LandlordRepository.Get(
+                orderBy: q => q.OrderByDescending(p => p.CreatedDate),
+                includeProperties: "User,BusinessImages",
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
 
             var totalLandlord = await _unitOfWork.LandlordRepository.CountAsync(searchFilter);
 
             if (res == null || !res.Any())
             {
-                return new GetAllLandlordRegisterResponseModel { Landlords = new List<ListLandlordResgiterResponse>(), TotalUser = 0 };
+                return new GetAllLandlordRegisterResponseModel
+                {
+                    Landlords = new List<ListLandlordResgiterResponse>(),
+                    TotalUser = 0
+                };
             }
 
             var landlordRes = _mapper.Map<List<ListLandlordResgiterResponse>>(res.ToList());
@@ -191,6 +194,7 @@ namespace SP25_RPSC.Services.Service.UserService
                 TotalUser = totalLandlord
             };
         }
+
 
         public async Task<List<LanlordRegisByIdResponse>> GetRegisLandLordById(string landlordId)
         {
