@@ -51,7 +51,7 @@ namespace SP25_RPSC.Controllers.Controllers
             {
             string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             var result = await _roomRentRequestService.AcceptCustomerAndRejectOthers(
-                    token, roomRentRequestsId, selectedCustomerId);
+                    token, roomRentRequestsId, selectedCustomerId, HttpContext);
 
                 if (!result)
                 {
