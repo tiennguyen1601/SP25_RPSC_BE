@@ -33,7 +33,7 @@ namespace SP25_RPSC.Data.Models.LContractModel.Response
 
         public string? ServiceDetailDescription { get; set; }
         public decimal? Price { get; set; }
-        public int? Duration { get; set; }
+        public string? Duration { get; set; }
         public List<TransactionRes> Transactions { get; set; } = new List<TransactionRes>();
     }
     public class TransactionRes

@@ -69,14 +69,31 @@ namespace SP25_RPSC.Services.Service.AuthenticationService
                     await _unitOfWork.RefreshTokenRepository.Add(newRefreshToken);
 
                     string? roleUserId = null;
-                    if (currentUser.Role.RoleName == "Landlord" && currentUser.Landlords.Any())
+                    if (currentUser.Role.RoleName == "Landlord")
                     {
-                        roleUserId = currentUser.Landlords.FirstOrDefault()?.LandlordId;
+                        var activeLandlord = currentUser.Landlords.FirstOrDefault(l => l.Status == StatusEnums.Active.ToString());
+                        if (activeLandlord != null)
+                        {
+                            roleUserId = activeLandlord.LandlordId;
+                        }
+                        else
+                        {
+                            throw new ApiException(HttpStatusCode.BadRequest, "This landlord account has been deactivated");
+                        }
                     }
-                    else if (currentUser.Role.RoleName == "Customer" && currentUser.Customers.Any())
+                    else if (currentUser.Role.RoleName == "Customer")
                     {
-                        roleUserId = currentUser.Customers.FirstOrDefault()?.CustomerId;
+                        var activeCustomer = currentUser.Customers.FirstOrDefault(c => c.Status == StatusEnums.Active.ToString());
+                        if (activeCustomer != null)
+                        {
+                            roleUserId = activeCustomer.CustomerId;
+                        }
+                        else
+                        {
+                            throw new ApiException(HttpStatusCode.BadRequest, "This customer account has been deactivated");
+                        }
                     }
+
 
                     var userLoginRes = new UserLoginResModel
                     {

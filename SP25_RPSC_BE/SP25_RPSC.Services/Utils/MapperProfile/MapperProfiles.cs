@@ -420,29 +420,50 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
 
             //----------------------------LandlordContract-------------------------------
             CreateMap<LandlordContract, ListLandlordContractRes>()
-                .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().PricePackages.FirstOrDefault().Price))
-                .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.Landlord.User.FullName))
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Landlord.User.PhoneNumber))
-                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().Duration))
-                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
-                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl))
-                .ReverseMap();
+                 .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type))
+                 .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.Landlord.User.FullName))
+                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Landlord.User.PhoneNumber))
+                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                 .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl))
+                 .AfterMap((src, dest) =>
+                 {
+                     var matchedDetail = src.Package?.ServiceDetails?.FirstOrDefault(sd => sd.ServiceDetailId == src.ServiceDetailId);
+                     if (matchedDetail != null)
+                     {
+                         dest.Duration = matchedDetail.Duration;
+                         dest.Price = matchedDetail.PricePackages?.FirstOrDefault(p => p.Status == "Active")?.Price ?? 0;
+                     }
+                     else
+                     {
+                         dest.Duration = "0";
+                         dest.Price = 0;
+                     }
+                 });
+
+
 
 
             CreateMap<LandlordContract, LandlordContractDetailRes>()
-            .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type)) 
-            .ForMember(dest => dest.ServiceDetailName, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().Name)) 
                 .ForMember(dest => dest.PackageName, opt => opt.MapFrom(src => src.Package.Type))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().PricePackages.FirstOrDefault().Price))
-                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Package.ServiceDetails.FirstOrDefault().Duration))
-            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
-            .ForMember(dest => dest.LcontractId, opt => opt.MapFrom(src => src.LcontractId))
-            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate)) 
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status)) 
-            .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl)); 
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.LcontractId, opt => opt.MapFrom(src => src.LcontractId))
+                .ForMember(dest => dest.LcontractUrl, opt => opt.MapFrom(src => src.LcontractUrl))
+                .AfterMap((src, dest) =>
+                {
+                    var serviceDetail = src.Package?.ServiceDetails?.FirstOrDefault(sd => sd.ServiceDetailId == src.ServiceDetailId);
+                    if (serviceDetail != null)
+                    {
+                        dest.ServiceDetailName = serviceDetail.Name;
+                        dest.Duration = serviceDetail.Duration;
+                        dest.Price = serviceDetail.PricePackages?.FirstOrDefault(p => p.Status == "Active")?.Price;
+                    }
+                });
+
+
 
 
 

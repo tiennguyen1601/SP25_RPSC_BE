@@ -23,7 +23,7 @@ namespace SP25_RPSC.Data.Models.LContractModel.Response
 
         public string? PhoneNumber { get; set; }
 
-        public int? Duration { get; set; }
+        public string? Duration { get; set; }
 
         public DateTime? StartDate { get; set; }
 

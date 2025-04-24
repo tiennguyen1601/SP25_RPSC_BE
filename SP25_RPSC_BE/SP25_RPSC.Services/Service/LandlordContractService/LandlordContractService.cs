@@ -160,7 +160,10 @@ namespace SP25_RPSC.Services.Service.LandlordContractService
                 ServiceDetailDescription = landlordContract.ServiceDetail?.Description,
 
                 Price = landlordContract.Package?.ServiceDetails.FirstOrDefault()?.PricePackages.FirstOrDefault()?.Price ?? 0,
-                Duration = int.TryParse(landlordContract.Package.ServiceDetails.FirstOrDefault().Duration, out var duration) ? duration : 0,
+                Duration = int.TryParse(landlordContract.Package.ServiceDetails.FirstOrDefault()?.Duration, out var duration)
+    ? duration.ToString()
+    : "0",
+
 
                 Transactions = transactions.Select(t => new TransactionRes
                 {
