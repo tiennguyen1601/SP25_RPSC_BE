@@ -462,5 +462,128 @@ namespace SP25_RPSC.Services.Service.RoomServices
             return roomDtos;
         }
 
+        public async Task<bool> UpdateRoom(string roomId, RoomUpdateRequestModel model, string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                           .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomId);
+            if (room == null)
+            {
+                throw new Exception("Room not found.");
+            }
+
+            if (landlord.LandlordId != room.RoomType.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to update this room. Only the landlord can update their rooms.");
+            }
+
+            if (room.Status == "Renting")
+            {
+                throw new Exception("Cannot update room that is currently being rented.");
+            }
+
+            if(model.RoomTypeId != null)
+            {
+                var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(model.RoomTypeId);
+                if (roomType == null)
+                {
+                    throw new Exception("RoomType not found.");
+                }
+
+                if (roomType.LandlordId != landlord.LandlordId)
+                {
+                    throw new UnauthorizedAccessException("You can only assign room types that belong to you.");
+                }
+            }
+            if(model.RoomNumber != null)
+            {
+                room.RoomNumber = model.RoomNumber;
+            }
+            if (model.Title != null)
+            {
+                room.Title = model.Title;
+            }
+            if (model.AvailableDateToRent != null)
+            {
+                room.AvailableDateToRent = model.AvailableDateToRent;
+            }
+            if (model.Description != null)
+            {
+                room.Description = model.Description;
+            }
+            room.UpdatedAt = DateTime.Now;
+            room.RoomTypeId = model.RoomTypeId;
+
+            if (model.Price > 0)
+            {
+                var newRoomPrice = new Data.Entities.RoomPrice
+                {
+                    RoomPriceId = Guid.NewGuid().ToString(),
+                    Price = model.Price,
+                    ApplicableDate = DateTime.Now,
+                    RoomId = roomId
+                };
+                await _unitOfWork.RoomPriceRepository.Add(newRoomPrice);
+            }
+
+            if (model.Images != null && model.Images.Any())
+            {
+
+                var existingImages = (await _unitOfWork.RoomImageRepository.Get(filter: ri => ri.RoomId == roomId)).ToList();
+                foreach (var image in existingImages)
+                {
+                    await _unitOfWork.RoomImageRepository.Remove(image);
+                }
+
+
+                var downloadUrls = await _cloudinaryStorageService.UploadImageAsync(model.Images);
+                foreach (var link in downloadUrls)
+                {
+                    var image = new Data.Entities.RoomImage
+                    {
+                        ImageId = Guid.NewGuid().ToString(),
+                        ImageUrl = link,
+                        RoomId = roomId
+                    };
+                    await _unitOfWork.RoomImageRepository.Add(image);
+                }
+            }
+
+
+            if (model.AmentyIds != null && model.AmentyIds.Any())
+            {
+
+                var existingAmenities = (await _unitOfWork.RoomAmentyListRepository.Get(filter: ra => ra.RoomId == roomId)).ToList();
+                foreach (var amenity in existingAmenities)
+                {
+                    await _unitOfWork.RoomAmentyListRepository.Remove(amenity);
+                }
+
+
+                foreach (var amentyId in model.AmentyIds)
+                {
+                    var roomAmentyList = new Data.Entities.RoomAmentiesList
+                    {
+                        RoomAmentyId = amentyId,
+                        RoomId = roomId
+                    };
+                    await _unitOfWork.RoomAmentyListRepository.Add(roomAmentyList);
+                }
+            }
+
+            await _unitOfWork.RoomRepository.Update(room);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }
