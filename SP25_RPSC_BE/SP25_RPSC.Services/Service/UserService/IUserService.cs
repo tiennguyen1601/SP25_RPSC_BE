@@ -17,7 +17,7 @@ namespace SP25_RPSC.Services.Service.UserService
         Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status);
 
         Task RegisterLandlord(LandlordRegisterReqModel model, string email);
-        Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, int pageIndex, int pageSize);
+        Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, string status, int pageIndex, int pageSize);
         Task<bool> UpdateLandlordStatus(string landlordId, bool isApproved, string rejectionReason = "");
         Task<List<LanlordRegisByIdResponse>> GetRegisLandLordById(string landlordId);
         Task<List<LanlordRegisByIdResponse>> GetProfileLordById(string landlordId);
