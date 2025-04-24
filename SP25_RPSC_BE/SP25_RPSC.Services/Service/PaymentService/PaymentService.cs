@@ -150,6 +150,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 Status = StatusEnums.Inactive.ToString(),
                 LandlordId = paymentInfo.LandlordId,
                 PackageId = package!.PackageId,
+                ServiceDetailId = paymentInfo.ServiceDetailId,
                 StartDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddDays(1) : DateTime.Now : DateTime.Now,
                 EndDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddMonths(currContract.Transactions.Count() * int.Parse(package.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId)?.Duration ?? "0")) : DateTime.Now : DateTime.Now.AddDays(double.Parse(package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId)?.Duration ?? "0")),
                 LcontractUrl = contractUrl,
@@ -215,7 +216,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             await _packageService.CheckPackageRequest(extendInfo.LandlordId, extendInfo.PackageId);
 
             // check package
-            var currContracts = await _landlordContractService.GetCurrentContracts(extendInfo.LandlordId);
+            var currContracts = await _landlordContractService.GetCurrentExpiredContracts(extendInfo.LandlordId);
             var currContract = currContracts.FirstOrDefault(u => u.PackageId == extendInfo.PackageId);
 
             if (currContract == null)
@@ -252,7 +253,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             };
 
             // add
-            _transactionService.AddNewTransaction(newTran);
+            await _transactionService.AddNewTransaction(newTran);
 
             // save
             await _unitOfWork.SaveAsync();
@@ -276,7 +277,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
         public async Task<ResultModel> HandlePaymentPackageResponse(PaymentPackageResponseDTO response)
         {
             // check Landlord
-            var Landlord = await _landlordService.GetLandlordById(response.LandlordId);
+             var Landlord = await _landlordService.GetLandlordById(response.LandlordId);
 
             // CASE NOT EXISTED, throw 404 error - NOT FOUND
             if (Landlord == null)
@@ -318,12 +319,16 @@ namespace SP25_RPSC.Services.Service.PaymentService
                         // package
                         var package = await _packageService.GetById(upTran.Lcontract.PackageId);
 
-                        var serviceDetail = package.ServiceDetails.FirstOrDefault();
+                        var serviceDetail =  await _unitOfWork.ServiceDetailRepository.GetByIDAsync(upTran.Lcontract.ServiceDetailId);
 
                         var duration = serviceDetail?.Duration;
                         int parsedDuration = int.TryParse(duration, out var result) ? result : 0;
 
-                        var pricePackage = serviceDetail?.PricePackages.FirstOrDefault();
+                        var pricePackage = serviceDetail?.PricePackages
+                            .Where(p => p.Status == "Active") 
+                            .OrderByDescending(p => p.ApplicableDate) 
+                            .FirstOrDefault(); 
+
                         var price = pricePackage?.Price ?? 0;
                         double priceAsDouble = (double)price;
 
@@ -356,9 +361,16 @@ namespace SP25_RPSC.Services.Service.PaymentService
                         // update
                         upTran.Lcontract.LcontractUrl = contractUrl;
                         upTran.Lcontract.EndDate = upTran.Lcontract.EndDate.Value.AddDays(parsedDuration);
+                        upTran.Lcontract.Status = StatusEnums.Active.ToString();
+
                     }
                     else
                     {
+                        var package = await _packageService.GetById(upTran.Lcontract.PackageId);
+                        // **Update Landlord's NumberRoom from MaxPost**
+                        var maxPost = package.MaxPost;
+                        Landlord.NumberRoom = maxPost;
+                        await _unitOfWork.LandlordRepository.Update(Landlord);
                         upTran.Lcontract.Status = StatusEnums.Active.ToString();
                     }
                 }
@@ -384,6 +396,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
 
                 if (response.IsSuccess)
                 {
+
                     string subject = "Bạn đã thanh toán thành công";
                     string html = EmailTemplate.EmailAfterPaymentTemplate(Landlord.User.FullName, upTran.Lcontract.LcontractUrl, subject);
                     // send email

@@ -20,6 +20,43 @@ namespace SP25_RPSC.Controllers.Controllers
             _postService = postService;
         }
 
+        [HttpGet]
+        [Route("recommended-roommate-posts")]
+        public async Task<IActionResult> GetRecommendedRoommatePosts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.GetRecommendedRoommatePosts(token, pageNumber, pageSize);
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Data = result,
+                    Message = "Recommended roommate posts retrieved successfully"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving recommended roommate posts."
+                });
+            }
+        }
+
         [HttpGet("Get-All-Roommate-Post")]
         public async Task<ActionResult<PagedResult<RoommatePostRes>>> GetAllRoommatePosts([FromQuery] RoommatePostSearchReq searchRequest)
         {
@@ -132,5 +169,149 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
+        [HttpPut("update-roommate-post/{postId}")]
+        public async Task<IActionResult> UpdateRoommatePost(string postId, [FromBody] UpdateRoommatePostReq request)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.UpdateRoommatePost(token, postId, request);
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Roommate post updated successfully.",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while getting roommate post by customer ID",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("posts/landlord/customer-roommate")]
+        public async Task<IActionResult> GetCustomerRoommatePosts()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _postService.GetPostsByLandlordAsync(token);
+            return Ok(result);
+        }
+
+        [HttpPut("inactivate-roommate-post-by-tenant/{postId}")]
+        public async Task<IActionResult> InactivateRoommatePostByTenant(string postId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.InactivateRoommatePostByTenant(token, postId);
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Roommate post has been successfully inactivated.",
+                    Data = result
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while inactivating the roommate post.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+
+        [HttpPut("inactivate-roommate-post-by-landlord/{postId}")]
+        public async Task<IActionResult> InactivateRoommatePostByLandlord(string postId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var result = await _postService.InactivateRoommatePostByLandlord(token, postId);
+
+                return StatusCode((int)HttpStatusCode.OK, new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Roommate post has been successfully inactivated.",
+                    Data = result
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode((int)HttpStatusCode.NotFound, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.NotFound,
+                    Message = ex.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while inactivating the roommate post.",
+                    Data = ex.Message
+                });
+            }
+        }
     }
 }

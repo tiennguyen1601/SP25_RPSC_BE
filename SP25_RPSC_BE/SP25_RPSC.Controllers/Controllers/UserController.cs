@@ -70,9 +70,9 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpGet]
         [Route("Get-Landlord-Regis")]
-        public async Task<ActionResult> GetLanlordRegis(int pageIndex, int pageSize, string searchQuery = null)
+        public async Task<ActionResult> GetLanlordRegis(int pageIndex, int pageSize, string searchQuery = null, string status = null)
         {
-            var landlords = await _userService.GetRegisLandLord(searchQuery, pageIndex, pageSize);
+            var landlords = await _userService.GetRegisLandLord(searchQuery,status ,pageIndex, pageSize);
             ResultModel response = new ResultModel
             {
                 IsSuccess = true,
@@ -204,10 +204,6 @@ namespace SP25_RPSC.Controllers.Controllers
             return StatusCode(response.Code, response);
         }
 
-
-
-
-
         [HttpPut]
         [Route("Update-Customer-Profile")]
         public async Task<IActionResult> UpdateCustomerProfile([FromForm] UpdateInfoReq updateReqtModel, [FromQuery] string userEmail)
@@ -231,7 +227,180 @@ namespace SP25_RPSC.Controllers.Controllers
                 Message = "Customer profile updated successfully."
             });
         }
+        [HttpGet]
+        [Route("Get-Customer-By-UserId")]
+        public async Task<IActionResult> GetCustomerByUserId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.GetCustomerByUserId(token);
 
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Customer information retrieved successfully.",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving customer information: " + ex.Message
+                });
+            }
+        }
+
+        [HttpPut]
+        [Route("Edit-Customer-Profile")]
+        public async Task<IActionResult> UpdateCustomerProfile([FromBody] UpdateCustomerRequestModel model)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.UpdateCustomer(token, model);
+
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Customer profile updated successfully."
+                    });
+                }
+                else
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Failed to update customer profile."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while updating customer profile: " + ex.Message
+                });
+            }
+        }
+
+
+        [HttpPut]
+        [Route("Update-User-Profile")]
+        public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateUserRequestModel model)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.UpdateUser(token, model);
+
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "User profile updated successfully."
+                    });
+                }
+                else
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Failed to update user profile."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while updating user profile: " + ex.Message
+                });
+            }
+        }
+
+
+        [HttpGet]
+        [Route("Get-Landlord-By-UserId")]
+        public async Task<IActionResult> GetLandlordByUserId()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.GetLandlordByUserId(token);
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Landlord information retrieved successfully.",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while retrieving landlord information: " + ex.Message
+                });
+            }
+        }
+
+        [HttpPut]
+        [Route("Edit-Landlord-Profile")]
+        public async Task<IActionResult> UpdateLandlordProfile([FromBody] UpdateLandlordRequestModel model)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            try
+            {
+                var result = await _userService.UpdateLandlord(token, model);
+
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Landlord profile updated successfully."
+                    });
+                }
+                else
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.BadRequest,
+                        Message = "Failed to update landlord profile."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "An error occurred while updating landlord profile: " + ex.Message
+                });
+            }
+        }
 
 
 

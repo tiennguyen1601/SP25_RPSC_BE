@@ -173,5 +173,56 @@ namespace SP25_RPSC.Controllers.Controllers
             return Ok(room);
         }
 
+
+        [HttpGet("get-past-rooms")]
+        public async Task<IActionResult> GetUserPastRooms()
+        {
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Authorization token is required" });
+                }
+
+                var pastRooms = await _roomService.GetUserPastRooms(token);
+                return Ok(new
+                {
+                    isSuccess = true,
+                    message = "Past rooms retrieved successfully",
+                    data = pastRooms
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { isSuccess = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { isSuccess = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { isSuccess = false, message = "An error occurred while retrieving past rooms", error = ex.Message });
+            }
+        }
+        [HttpGet("landlord/rooms")]
+        public async Task<IActionResult> GetRoomsByLandlordToken([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var rooms = await _roomService.GetRoomsByLandlordAsync(token, pageNumber, pageSize);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get room by landlord successfully",
+                Data = rooms
+            };
+
+            return StatusCode(response.Code, response);
+        }
+
     }
 }

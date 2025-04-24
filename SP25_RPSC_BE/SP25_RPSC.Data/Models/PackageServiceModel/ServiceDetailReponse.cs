@@ -19,7 +19,7 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
         public string label { get; set; }
 
         public string? Status { get; set; }
-
+        public int TotalServiceIsUseNow { get; set; }
 
         public List<ListDetailService> ListDetails { get; set; }
      
@@ -37,7 +37,7 @@ namespace SP25_RPSC.Data.Models.PackageServiceModel
 
             public string? PackageId { get; set; }
             public string PriceId { get; set; }
-
+            public string Status { get; set; } = "Unknown";
         }
 
 

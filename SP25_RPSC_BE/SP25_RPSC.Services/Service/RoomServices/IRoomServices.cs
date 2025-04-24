@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SP25_RPSC.Data.Models.RoomModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
+using SP25_RPSC.Data.Models.RoomStay;
 
 namespace SP25_RPSC.Services.Service.RoomServices
 {
@@ -18,5 +19,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
         Task<GetRoomByRoomTypeIdResponseModel> GetRoomByRoomTypeId(string roomTypeId, int pageIndex, int pageSize, string searchQuery = "", string status = null);
         Task<List<RoomResponseModel>> GetAllRoomsAsync(decimal? minPrice = null, decimal? maxPrice = null, string roomTypeName = null, string district = null, List<string> amenityIds = null);
         Task<RoomDetailResponseModel> GetRoomDetailByIdAsync(string roomId);
+        Task<List<UserPastRoomRes>> GetUserPastRooms(string token);
+        Task<List<RoomDto>> GetRoomsByLandlordAsync(string token, int pageNumber, int pageSize);
     }
 }

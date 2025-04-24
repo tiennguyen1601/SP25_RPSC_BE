@@ -8,6 +8,7 @@ using SP25_RPSC.Data.Repositories.CustomerMoveOutRepository;
 using SP25_RPSC.Data.Repositories.CustomerRentRoomDetailRequestRepository;
 using SP25_RPSC.Data.Repositories.CustomerRepository;
 using SP25_RPSC.Data.Repositories.CustomerRequestRepository;
+using SP25_RPSC.Data.Repositories.ExtendCcontractRepository;
 using SP25_RPSC.Data.Repositories.FavoriteRepository;
 using SP25_RPSC.Data.Repositories.FeedbackRepository;
 using SP25_RPSC.Data.Repositories.ImageRfRepository;
@@ -81,11 +82,11 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomRentRequestRepository _roomRentRequestRepository;
         private IImageRfRepository _imageRfRepository;
         private IChatRepository _chatRepository;
-
+        private IExtendContractRequestRepository _extendContractRequestRepository;
         private IRoomAmentyRepository _roomAmentyRepository;
         private IRoomAmentyListRepository _roomAmentyListRepository;
         private ICustomerMoveOutRepository _customerMoveOutRepository;
-
+        private IExtendCcontractRepository _extendCcontractRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -93,7 +94,13 @@ namespace SP25_RPSC.Data.UnitOfWorks
         }
 
         public IChatRepository ChatRepository { get { return _chatRepository ??= new ChatRepository(_context); } }
-
+        public IExtendCcontractRepository ExtendCcontractRepository
+        {
+            get
+            {
+                return _extendCcontractRepository ??= new ExtendCcontractRepository(_context);
+            }
+        }
         public IAddressRepository AddressRepository
         {
             get
@@ -369,6 +376,16 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _customerMoveOutRepository ??= new CustomerMoveOutRepository(_context);
+            }
+        }
+
+    
+
+        public IExtendContractRequestRepository ExtendContractRequestRepository
+        {
+            get
+            {
+                return _extendContractRequestRepository ??= new ExtendContractRequestRepository(_context);
             }
         }
 

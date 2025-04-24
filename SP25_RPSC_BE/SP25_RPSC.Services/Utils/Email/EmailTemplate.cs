@@ -256,7 +256,7 @@ namespace SP25_RPSC.Services.Utils.Email
 
         }
 
-        public static string RoomSharingRejected(string requesterName, string postOwnerName, string postTitle, string roomAddress)
+        public static string RoomSharingRejected(string requesterName, string postOwnerName, string postTitle, string roomAddress, string reason)
         {
             return $@"
     <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
@@ -271,7 +271,8 @@ namespace SP25_RPSC.Services.Utils.Email
             <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
                 <p><strong>Bài đăng:</strong> {postTitle}</p>
                 <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
-                <p><strong>Chủ phòng:</strong> {postOwnerName}</p>
+                <p><strong>Chủ phòng:</strong> {postOwnerName}</p>                
+                <p><strong>Lý do:</strong> {reason}</p
             </div>
             
             <p style='font-size: 14px;'>Đừng nản lòng! Bạn có thể tiếp tục tìm kiếm các lựa chọn phòng ở ghép khác phù hợp hơn trên nền tảng của chúng tôi.</p>
@@ -479,7 +480,7 @@ namespace SP25_RPSC.Services.Utils.Email
             </div>
             <h2 style='color: #28a745; text-align: center;'>Yêu cầu rời phòng đã được chấp nhận</h2>
             <p style='font-size: 16px;'>Xin chào <strong>{memberName}</strong>,</p>
-            <p style='font-size: 14px;'>Chúng tôi vui mừng thông báo rằng yêu cầu rời phòng của bạn đã được <strong>{tenantName}</strong> chấp nhận.</p>
+            <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng yêu cầu rời phòng của bạn đã được <strong>{tenantName}</strong> chấp nhận.</p>
             
             <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #28a745; margin: 15px 0;'>
                 <p><strong>Số phòng:</strong> {roomNumber}</p>
@@ -490,6 +491,35 @@ namespace SP25_RPSC.Services.Utils.Email
             
             <p style='font-size: 14px;'>Tài khoản của bạn đã được cập nhật và bạn không còn là thành viên của phòng này.</p>
             <p style='font-size: 14px;'>Vui lòng liên hệ với chủ nhà hoặc <strong>{tenantName}</strong> để hoàn tất các thủ tục cần thiết trước khi rời đi.</p>
+
+            <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+            <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+            <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+        </div>
+    </div>";
+        }
+
+        public static string LeaveRoomAcceptedNotificationForTenant(string tenantName, string landlordName, string roomNumber, string roomAddress, string acceptDate)
+        {
+            return $@"
+    <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+        <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+            <div style='text-align: center; margin-bottom: 20px;'>
+                <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+            </div>
+            <h2 style='color: #28a745; text-align: center;'>Yêu cầu rời phòng đã được chấp nhận</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{tenantName}</strong>,</p>
+            <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng yêu cầu rời phòng của bạn đã được <strong>{landlordName}</strong> chấp nhận.</p>
+            
+            <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #28a745; margin: 15px 0;'>
+                <p><strong>Số phòng:</strong> {roomNumber}</p>
+                <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+                <p><strong>Ngày chấp nhận:</strong> {acceptDate}</p>
+                <p><strong>Trạng thái:</strong> <span style='color: #28a745; font-weight: bold;'>Đã chấp nhận</span></p>
+            </div>
+            
+            <p style='font-size: 14px;'>Tài khoản của bạn đã được cập nhật và bạn không còn là thành viên của phòng này.</p>
+            <p style='font-size: 14px;'>Vui lòng liên hệ với chủ nhà: <strong>{landlordName}</strong> để hoàn tất các thủ tục cần thiết trước khi rời đi.</p>
 
             <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
             <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
@@ -520,6 +550,35 @@ namespace SP25_RPSC.Services.Utils.Email
         </div>
         
         <p style='font-size: 14px;'>Hệ thống đã cập nhật thông tin và <strong>{memberName}</strong> không còn là thành viên của phòng này.</p>
+        <p style='font-size: 14px;'>Vui lòng kiểm tra và cập nhật các thông tin liên quan đến hợp đồng thuê phòng nếu cần thiết.</p>
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string TenantLeaveRoomAcceptedNotificationForLandlord(string landlordName, string tenantName, string roomNumber, string roomAddress, string acceptDate, string designatedName)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #007bff; text-align: center;'>Thông báo thành viên rời phòng</h2>
+            <p style='font-size: 16px;'>Xin chào <strong>{landlordName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng yêu cầu rời phòng của thành viên <strong>{tenantName}</strong> đã được chấp nhận.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #007bff; margin: 15px 0;'>
+            <p><strong>Số phòng:</strong> {roomNumber}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Ngày chấp nhận:</strong> {acceptDate}</p>
+            <p><strong>Thành viên được chỉ định làm thành viên chính tiếp theo:</strong> {designatedName}</p>
+            <p><strong>Trạng thái:</strong> <span style='color: #007bff; font-weight: bold;'>Đã xác nhận.</span></p>
+        </div>
+        
+        <p style='font-size: 14px;'>Hệ thống đã cập nhật thông tin và <strong>{tenantName}</strong> không còn là thành viên của phòng này.</p>
         <p style='font-size: 14px;'>Vui lòng kiểm tra và cập nhật các thông tin liên quan đến hợp đồng thuê phòng nếu cần thiết.</p>
         <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
         <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
@@ -624,6 +683,260 @@ namespace SP25_RPSC.Services.Utils.Email
     </div>";
         }
 
+
+        public static string LeaveRoomDesignatedPersonNotification(string designatedUserName, string tenantName, string roomNumber, string roomAddress, string requestDate)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #4CAF50; text-align: center;'>Thông báo: Bạn được chỉ định xử lý tiền đặt cọc và trở thành người thuê chính</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{designatedUserName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi xin thông báo rằng <strong>{tenantName}</strong> đã chỉ định bạn là người xử lý tiền đặt cọc và trở thành người thuê chính của phòng khi họ rời đi.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #4CAF50; margin: 15px 0;'>
+            <p><strong>Số phòng:</strong> {roomNumber}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Ngày yêu cầu:</strong> {requestDate}</p>
+            <p><strong>Vai trò mới của bạn:</strong> <span style='color: #4CAF50; font-weight: bold;'>Người thuê chính được chỉ định</span></p>
+        </div>
+        
+        <p style='font-size: 14px;'>Khi trở thành người thuê chính, bạn sẽ có trách nhiệm:</p>
+        <ul style='font-size: 14px;'>
+            <li>Quản lý tiền đặt cọc của phòng</li>
+            <li>Chịu trách nhiệm trong việc liên hệ với chủ nhà</li>
+            <li>Xử lý các yêu cầu liên quan đến phòng</li>
+            <li>Quản lý các thành viên ở ghép</li>
+        </ul>
+        
+        <p style='font-size: 14px;'>Chúng tôi khuyến nghị bạn liên hệ với <strong>{tenantName}</strong> để thảo luận về quá trình bàn giao và các chi tiết liên quan đến tiền đặt cọc.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string RoommateKicked(string roommateName, string tenantName, string roomTitle, string roomNumber, string roomAddress, string reason, string moveOutDate)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo chấm dứt ở ghép</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{roommateName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi thông báo rằng bạn sẽ không còn là thành viên của phòng trọ này từ ngày <strong>{moveOutDate}</strong>.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Phòng trọ:</strong> {roomTitle}</p>
+            <p><strong>Số phòng:</strong> {roomNumber}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Chủ phòng:</strong> {tenantName}</p>                
+            <p><strong>Lý do:</strong> {reason}</p>
+            <p>Liên hệ với<strong> {roommateName}</strong> để xác nhận lại nếu thông tin có sai sót.</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Vui lòng thu dọn đồ đạc cá nhân và bàn giao phòng đúng hạn theo quy định.</p>
+        <p style='font-size: 14px;'>Nếu bạn cần hỗ trợ tìm kiếm phòng mới, vui lòng sử dụng ứng dụng EasyRoomie hoặc liên hệ với chúng tôi.</p>
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string RoommateKickedLandlordNoti(string landlordName, string tenantName,
+                                                        string roommateName, string roomTitle, string roomNumber, string roomAddress,
+                                                        string reason, string moveOutDate, List<string> evidenceImageUrls = null)
+        {
+            // Tạo phần HTML hiển thị ảnh bằng chứng
+            StringBuilder evidenceImagesHtml = new StringBuilder();
+            if (evidenceImageUrls != null && evidenceImageUrls.Any())
+            {
+                evidenceImagesHtml.Append("<div style='margin-top: 15px;'>");
+                evidenceImagesHtml.Append("<h4 style='color: #dc3545;'>Bằng chứng:</h4>");
+                evidenceImagesHtml.Append("<div style='display: flex; flex-wrap: wrap; gap: 10px;'>");
+                foreach (var imageUrl in evidenceImageUrls)
+                {
+                    evidenceImagesHtml.Append($"<div style='flex: 0 0 250px; max-width: 250px;'>");
+                    evidenceImagesHtml.Append($"<img src=\"{imageUrl}\" alt=\"Bằng chứng\" style='width: 100%; max-height: 180px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);'/>");
+                    evidenceImagesHtml.Append("</div>");
+                }
+                evidenceImagesHtml.Append("</div></div>");
+            }
+
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #4a86e8; text-align: center;'>Thông báo: Thành viên kết thúc ở ghép</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{landlordName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi thông báo rằng có một thành viên sẽ rời khỏi phòng trọ của bạn từ ngày <strong>{moveOutDate}</strong>.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #4a86e8; margin: 15px 0;'>
+            <p><strong>Phòng trọ:</strong> {roomTitle}</p>
+            <p><strong>Số phòng:</strong> {roomNumber}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Chủ phòng:</strong> {tenantName}</p>
+            <p><strong>Thành viên rời đi:</strong> {roommateName}</p>
+            <p><strong>Lý do gửi cho thành viên rời đi:</strong> {reason}</p>
+        </div>
+        
+        {evidenceImagesHtml}
+        
+        <p style='font-size: 14px;'>Thông báo này chỉ nhằm mục đích thông tin. Vui lòng liên hệ với người thuê chính để biết thêm chi tiết.</p>
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+        public static string ExtendContractRejected(string customerName, string contractId, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 25px;'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src='{logoUrl}' alt='EasyRoomie Logo' style='max-width: 180px;' />
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Yêu cầu gia hạn hợp đồng bị từ chối</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{customerName}</strong>,</p>
+        <p style='font-size: 14px;'>Rất tiếc, yêu cầu gia hạn hợp đồng mã số <strong>{contractId}</strong> của bạn đã bị từ chối bởi chủ trọ.</p>
+        
+        <div style='background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; border-left: 5px solid #dc3545; margin: 20px 0;'>
+            <strong>Lý do từ chối:</strong>
+            <p style='margin: 8px 0 0;'>{reason}</p>
+        </div>
+
+        <p style='font-size: 14px;'>Nếu bạn có thắc mắc hoặc cần trao đổi thêm, hãy liên hệ trực tiếp với chủ trọ.</p>
+        <p style='font-size: 14px;'>Chúng tôi luôn sẵn sàng hỗ trợ bạn trong việc tìm kiếm và duy trì nơi ở lý tưởng.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 30px 0;'/>
+        <p style='font-size: 12px; color: #777;'>Đây là email tự động, vui lòng không phản hồi trực tiếp. Mọi thắc mắc xin gửi về: 
+            <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #007bff;'>easyroomie.rpsc@gmail.com</a>
+        </p>
+        <p style='font-size: 12px; color: #777;'>Trân trọng, <br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+        public static string NotifyLandlordForExtendRequest(string landlordName, string customerName, string contractId, int months, string message)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+    <div style='background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 25px;'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src='{logoUrl}' alt='EasyRoomie Logo' style='max-width: 180px;' />
+        </div>
+        <h2 style='color: #007bff; text-align: center;'>Yêu cầu gia hạn hợp đồng</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{landlordName}</strong>,</p>
+        <p style='font-size: 14px;'>Người thuê <strong>{customerName}</strong> đã gửi yêu cầu gia hạn hợp đồng với mã số <strong>{contractId}</strong>.</p>
+
+        <div style='background-color: #f1f1f1; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+            <p><strong>Số tháng muốn gia hạn:</strong> {months} tháng</p>
+            <p><strong>Lời nhắn từ khách thuê:</strong></p>
+            <p style='font-style: italic; color: #555;'>{message}</p>
+        </div>
+
+        <p style='font-size: 14px;'>Vui lòng đăng nhập hệ thống để xem và xử lý yêu cầu này.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 30px 0;'/>
+        <p style='font-size: 12px; color: #777;'>Đây là email tự động, vui lòng không phản hồi. Mọi thắc mắc xin gửi về: 
+            <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #007bff;'>easyroomie.rpsc@gmail.com</a>
+        </p>
+        <p style='font-size: 12px; color: #777;'>Trân trọng, <br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+        public static string ExtendContractApproved(string fullname, string contractId, string newEndDate)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+    <div style='background-color: #ffffff; max-width: 600px; margin: auto; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); padding: 25px;'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src='{logoUrl}' alt='EasyRoomie Logo' style='max-width: 180px;' />
+        </div>
+        <h2 style='color: #28a745; text-align: center; margin-bottom: 10px;'>Yêu cầu gia hạn được chấp thuận</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{fullname}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi rất vui thông báo rằng yêu cầu gia hạn hợp đồng của bạn (Mã hợp đồng: <strong>{contractId}</strong>) đã được <strong>chủ nhà</strong> chấp nhận.</p>
+
+        <div style='background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0;'>
+            <p><strong>Ngày kết thúc mới của hợp đồng:</strong></p>
+            <p style='font-size: 16px; font-weight: bold; color: #2e7d32;'>{newEndDate}</p>
+        </div>
+
+        <p style='font-size: 14px;'>Bạn có thể đăng nhập vào hệ thống EasyRoomie để xem chi tiết hợp đồng, cập nhật thông tin, hoặc liên hệ với chủ nhà nếu cần.</p>
+
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 30px 0;' />
+        <p style='font-size: 12px; color: #777;'>Đây là email tự động, vui lòng không phản hồi. Mọi thắc mắc xin gửi về: 
+            <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #007bff;'>easyroomie.rpsc@gmail.com</a>
+        </p>
+        <p style='font-size: 12px; color: #777;'>Trân trọng, <br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string InactivateRoommatePostByLandlord(string ownerName, string postTitle, string roomAddress, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo vô hiệu hóa bài đăng tìm người ở ghép</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{ownerName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi thông báo rằng bài đăng tìm người ở ghép của bạn đã bị vô hiệu hóa bởi chủ nhà.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Bài đăng:</strong> {postTitle}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Lý do:</strong> {reason}</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Khi bài đăng bị vô hiệu hóa, nó sẽ không hiển thị cho người dùng khác và mọi yêu cầu ở ghép đến bài đăng này sẽ bị hủy.</p>
+        <p style='font-size: 14px;'>Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ với chủ nhà hoặc đội ngũ hỗ trợ của chúng tôi.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string CancelRoommateRequestDueToInactivePost(string customerName, string postTitle, string roomAddress, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo hủy yêu cầu ở ghép</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{customerName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi lấy làm tiếc thông báo rằng yêu cầu ở ghép của bạn đã bị hủy do bài đăng không còn hoạt động.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Bài đăng:</strong> {postTitle}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Lý do:</strong> {reason}</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Bài đăng này đã bị vô hiệu hóa bởi chủ nhà, vì vậy tất cả các yêu cầu ở ghép liên quan đều bị hủy.</p>
+        <p style='font-size: 14px;'>Đừng lo, vẫn còn rất nhiều cơ hội ở ghép khác cho bạn trên nền tảng EasyRoomie.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
 
     }
 }

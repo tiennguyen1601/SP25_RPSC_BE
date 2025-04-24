@@ -26,13 +26,13 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
             public List<string> RoomImages { get; set; }
             public List<RoomAmentyDto> Amenties { get; set; }
         }
-            public class RoomAmentyDto
-            {
+        public class RoomAmentyDto
+        {
                 public string RoomAmentyId { get; set; }
                 public string RoomId { get; set; }
                 public string Name { get; set; }  
                 public decimal? Compensation { get; set; } 
-            }
+        }
 
 
 }

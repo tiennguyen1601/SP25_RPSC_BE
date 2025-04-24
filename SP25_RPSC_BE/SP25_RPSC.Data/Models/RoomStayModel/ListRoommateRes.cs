@@ -41,5 +41,7 @@ namespace SP25_RPSC.Data.Models.RoomStay
         public string? PreferredLocation { get; set; }
         public string? Requirement { get; set; }
         public string? UserId { get; set; }
+
+        public bool IsCurrentUser { get; set; }
     }
 }

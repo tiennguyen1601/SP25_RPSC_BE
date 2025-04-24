@@ -14,6 +14,7 @@ namespace SP25_RPSC.Data.Models.RoomStay
     {
         public string RoomStayCustomerId { get; set; } = null!;
         public string? Type { get; set; }
+        public string? Avatar { get; set; }
         public string? Status { get; set; }
         public string? CustomerId { get; set; }
         public string? CustomerName { get; set; }

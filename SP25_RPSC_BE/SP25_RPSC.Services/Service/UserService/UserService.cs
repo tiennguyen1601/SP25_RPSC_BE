@@ -10,6 +10,10 @@ using SP25_RPSC.Services.Utils.CustomException;
 using SP25_RPSC.Services.Utils.Email;
 using SP25_RPSC.Services.Service.EmailService;
 using Microsoft.AspNetCore.Http;
+using SP25_RPSC.Data.Models.CustomerModel.Response;
+using SP25_RPSC.Services.Utils.DecodeTokenHandler;
+using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 
 namespace SP25_RPSC.Services.Service.UserService
 {
@@ -19,13 +23,17 @@ namespace SP25_RPSC.Services.Service.UserService
         private readonly IMapper _mapper;
         private readonly ICloudinaryStorageService _cloudinaryStorageService;
         private readonly IEmailService _emailService;
+        private IDecodeTokenHandler _decodeTokenHandler;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService, IEmailService emailService)
+
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryStorageService cloudinaryStorageService
+            , IEmailService emailService, IDecodeTokenHandler decodeTokenHandler)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cloudinaryStorageService = cloudinaryStorageService;
             _emailService = emailService;
+            _decodeTokenHandler = decodeTokenHandler;
         }
 
         public async Task<GetAllUserResponseModel> GetAllCustomer(string searchQuery, int pageIndex, int pageSize, string status)
@@ -33,7 +41,7 @@ namespace SP25_RPSC.Services.Service.UserService
             Expression<Func<Customer, bool>> searchFilter = c =>
                 (string.IsNullOrEmpty(searchQuery) ||
                  c.User.Email.Contains(searchQuery) ||
-                 c.User.PhoneNumber.Contains(searchQuery)) 
+                 c.User.PhoneNumber.Contains(searchQuery))
                 &&
                 (string.IsNullOrEmpty(status) || c.Status == status)
                 &&
@@ -152,27 +160,30 @@ namespace SP25_RPSC.Services.Service.UserService
         }
 
 
-        public async Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, int pageIndex, int pageSize)
+        public async Task<GetAllLandlordRegisterResponseModel> GetRegisLandLord(string searchQuery, string status, int pageIndex, int pageSize)
         {
             Expression<Func<Landlord, bool>> searchFilter = c =>
-                c.Status == StatusEnums.Pending.ToString() &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  c.User.Email.Contains(searchQuery) ||
-                 c.User.PhoneNumber.Contains(searchQuery));
+                 c.User.PhoneNumber.Contains(searchQuery)) &&
+                (string.IsNullOrEmpty(status) || c.Status == status);
 
-
-            var res = await _unitOfWork.LandlordRepository.Get(orderBy: q => q.OrderByDescending(p => p.CreatedDate),
-                                                                    includeProperties: "User,BusinessImages", 
-                                                                    filter: searchFilter,
-                                                                    pageIndex: pageIndex,
-                                                                    pageSize: pageSize);
-
+            var res = await _unitOfWork.LandlordRepository.Get(
+                orderBy: q => q.OrderByDescending(p => p.CreatedDate),
+                includeProperties: "User,BusinessImages",
+                filter: searchFilter,
+                pageIndex: pageIndex,
+                pageSize: pageSize);
 
             var totalLandlord = await _unitOfWork.LandlordRepository.CountAsync(searchFilter);
 
             if (res == null || !res.Any())
             {
-                return new GetAllLandlordRegisterResponseModel { Landlords = new List<ListLandlordResgiterResponse>(), TotalUser = 0 };
+                return new GetAllLandlordRegisterResponseModel
+                {
+                    Landlords = new List<ListLandlordResgiterResponse>(),
+                    TotalUser = 0
+                };
             }
 
             var landlordRes = _mapper.Map<List<ListLandlordResgiterResponse>>(res.ToList());
@@ -183,6 +194,7 @@ namespace SP25_RPSC.Services.Service.UserService
                 TotalUser = totalLandlord
             };
         }
+
 
         public async Task<List<LanlordRegisByIdResponse>> GetRegisLandLordById(string landlordId)
         {
@@ -355,6 +367,207 @@ namespace SP25_RPSC.Services.Service.UserService
         {
             await _unitOfWork.UserRepository.Update(user);
         }
+
+        public async Task<GetCustomerByUserIdResponseModel> GetCustomerByUserId(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "User ID is required.");
+            }
+
+            var user = (await _unitOfWork.UserRepository.Get(
+                filter: u => u.UserId == userId,
+                includeProperties: "Customers"
+            )).FirstOrDefault();
+
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            var customer = user.Customers.FirstOrDefault(c => c.UserId == userId);
+
+            if (customer == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Customer not found for this user.");
+            }
+
+            var userResponse = _mapper.Map<UserResponseModel>(user);
+            var customerResponse = _mapper.Map<CustomerResponseModel>(customer);
+
+            return new GetCustomerByUserIdResponseModel
+            {
+                User = userResponse,
+                Customer = customerResponse
+            };
+        }
+        public async Task<bool> UpdateUser(string token, UpdateUserRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var user = (await _unitOfWork.UserRepository.Get(
+                filter: u => u.UserId == userId
+            )).FirstOrDefault();
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(
+                includeProperties: "User,BusinessImages",
+                filter: c => c.UserId == user.UserId)).FirstOrDefault();
+
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            if (!string.IsNullOrEmpty(model.FullName))
+                user.FullName = model.FullName;
+
+            if (!string.IsNullOrEmpty(model.PhoneNumber))
+                user.PhoneNumber = model.PhoneNumber;
+
+            if (!string.IsNullOrEmpty(model.Address))
+                user.Address = model.Address;
+
+            if (!string.IsNullOrEmpty(model.Gender))
+                user.Gender = model.Gender;
+
+            if (model.Dob.HasValue)
+                user.Dob = model.Dob;
+
+            if (model.Avatar != null)
+            {
+                var avatarList = new List<IFormFile> { model.Avatar };
+                var uploadedUrls = await _cloudinaryStorageService.UploadImageAsync(avatarList);
+                user.Avatar = uploadedUrls.FirstOrDefault();
+            }
+
+            user.UpdateAt = DateTime.UtcNow;
+
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+        public async Task<bool> UpdateCustomer(string token, UpdateCustomerRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+            if (customer == null)
+            {
+                
+            }
+            var customerId = customer.CustomerId;
+
+            if (!string.IsNullOrEmpty(model.Preferences))
+                customer.Preferences = model.Preferences;
+
+            if (!string.IsNullOrEmpty(model.LifeStyle))
+                customer.LifeStyle = model.LifeStyle;
+
+            if (!string.IsNullOrEmpty(model.BudgetRange))
+                customer.BudgetRange = model.BudgetRange;
+
+            if (!string.IsNullOrEmpty(model.PreferredLocation))
+                customer.PreferredLocation = model.PreferredLocation;
+
+            if (!string.IsNullOrEmpty(model.Requirement))
+                customer.Requirement = model.Requirement;
+
+            if (!string.IsNullOrEmpty(model.CustomerType))
+                customer.CustomerType = model.CustomerType;
+
+
+            await _unitOfWork.CustomerRepository.Update(customer);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+        public async Task<GetLandlordByUserIdResponseModel> GetLandlordByUserId(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "User ID is required.");
+            }
+
+            var user = (await _unitOfWork.UserRepository.Get(
+                filter: u => u.UserId == userId,
+                includeProperties: "Landlords.BusinessImages"  
+            )).FirstOrDefault();
+
+            if (user == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+            }
+
+            var landlord = user.Landlords.FirstOrDefault(l => l.UserId == userId);
+
+            if (landlord == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found for this user.");
+            }
+
+            var userResponse = _mapper.Map<UserResponseModel>(user);
+            var landlordResponse = _mapper.Map<LandlordResponseUptModel>(landlord);
+
+            landlordResponse.BusinessImages = landlord.BusinessImages.Select(bi => bi.ImageUrl).ToList();
+
+            return new GetLandlordByUserIdResponseModel
+            {
+                User = userResponse,
+                Landlord = landlordResponse
+            };
+        }
+
+
+        public async Task<bool> UpdateLandlord(string token, UpdateLandlordRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new ApiException(HttpStatusCode.NotFound, "Landlord not found.");
+            }
+
+            if (!string.IsNullOrEmpty(model.CompanyName))
+                landlord.CompanyName = model.CompanyName;
+
+            //if (model.NumberRoom.HasValue)
+            //    landlord.NumberRoom = model.NumberRoom;
+
+            if (!string.IsNullOrEmpty(model.LicenseNumber))
+                landlord.LicenseNumber = model.LicenseNumber;
+
+            if (!string.IsNullOrEmpty(model.BankName))
+                landlord.BankName = model.BankName;
+
+            if (!string.IsNullOrEmpty(model.BankNumber))
+                landlord.BankNumber = model.BankNumber;
+
+            if (!string.IsNullOrEmpty(model.Template))
+                landlord.Template = model.Template;
+
+            if (!string.IsNullOrEmpty(model.Status))
+                landlord.Status = model.Status;
+
+            landlord.UpdatedDate = DateTime.UtcNow;
+
+            await _unitOfWork.LandlordRepository.Update(landlord);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
 
     }
 }

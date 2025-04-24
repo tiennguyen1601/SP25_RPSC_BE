@@ -25,6 +25,8 @@ public partial class CustomerContract
 
     public virtual ICollection<ExtendCcontract> ExtendCcontracts { get; set; } = new List<ExtendCcontract>();
 
+    public virtual ICollection<ExtendContractRequest> ExtendContractRequests { get; set; } = new List<ExtendContractRequest>();
+
     public virtual Room? RentalRoom { get; set; }
 
     public virtual Customer? Tenant { get; set; }

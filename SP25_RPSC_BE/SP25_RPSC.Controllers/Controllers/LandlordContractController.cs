@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.ResultModel;
 using SP25_RPSC.Services.Service.LandlordContractService;
-using SP25_RPSC.Services.Service.UserService;
-using System.Net;
 
 namespace SP25_RPSC.Controllers.Controllers
 {
@@ -32,6 +30,36 @@ namespace SP25_RPSC.Controllers.Controllers
             };
             return StatusCode(response.Code, response);
         }
+        [HttpGet]
+        [Route("Get-LandlordContract-LandlordId")]
+        public async Task<ActionResult> GetContractByLandlordId(int pageIndex, int pageSize, string status = null, string search = null)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var customers = await _landlordContractService.GetContractsByLandlordId(token, pageIndex, pageSize, status, search);
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get LandlordContract successfully",
+                Data = customers
+            };
+            return StatusCode(response.Code, response);
+        }
 
+        [HttpGet]
+        [Route("Get-LandlordContract-ContractId")]
+        public async Task<ActionResult> GetContractdetailByContractId(string contractId)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var customers = await _landlordContractService.GetContractDetailByContractId(contractId);
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get LandlordContract successfully",
+                Data = customers
+            };
+            return StatusCode(response.Code, response);
+        }
     }
 }

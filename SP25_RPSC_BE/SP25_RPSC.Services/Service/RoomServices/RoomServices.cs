@@ -13,6 +13,7 @@ using SP25_RPSC.Data.Enums;
 using SP25_RPSC.Data.Models.DecodeTokenModel;
 using SP25_RPSC.Data.Models.RoomModel.RequestModel;
 using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
+using SP25_RPSC.Data.Models.RoomStay;
 using SP25_RPSC.Data.Models.RoomTypeModel.Request;
 using SP25_RPSC.Data.Models.UserModels.Response;
 using SP25_RPSC.Data.UnitOfWorks;
@@ -37,15 +38,32 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
         public async Task<bool> CreateRoom(RoomCreateRequestModel model)
         {
-            var roomPrice = new List<RoomPrice>
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(model.roomtypeId);
+            if (roomType == null)
             {
-              new RoomPrice
-              {
-                RoomPriceId = Guid.NewGuid().ToString(),
-                Price = model.price,
-                ApplicableDate = DateTime.Now,
-              }
-            };
+                throw new Exception("RoomType not found."); 
+            }
+
+            var landlordId = roomType.LandlordId;
+
+            var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
+                contract => contract.LandlordId == landlordId && contract.Status == StatusEnums.Active.ToString()
+            )).FirstOrDefault();
+
+            if (activeContract == null)
+            {
+                throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
+            }
+
+            var roomPrice = new List<RoomPrice>
+    {
+        new RoomPrice
+        {
+            RoomPriceId = Guid.NewGuid().ToString(),
+            Price = model.price,
+            ApplicableDate = DateTime.Now,
+        }
+    };
 
             var room = new Room
             {
@@ -64,12 +82,12 @@ namespace SP25_RPSC.Services.Service.RoomServices
             var downloadUrl = await _cloudinaryStorageService.UploadImageAsync(model.Images);
             foreach (var link in downloadUrl)
             {
-                var Image = new RoomImage
+                var image = new RoomImage
                 {
-                 ImageId = Guid.NewGuid().ToString(),
-                 ImageUrl = link,
+                    ImageId = Guid.NewGuid().ToString(),
+                    ImageUrl = link,
                 };
-               room.RoomImages.Add(Image);
+                room.RoomImages.Add(image);
             }
 
             foreach (var amenty in model.AmentyId)
@@ -81,11 +99,31 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 };
                 await _unitOfWork.RoomAmentyListRepository.Add(roomAmentyList);
             }
-
             await _unitOfWork.RoomRepository.Add(room);
+
+            var landlord = await _unitOfWork.LandlordRepository.GetByIDAsync(landlordId);
+            if (landlord == null)
+            {
+                throw new Exception("Landlord not found."); 
+            }
+
+            landlord.NumberRoom -= 1;
+
+            if (landlord.NumberRoom == 0)
+            {
+                activeContract.Status = StatusEnums.Expired.ToString();
+                await _unitOfWork.LandlordContractRepository.Update(activeContract);
+            }
+
+            await _unitOfWork.LandlordRepository.Update(landlord);
+
             await _unitOfWork.SaveAsync();
-            return true;
+
+            return true; 
         }
+
+
+
 
         public async Task<GetRequiresRoomRentalByLandlordResponseModel> GetRequiresRoomRentalByLandlordId(
     string token, string searchQuery, int pageIndex, int pageSize)
@@ -324,6 +362,105 @@ namespace SP25_RPSC.Services.Service.RoomServices
             return result;
         }
 
+        public async Task<List<UserPastRoomRes>> GetUserPastRooms(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var currentCustomer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User"
+            )).FirstOrDefault();
+
+            if (currentCustomer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var roomStayCustomers = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == currentCustomer.CustomerId,
+                includeProperties: "RoomStay,RoomStay.Room,RoomStay.Room.RoomType,RoomStay.Room.RoomImages,RoomStay.Room.RoomType.Address"
+            );
+
+            var pastRoomStayCustomers = roomStayCustomers
+                .Where(rsc => !rsc.Status.Equals(StatusEnums.Active.ToString()) && !rsc.Status.Equals(StatusEnums.Pending.ToString()))
+                .ToList();
+
+
+
+            var response = new List<UserPastRoomRes>();
+
+            foreach (var roomStayCustomer in pastRoomStayCustomers)
+            {
+                var roomStay = roomStayCustomer.RoomStay;
+                var room = roomStay?.Room;
+                var roomType = room?.RoomType;
+
+                if (roomStay == null || room == null || roomType == null) continue;
+
+                var roomImages = room.RoomImages
+                   .Where(ri => !string.IsNullOrEmpty(ri.ImageUrl))
+                   .Select(ri => ri.ImageUrl)
+                   .ToList();
+
+
+                var pastRoomInfo = new UserPastRoomRes
+                {
+                    RoomId = room.RoomId,
+                    RoomNumber = room.RoomNumber,
+                    Title = room.Title,
+                    Description = room.Description,
+                    RoomTypeName = roomType.RoomTypeName,
+                    Address = room.Location,
+                    Images = roomImages,
+                };
+
+                response.Add(pastRoomInfo);
+            }
+
+            return response;
+        }
+
+        public async Task<List<RoomDto>> GetRoomsByLandlordAsync(string token, int pageNumber, int pageSize)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new Exception("Landlord not found");
+            }
+
+            var allRooms = await _unitOfWork.RoomRepository.GetRoomsByLandlordIdAsync(landlord.LandlordId);
+
+            var pagedRooms = allRooms
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var roomDtos = _mapper.Map<List<RoomDto>>(pagedRooms);
+
+            foreach (var dto in roomDtos)
+            {
+                var room = pagedRooms.First(r => r.RoomId == dto.RoomId);
+                var latestPrice = room.RoomPrices
+                    .Where(p => p.ApplicableDate <= DateTime.Now)
+                    .OrderByDescending(p => p.ApplicableDate)
+                    .FirstOrDefault();
+
+                dto.Price = latestPrice?.Price ?? 0;
+            }
+
+            return roomDtos;
+        }
 
     }
 }

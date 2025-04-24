@@ -24,7 +24,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
 {
 
 
-    public class CustomerService : ICustomerService 
+    public class CustomerService : ICustomerService
     {
 
         private readonly IUnitOfWork _unitOfWork;
@@ -183,6 +183,59 @@ namespace SP25_RPSC.Services.Service.CustomerService
 
         }
 
+        public async Task<bool> CancelRequestRoomSharing(string token, string requestId)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var customerRequest = (await _unitOfWork.CustomerRequestRepository.Get(
+                filter: cr => cr.CustomerRequestId == requestId && cr.CustomerId == customer.CustomerId,
+                includeProperties: "Request.Post.RentalRoom,Request.Post.User"
+            )).FirstOrDefault();
+
+            if (customerRequest == null)
+            {
+                throw new KeyNotFoundException("Request not found or you don't have permission to cancel it.");
+            }
+
+            if (customerRequest.Status != StatusEnums.Pending.ToString())
+            {
+                throw new InvalidOperationException("Only pending requests can be cancelled.");
+            }
+
+            customerRequest.Status = StatusEnums.CANCELLED.ToString();
+            await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
+
+            // Check if all customer requests for this roommate request are cancelled
+            var allCustomerRequests = (await _unitOfWork.CustomerRequestRepository.Get(
+                filter: cr => cr.RequestId == customerRequest.RequestId
+            )).ToList();
+
+            var allCancelled = allCustomerRequests.All(cr => cr.Status == StatusEnums.CANCELLED.ToString());
+
+            if (allCancelled)
+            {
+                var roommateRequest = customerRequest.Request;
+                roommateRequest.Status = StatusEnums.CANCELLED.ToString();
+                await _unitOfWork.RoommateRequestRepository.Update(roommateRequest);
+            }
+
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
         public async Task<ListRequestSharingRes> GetListRequestSharing(string token)
         {
             if (token == null)
@@ -318,16 +371,17 @@ namespace SP25_RPSC.Services.Service.CustomerService
             return result;
         }
 
-        public async Task<bool> RejectRequestSharing(string token, string requestId)
+        public async Task<bool> RejectRequestSharing(string token, RejectSharingReq rejectSharingReq)
         {
             if (string.IsNullOrEmpty(token))
             {
                 throw new UnauthorizedAccessException("Invalid or expired token.");
             }
 
-            if (string.IsNullOrEmpty(requestId))
+            var reqId = rejectSharingReq.requestId;
+            if (string.IsNullOrEmpty(reqId))
             {
-                throw new ArgumentNullException(nameof(requestId), "Request ID cannot be null or empty.");
+                throw new ArgumentNullException(nameof(reqId), "Request ID cannot be null or empty.");
             }
 
             var tokenModel = _decodeTokenHandler.decode(token);
@@ -349,7 +403,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             var customerRequest = (await _unitOfWork.CustomerRequestRepository.Get(
-                                        filter: cr => cr.CustomerRequestId == requestId,
+                                        filter: cr => cr.CustomerRequestId == reqId,
                                         includeProperties: "Request,Customer.User"
                                     )).FirstOrDefault();
             if (customerRequest == null)
@@ -372,6 +426,9 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
             await _unitOfWork.SaveAsync();
 
+            var rejectReason = ReasonEnums.RejectSharingReason.ToString();
+            if (!string.IsNullOrEmpty(rejectSharingReq.reason)) { rejectReason = rejectSharingReq.reason; }
+
             if (customerRequest.Customer?.User != null)
             {
                 var requesterEmail = customerRequest.Customer.User.Email;
@@ -384,7 +441,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
                     requesterName,
                     postOwnerName,
                     postTitle,
-                    roomAddress);
+                    roomAddress,
+                    rejectReason);
 
                 await _emailService.SendEmail(
                     requesterEmail,
@@ -418,7 +476,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             var post = (await _unitOfWork.PostRepository.Get(filter: p => p.UserId == userId && p.Status == StatusEnums.Active.ToString(),
-                   includeProperties: "RentalRoom,User"
+                   includeProperties: "RentalRoom,User,RentalRoom.RoomType"
                )).FirstOrDefault();
             if (post == null)
             {
@@ -445,6 +503,17 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 throw new InvalidOperationException($"Cannot accept request with status {customerRequest.Status}.");
             }
 
+            var customerRentRoom = (await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Get(
+                                        filter: c => c.CustomerId == customerRequest.CustomerId && c.Status.Equals(StatusEnums.Accepted.ToString())
+                                    )).FirstOrDefault();
+            var roomStayCus = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                                        filter: rs => rs.CustomerId == customerRequest.CustomerId && rs.Status.Equals(StatusEnums.Active.ToString())
+                                    )).FirstOrDefault();
+            if (customerRentRoom != null && roomStayCus != null)
+            {
+                throw new InvalidOperationException("This customer maybe has a room, you can not accept he/she to roommate.");
+            }
+
             var rentalRoom = post.RentalRoom;
             var landlord = await _unitOfWork.LandlordRepository.GetLandlordByRentalRoomId(rentalRoom.RoomId);
             var landlordUser = landlord != null ?
@@ -453,8 +522,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
             customerRequest.Status = StatusEnums.Accepted.ToString();
             await _unitOfWork.CustomerRequestRepository.Update(customerRequest);
 
-            post.Status = StatusEnums.Inactive.ToString();
-            await _unitOfWork.PostRepository.Update(post);
+            //post.Status = StatusEnums.Inactive.ToString();
+            //await _unitOfWork.PostRepository.Update(post);
 
             var acceptedCustomerId = customerRequest.CustomerId;
             if (!string.IsNullOrEmpty(acceptedCustomerId))
@@ -469,6 +538,16 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 {
                     otherRequest.Status = StatusEnums.Inactive.ToString();
                     await _unitOfWork.CustomerRequestRepository.Update(otherRequest);
+                }
+
+                var otherRequestsRentRoomFromSameCustomer = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Get(
+                    filter: cr => cr.CustomerId == acceptedCustomerId
+                               && cr.Status == StatusEnums.Pending.ToString());
+
+                foreach (var otherRentRoomRequest in otherRequestsRentRoomFromSameCustomer)
+                {
+                    otherRentRoomRequest.Status = StatusEnums.Inactive.ToString();
+                    await _unitOfWork.CustomerRentRoomDetailRequestRepositories.Update(otherRentRoomRequest);
                 }
             }
 
@@ -492,9 +571,12 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.RoomStayCustomerRepository.Add(roomStayCusNew);
             await _unitOfWork.SaveAsync();
 
+            /*
             var otherRequests = await _unitOfWork.CustomerRequestRepository.Get(
                 filter: cr => cr.RequestId == roommateRequest.RequestId && cr.CustomerRequestId != requestId && cr.Status == StatusEnums.Pending.ToString(),
                 includeProperties: "Customer.User");
+
+            var rejectReason = "Người đăng bài đã tìm được bạn ở ghép phù hợp.";
 
             foreach (var otherRequest in otherRequests)
             {
@@ -508,12 +590,13 @@ namespace SP25_RPSC.Services.Service.CustomerService
                     var ownerPostName = customer.User.FullName ?? "Chủ phòng";
                     var titlePost = post.Title ?? "Phòng trọ";
                     var addressRoom = post.RentalRoom?.Location ?? "Không có địa chỉ";
-
                     var rejectMailContent = EmailTemplate.RoomSharingRejected(
                         rejectedRequesterName,
                         ownerPostName,
                         titlePost,
-                        addressRoom);
+                        addressRoom,
+                        reason: rejectReason
+                        );
 
                     await _emailService.SendEmail(
                         rejectedRequesterEmail,
@@ -525,6 +608,58 @@ namespace SP25_RPSC.Services.Service.CustomerService
             roommateRequest.Status = StatusEnums.Completed.ToString();
             await _unitOfWork.RoommateRequestRepository.Update(roommateRequest);
             await _unitOfWork.SaveAsync();
+            */
+
+            var currentMemberCount = await _unitOfWork.RoomStayCustomerRepository.Get(
+                        filter: rsc => rsc.RoomStayId == roomStay.RoomStayId && rsc.Status == StatusEnums.Active.ToString()
+                    );
+
+            int maxCapacity = rentalRoom.RoomType?.MaxOccupancy ?? 0;
+            if (currentMemberCount.Count() >= maxCapacity)
+            {
+                post.Status = StatusEnums.Inactive.ToString();
+                await _unitOfWork.PostRepository.Update(post);
+
+                roommateRequest.Status = StatusEnums.Completed.ToString();
+                await _unitOfWork.RoommateRequestRepository.Update(roommateRequest);
+                await _unitOfWork.SaveAsync();
+
+                var remainingRequests = await _unitOfWork.CustomerRequestRepository.Get(
+                    filter: cr => cr.RequestId == roommateRequest.RequestId
+                              && cr.Status == StatusEnums.Pending.ToString(),
+                    includeProperties: "Customer.User");
+
+                foreach (var remainingRequest in remainingRequests)
+                {
+                    remainingRequest.Status = StatusEnums.Rejected.ToString();
+                    await _unitOfWork.CustomerRequestRepository.Update(remainingRequest);
+
+                    if (remainingRequest.Customer?.User != null)
+                    {
+                        var rejectedEmail = remainingRequest.Customer.User.Email;
+                        var rejectedName = remainingRequest.Customer.User.FullName ?? "Người dùng";
+                        var ownerName = customer.User.FullName ?? "Chủ phòng";
+                        var titlePost = post.Title ?? "Phòng trọ";
+                        var addressRoom = post.RentalRoom?.Location ?? "Không có địa chỉ";
+                        var rejectReason = "Phòng trọ đã đủ người ở ghép.";
+
+                        var rejectContent = EmailTemplate.RoomSharingRejected(
+                            rejectedName,
+                            ownerName,
+                            titlePost,
+                            addressRoom,
+                            reason: rejectReason
+                        );
+
+                        await _emailService.SendEmail(
+                            rejectedEmail,
+                            "Thông báo từ chối yêu cầu chia sẻ phòng trọ",
+                            rejectContent);
+                    }
+                }
+
+                await _unitOfWork.SaveAsync();
+            }
 
             var acceptedRequesterEmail = customerRequest.Customer.User.Email;
             var acceptedRequesterName = customerRequest.Customer.User.FullName ?? "Người dùng";
@@ -744,7 +879,8 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             var leaveRoomListRequest = await _unitOfWork.CustomerMoveOutRepository.Get(
-                    filter: cmo => cmo.RoomStayId == roomStayCustomer.RoomStayId && cmo.Status == 0,
+                    filter: cmo => cmo.RoomStayId == roomStayCustomer.RoomStayId && cmo.Status == 0
+                    && cmo.UserMoveId != userId,
                     includeProperties: "UserMove");
             if (leaveRoomListRequest == null || !leaveRoomListRequest.Any())
             {
@@ -902,6 +1038,20 @@ namespace SP25_RPSC.Services.Service.CustomerService
             return true;
         }
 
+
+        public async Task<bool> CheckLeaveRoomRequest(string userId, string roomStayId)
+        {
+            var leaveRoomListRequest = await _unitOfWork.CustomerMoveOutRepository.Get(
+                    filter: cmo => cmo.RoomStayId == roomStayId && cmo.Status == 0
+                    && cmo.UserMoveId != userId,
+                    includeProperties: "UserMove");
+            if (leaveRoomListRequest == null || !leaveRoomListRequest.Any())
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<bool> RequestLeaveRoomByTenant(string token, TenantRoomLeavingReq request)
         {
             if (string.IsNullOrEmpty(token))
@@ -948,6 +1098,12 @@ namespace SP25_RPSC.Services.Service.CustomerService
             if (roomStay == null)
             {
                 throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+            var checkLeaveRoomReq = await CheckLeaveRoomRequest(userId, roomStay.RoomStayId);
+            if (checkLeaveRoomReq)
+            {
+                throw new ArgumentException("You must process your roommate's request to leave first.");
             }
 
             // Get all active members in the room
@@ -1072,6 +1228,229 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }
 
             return true;
+        }
+
+        public async Task<bool> KickRoommateByTenant(string token, KickRoommateReq kickRoommateReq)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc => rsc.Customer.CustomerId == customer.CustomerId
+                    && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+            if (roomStayCustomer == null)
+            {
+                throw new KeyNotFoundException("You do not in any room.");
+            }
+            if (!roomStayCustomer.Type.Equals(CustomerTypeEnums.Tenant.ToString()))
+            {
+                throw new UnauthorizedAccessException("This is kick roommate out of room API for tenant!");
+            }
+
+            var roomStay = await _unitOfWork.RoomStayRepository.GetByIDAsync(roomStayCustomer.RoomStayId);
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomStay.RoomId);
+            if (room == null)
+            {
+                throw new KeyNotFoundException("Room information not found.");
+            }
+
+            var memberKickedId = kickRoommateReq.customerId;
+            if (string.IsNullOrEmpty(memberKickedId))
+            {
+                throw new KeyNotFoundException("Customer Id is requied!");
+            }
+
+            var memberKicked = (await _unitOfWork.CustomerRepository.Get(filter: c => c.CustomerId == memberKickedId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (memberKickedId == null)
+            {
+                throw new UnauthorizedAccessException("The selected member kick not found.");
+            }
+
+            var checkMemberKicked = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: c => c.CustomerId == memberKickedId
+                            && c.RoomStayId == roomStay.RoomStayId
+                            && c.Status.Equals(StatusEnums.Active.ToString())
+                            && c.Type.Equals(CustomerTypeEnums.Member.ToString()),
+                    includeProperties: "Customer,Customer.User")).FirstOrDefault();
+            if (checkMemberKicked == null)
+            {
+                throw new KeyNotFoundException("The selected member is not in your room or they have left.");
+            }
+
+            List<string> evidenceImageUrls = new List<string>();
+            if (kickRoommateReq.evidenceImages != null && kickRoommateReq.evidenceImages.Any())
+            {
+                try
+                {
+                    evidenceImageUrls = await _cloudinaryStorageService.UploadImageAsync(kickRoommateReq.evidenceImages);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to upload evidence images: {ex.Message}");
+                }
+            }
+
+            checkMemberKicked.Status = StatusEnums.Inactive.ToString();
+            await _unitOfWork.RoomStayCustomerRepository.Update(checkMemberKicked);
+            await _unitOfWork.SaveAsync();
+
+            var kickReason = ReasonEnums.KickRoommateReason.ToString();
+            if (!string.IsNullOrEmpty(kickRoommateReq.reason)) { kickReason = kickRoommateReq.reason; }
+
+            if (checkMemberKicked.Customer?.User != null)
+            {
+                var requesterEmail = checkMemberKicked.Customer.User.Email;
+                var roommateName = checkMemberKicked.Customer.User.FullName ?? "";
+                var tenantName = customer.User.FullName ?? "Người chịu trách nhiệm chính";
+                var roomTitle = room.Title ?? "Phòng trọ";
+                var roomNumbser = room.RoomNumber ?? "";
+                var roomAddress = room.Location ?? "Không có địa chỉ";
+                var date = DateTime.Now.ToString("dd/MM/yyyy");
+
+                var kickRoommateMail = EmailTemplate.RoommateKicked(
+                    roommateName,
+                    tenantName,
+                    roomTitle,
+                    roomNumbser,
+                    roomAddress,
+                    kickReason,
+                    date);
+
+                await _emailService.SendEmail(
+                    requesterEmail,
+                    "Thông báo chấm dứt ở ghép",
+                    kickRoommateMail);
+            }
+
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.LandlordId == roomStay.LandlordId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (landlord != null && landlord.User != null)
+            {
+                var landlordEmail = landlord.User.Email;
+                var landlordName = landlord.User.FullName ?? "Chủ nhà";
+                var roommateName = checkMemberKicked.Customer?.User?.FullName ?? "Thành viên";
+                var tenantName = customer.User.FullName ?? "Người chịu trách nhiệm chính";
+                var roomTitle = room.Title ?? "Phòng trọ";
+                var roomNumber = room.RoomNumber ?? "";
+                var roomAddress = room.Location ?? "Không có địa chỉ";
+                var date = DateTime.Now.ToString("dd/MM/yyyy");
+
+                var landlordNotificationMail = EmailTemplate.RoommateKickedLandlordNoti(
+                    landlordName,
+                    tenantName,
+                    roommateName,
+                    roomTitle,
+                    roomNumber,
+                    roomAddress,
+                    kickReason,
+                    date,
+                    evidenceImageUrls);
+
+                await _emailService.SendEmail(
+                    landlordEmail,
+                    "Thông báo: Thành viên kết thúc ở ghép",
+                    landlordNotificationMail);
+            }
+
+            return true;
+        }
+
+        public async Task<List<PastRoommateRes>> GetPastRoommates(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var currentCustomer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User"
+            )).FirstOrDefault();
+
+            if (currentCustomer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var customerRoomStays = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.CustomerId == currentCustomer.CustomerId,
+                includeProperties: "RoomStay"
+            );
+
+            var roomStayIds = customerRoomStays.Select(rsc => rsc.RoomStayId).ToList();
+
+            var pastRoommates = new List<Customer>();
+
+            foreach (var roomStayId in roomStayIds)
+            {
+                var roommatesInRoomStay = await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: rsc => rsc.RoomStayId == roomStayId && rsc.CustomerId != currentCustomer.CustomerId,
+                    includeProperties: "Customer,Customer.User"
+                );
+
+                foreach (var roommate in roommatesInRoomStay)
+                {
+                    if (roommate.Customer != null && !pastRoommates.Any(c => c.CustomerId == roommate.Customer.CustomerId))
+                    {
+                        pastRoommates.Add(roommate.Customer);
+                    }
+                }
+            }
+
+            var currentRoomStays = customerRoomStays
+                .Where(rsc => rsc.Status.Equals(StatusEnums.Active.ToString()) || rsc.Status.Equals(StatusEnums.Pending.ToString()))
+                .Select(rsc => rsc.RoomStayId)
+                .ToList();
+
+            var currentRoommates = new List<string>();
+
+            foreach (var roomStayId in currentRoomStays)
+            {
+                var roommatesInRoomStay = await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: rsc => rsc.RoomStayId == roomStayId &&
+                                   rsc.CustomerId != currentCustomer.CustomerId &&
+                                   (rsc.Status.Equals(StatusEnums.Active.ToString()) || rsc.Status.Equals(StatusEnums.Pending.ToString()))
+                );
+
+                currentRoommates.AddRange(roommatesInRoomStay.Select(r => r.CustomerId).ToList());
+            }
+
+            var pastRoommatesFiltered = pastRoommates
+                .Where(pr => !currentRoommates.Contains(pr.CustomerId))
+                .ToList();
+
+            var response = pastRoommatesFiltered.Select(pr => new PastRoommateRes
+            {
+                CustomerId = pr.CustomerId,
+                UserId = pr.UserId,
+                FullName = pr.User?.FullName,
+                Email = pr.User?.Email,
+                PhoneNumber = pr.User?.PhoneNumber,
+                AvatarUrl = pr.User?.Avatar,
+            }).ToList();
+
+            return response;
         }
     }
 }
