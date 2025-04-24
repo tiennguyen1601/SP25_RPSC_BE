@@ -21,5 +21,6 @@ namespace SP25_RPSC.Services.Service.RoomServices
         Task<RoomDetailResponseModel> GetRoomDetailByIdAsync(string roomId);
         Task<List<UserPastRoomRes>> GetUserPastRooms(string token);
         Task<List<RoomDto>> GetRoomsByLandlordAsync(string token, int pageNumber, int pageSize);
+        Task<bool> UpdateRoom(string roomId, RoomUpdateRequestModel model, string token);
     }
 }
