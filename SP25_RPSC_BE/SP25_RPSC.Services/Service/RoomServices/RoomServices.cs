@@ -679,5 +679,81 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             return true;
         }
+
+        public async Task<PostRoomDetailResponseModel> GetPostRoomById(string postRoomId)
+        {
+            // Get the post room with related entities
+            var postRoom = (await _unitOfWork.PostRoomRepository.Get(
+                filter: p => p.PostRoomId == postRoomId,
+                includeProperties: "Room,Room.RoomType,Room.RoomType.Landlord,Room.RoomType.Landlord.User,Room.RoomImages,Room.RoomPrices,Room.RoomAmentiesLists.RoomAmenty"
+            )).FirstOrDefault();
+
+            if (postRoom == null)
+            {
+                throw new KeyNotFoundException($"Post room with ID {postRoomId} not found.");
+            }
+
+            // Get the latest price for the room
+            var latestPrice = postRoom.Room.RoomPrices
+                .OrderByDescending(p => p.ApplicableDate)
+                .FirstOrDefault();
+
+            // Get active contract for landlord to determine package priority
+            var activeContract = postRoom.Room.RoomType.Landlord.LandlordContracts?
+                .Where(c => c.Status == "Active")
+                .OrderByDescending(c => c.CreatedDate)
+                .FirstOrDefault();
+
+            // Map amenities
+            var amenities = postRoom.Room.RoomAmentiesLists
+                .Select(ra => new AmenityResponseModel
+                {
+                    AmenityId = ra.RoomAmenty.RoomAmentyId,
+                    AmenityName = ra.RoomAmenty.Name,
+                    Description = ra.RoomAmenty.Compensation.ToString()
+                }).ToList();
+
+            // Create landlord info
+            var landlordInfo = new LandlordInfoResponseModel
+            {
+                LandlordId = postRoom.Room.RoomType.Landlord.LandlordId,
+                FullName = postRoom.Room.RoomType.Landlord.User.FullName,
+                Email = postRoom.Room.RoomType.Landlord.User.Email,
+                PhoneNumber = postRoom.Room.RoomType.Landlord.User.PhoneNumber,
+                AvatarUrl = postRoom.Room.RoomType.Landlord.User.Avatar
+            };
+
+            // Create response model
+            var response = new PostRoomDetailResponseModel
+            {
+                PostRoomId = postRoom.PostRoomId,
+                Title = postRoom.Title,
+                Description = postRoom.Description,
+                DateUpPost = postRoom.DateUpPost,
+                DateExist = postRoom.DateExist,
+                Status = postRoom.Status,
+                AvailableDateToRent = postRoom.AvailableDateToRent,
+                CreatedAt = postRoom.CreatedAt,
+                UpdatedAt = postRoom.UpdatedAt,
+                RoomDetail = new RoomDetailForPostResponseModel
+                {
+                    RoomId = postRoom.Room.RoomId,
+                    RoomNumber = postRoom.Room.RoomNumber,
+                    Status = postRoom.Room.Status,
+                    Location = postRoom.Room.Location,
+                    RoomTypeName = postRoom.Room.RoomType.RoomTypeName,
+                    Square = postRoom.Room.RoomType.Square,
+                    Area = postRoom.Room.RoomType.Area,
+                    Price = latestPrice?.Price ?? 0,
+                    Images = postRoom.Room.RoomImages.Select(img => img.ImageUrl).ToList(),
+                    Amenities = amenities
+                },
+                Landlord = landlordInfo,
+                PackageLabel = activeContract?.Package?.Label,
+                PackagePriorityTime = activeContract?.Package?.PriorityTime
+            };
+
+            return response;
+        }
     }
 }
