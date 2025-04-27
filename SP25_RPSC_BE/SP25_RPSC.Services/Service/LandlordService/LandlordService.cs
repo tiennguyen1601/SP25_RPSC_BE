@@ -112,7 +112,7 @@ namespace SP25_RPSC.Services.Service.LandlordService
                                         Avatar = memberInfo.User.Avatar,
                                         RoomId = roomStay.RoomId ?? string.Empty,
                                         RoomNumber = roomStay.Room?.RoomNumber,
-                                        Title = roomStay.Room?.Title,
+                                        //Title = roomStay.Room?.Title,
                                     };
 
                                     DesignatedInfo designatedInfo = new DesignatedInfo();
@@ -224,8 +224,8 @@ namespace SP25_RPSC.Services.Service.LandlordService
                         Avatar = memberInfo.User.Avatar,
                         RoomId = roomStay.RoomId ?? string.Empty,
                         RoomNumber = roomStay.Room?.RoomNumber,
-                        Title = roomStay.Room?.Title,
-                        Description = roomStay.Room?.Description,
+                        //Title = roomStay.Room?.Title,
+                        //Description = roomStay.Room?.Description,
                         Status = roomStay.Room?.Status,
                         Location = roomStay.Room?.Location
                     };

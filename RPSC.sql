@@ -129,8 +129,6 @@ GO
 CREATE TABLE Rooms (
     RoomId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
 	RoomNumber NVARCHAR(50),
-    Title NVARCHAR(255),
-    Description NVARCHAR(MAX),
     Status NVARCHAR(50),
     Location NVARCHAR(255),
 	AvailableDateToRent DATETIME,
@@ -140,6 +138,19 @@ CREATE TABLE Rooms (
 );
 GO
 
+--Bảng PostRoom
+CREATE TABLE PostRoom (
+    PostRoomId  NVARCHAR(36) PRIMARY KEY DEFAULT NEWID(),
+    Title NVARCHAR(255),
+    Description NVARCHAR(MAX),
+	DateUpPost DATETIME,
+	DateExist INT, 
+    Status NVARCHAR(50),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+    RoomId NVARCHAR(36),
+    CONSTRAINT FK_Post_Room FOREIGN KEY (RoomId) REFERENCES Rooms(RoomId),
+);
 
 
 

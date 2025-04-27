@@ -53,6 +53,8 @@ public partial class RpscContext : DbContext
 
     public virtual DbSet<Post> Posts { get; set; }
 
+    public virtual DbSet<PostRoom> PostRooms { get; set; }
+
     public virtual DbSet<PricePackage> PricePackages { get; set; }
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -104,7 +106,7 @@ public partial class RpscContext : DbContext
                 .AddJsonFile("appsettings.json", true, true).Build();
         return configuration["ConnectionStrings:DefaultConnectionString"];
     }
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
@@ -542,6 +544,29 @@ public partial class RpscContext : DbContext
                 .HasConstraintName("FK_Post_User");
         });
 
+        modelBuilder.Entity<PostRoom>(entity =>
+        {
+            entity.HasKey(e => e.PostRoomId).HasName("PK__PostRoom__EBF0C142A56B2763");
+
+            entity.ToTable("PostRoom");
+
+            entity.Property(e => e.PostRoomId)
+                .HasMaxLength(36)
+                .HasDefaultValueSql("(newid())");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.DateUpPost).HasColumnType("datetime");
+            entity.Property(e => e.RoomId).HasMaxLength(36);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Room).WithMany(p => p.PostRooms)
+                .HasForeignKey(d => d.RoomId)
+                .HasConstraintName("FK_Post_Room");
+        });
+
         modelBuilder.Entity<PricePackage>(entity =>
         {
             entity.HasKey(e => e.PriceId).HasName("PK__PricePac__49575BAFB336018C");
@@ -638,7 +663,6 @@ public partial class RpscContext : DbContext
             entity.Property(e => e.RoomNumber).HasMaxLength(50);
             entity.Property(e => e.RoomTypeId).HasMaxLength(36);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.RoomType).WithMany(p => p.Rooms)

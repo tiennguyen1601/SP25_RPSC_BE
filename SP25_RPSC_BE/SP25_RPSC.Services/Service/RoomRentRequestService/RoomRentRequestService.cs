@@ -264,7 +264,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 CustomerAddress = selectedCustomer.User.Address ?? "Không có địa chỉ",
                 CustomerPhone = selectedCustomer.User.PhoneNumber ?? "Không có SĐT",
                 RoomAddress = roomAddress,
-                RoomDescription = room.Description ?? "Không có mô tả",
+               // RoomDescription = room.Description ?? "Không có mô tả",
                 Price = currentPrice,
                 PriceInWords = currentPrice + " đồng",
                 PaymentMethod = "Cash",

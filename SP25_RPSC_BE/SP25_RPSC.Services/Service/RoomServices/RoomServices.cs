@@ -69,9 +69,9 @@ namespace SP25_RPSC.Services.Service.RoomServices
             {
                 RoomId = Guid.NewGuid().ToString(),
                 RoomNumber = model.RoomNumber,
-                Title = model.Title,
+                //Title = model.Title,
                 AvailableDateToRent = model.AvailableDateToRent,
-                Description = model.Description,
+                //Description = model.Description,
                 Location = model.Location,
                 Status = "Available",
                 UpdatedAt = DateTime.Now,
@@ -138,8 +138,9 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 room.Status == "Available" &&
                 room.RoomRentRequests.Any(r => r.Status == "Pending") &&
                 (string.IsNullOrEmpty(searchQuery) ||
-                 room.RoomNumber.Contains(searchQuery) ||
-                 room.Title.Contains(searchQuery));
+                 room.RoomNumber.Contains(searchQuery)
+                 //room.Title.Contains(searchQuery)
+                 );
 
             var rooms = await _unitOfWork.RoomRepository.Get(
                 includeProperties: "RoomType,RoomRentRequests.CustomerRentRoomDetailRequests,RoomImages,RoomPrices",
@@ -165,8 +166,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 RoomTypeId = room.RoomTypeId,
                 RoomRentRequestsId = room.RoomRentRequests.FirstOrDefault()?.RoomRentRequestsId ?? "",
                 RoomNumber = room.RoomNumber,
-                Title = room.Title,
-                Description = room.Description,
+                //Title = room.Title,
+                //Description = room.Description,
                 Status = room.Status,
                 Location = room.Location,
                 RoomTypeName = room.RoomType?.RoomTypeName ?? "N/A",
@@ -236,8 +237,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 room.RoomTypeId == roomTypeId &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  room.RoomNumber.Contains(searchQuery) ||
-                 room.Title.Contains(searchQuery)) &&
-                (string.IsNullOrEmpty(status) || room.Status == status);  
+                 //room.Title.Contains(searchQuery)) &&
+                (string.IsNullOrEmpty(status) || room.Status == status));  
 
             var rooms = await _unitOfWork.RoomRepository.Get(
                 includeProperties: "RoomType,RoomImages,RoomPrices,RoomAmentiesLists",
@@ -413,8 +414,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 {
                     RoomId = room.RoomId,
                     RoomNumber = room.RoomNumber,
-                    Title = room.Title,
-                    Description = room.Description,
+                    //Title = room.Title,
+                    //Description = room.Description,
                     RoomTypeName = roomType.RoomTypeName,
                     Address = room.Location,
                     Images = roomImages,
@@ -510,7 +511,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
             }
             if (model.Title != null)
             {
-                room.Title = model.Title;
+                //room.Title = model.Title;
             }
             if (model.AvailableDateToRent != null)
             {
@@ -518,7 +519,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
             }
             if (model.Description != null)
             {
-                room.Description = model.Description;
+                //room.Description = model.Description;
             }
             room.UpdatedAt = DateTime.Now;
             room.RoomTypeId = model.RoomTypeId;

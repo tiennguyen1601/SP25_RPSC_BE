@@ -1319,7 +1319,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 var requesterEmail = checkMemberKicked.Customer.User.Email;
                 var roommateName = checkMemberKicked.Customer.User.FullName ?? "";
                 var tenantName = customer.User.FullName ?? "Người chịu trách nhiệm chính";
-                var roomTitle = room.Title ?? "Phòng trọ";
+                //var roomTitle = room.Title ?? "Phòng trọ";
                 var roomNumbser = room.RoomNumber ?? "";
                 var roomAddress = room.Location ?? "Không có địa chỉ";
                 var date = DateTime.Now.ToString("dd/MM/yyyy");
@@ -1327,7 +1327,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 var kickRoommateMail = EmailTemplate.RoommateKicked(
                     roommateName,
                     tenantName,
-                    roomTitle,
+                    //roomTitle,
                     roomNumbser,
                     roomAddress,
                     kickReason,
@@ -1348,7 +1348,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                 var landlordName = landlord.User.FullName ?? "Chủ nhà";
                 var roommateName = checkMemberKicked.Customer?.User?.FullName ?? "Thành viên";
                 var tenantName = customer.User.FullName ?? "Người chịu trách nhiệm chính";
-                var roomTitle = room.Title ?? "Phòng trọ";
+               // var roomTitle = room.Title ?? "Phòng trọ";
                 var roomNumber = room.RoomNumber ?? "";
                 var roomAddress = room.Location ?? "Không có địa chỉ";
                 var date = DateTime.Now.ToString("dd/MM/yyyy");
@@ -1357,7 +1357,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
                     landlordName,
                     tenantName,
                     roommateName,
-                    roomTitle,
+                    //roomTitle,
                     roomNumber,
                     roomAddress,
                     kickReason,
