@@ -90,6 +90,8 @@ namespace SP25_RPSC.Data.UnitOfWorks
         IExtendContractRequestRepository ExtendContractRequestRepository { get; }
         IExtendCcontractRepository ExtendCcontractRepository { get; }
 
+        IPostRoomRepository PostRoomRepository { get; }
+
         Task<IDbContextTransaction> BeginTransactionAsync();
 
         Task SaveAsync();
