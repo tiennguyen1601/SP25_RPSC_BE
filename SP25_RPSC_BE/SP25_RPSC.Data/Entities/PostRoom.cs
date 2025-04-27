@@ -23,5 +23,7 @@ public partial class PostRoom
 
     public string? RoomId { get; set; }
 
+    public DateTime? AvailableDateToRent { get; set; }
+
     public virtual Room? Room { get; set; }
 }

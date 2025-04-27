@@ -13,7 +13,7 @@ namespace SP25_RPSC.Data.Models.RoomModel.RequestModel
 
         public string RoomNumber { get; set; }
 
-        public string? Title { get; set; }
+        //public string? Title { get; set; }
 
         public string? Description { get; set; }
 
@@ -21,7 +21,7 @@ namespace SP25_RPSC.Data.Models.RoomModel.RequestModel
 
         public decimal price { get; set; }
 
-        public DateTime? AvailableDateToRent { get; set; }
+        //public DateTime? AvailableDateToRent { get; set; }
 
         public string? Location { get; set; }
 
