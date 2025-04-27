@@ -56,21 +56,21 @@ namespace SP25_RPSC.Services.Service.RoomServices
             }
 
             var roomPrice = new List<RoomPrice>
-    {
-        new RoomPrice
-        {
-            RoomPriceId = Guid.NewGuid().ToString(),
-            Price = model.price,
-            ApplicableDate = DateTime.Now,
-        }
-    };
+            {
+                new RoomPrice
+                {
+                    RoomPriceId = Guid.NewGuid().ToString(),
+                    Price = model.price,
+                    ApplicableDate = DateTime.Now,
+                }
+            };
 
             var room = new Room
             {
                 RoomId = Guid.NewGuid().ToString(),
                 RoomNumber = model.RoomNumber,
                 //Title = model.Title,
-                AvailableDateToRent = model.AvailableDateToRent,
+                //AvailableDateToRent = model.AvailableDateToRent,
                 //Description = model.Description,
                 Location = model.Location,
                 Status = "Available",
@@ -513,10 +513,10 @@ namespace SP25_RPSC.Services.Service.RoomServices
             {
                 //room.Title = model.Title;
             }
-            if (model.AvailableDateToRent != null)
-            {
-                room.AvailableDateToRent = model.AvailableDateToRent;
-            }
+            //if (model.AvailableDateToRent != null)
+            //{
+            //    room.AvailableDateToRent = model.AvailableDateToRent;
+            //}
             if (model.Description != null)
             {
                 //room.Description = model.Description;
