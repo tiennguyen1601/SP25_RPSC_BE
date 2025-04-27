@@ -619,5 +619,65 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             return true;
         }
+
+        public async Task<bool> CreatePostRoom(string token, PostRoomCreateRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(model.RoomId);
+            if (room == null)
+            {
+                throw new Exception("Room not found.");
+            }
+
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(room.RoomTypeId);
+            if (roomType == null || roomType.LandlordId != landlord.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to create a post for this room.");
+            }
+
+            if (room.Status != "Available")
+            {
+                throw new Exception("Cannot create post for a room that is not available.");
+            }
+
+
+            var existingActivePost = (await _unitOfWork.PostRoomRepository.Get(
+                filter: p => p.RoomId == model.RoomId && p.Status == "Active"
+            )).FirstOrDefault();
+
+            if (existingActivePost != null)
+            {
+                throw new Exception("This room already has an active post.");
+            }
+
+            var postRoom = new PostRoom
+            {
+                PostRoomId = Guid.NewGuid().ToString(),
+                Title = model.Title,
+                Description = model.Description,
+                DateUpPost = DateTime.Now,
+                DateExist = model.DateExist,
+                Status = "Active",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                RoomId = model.RoomId,
+                AvailableDateToRent = model.AvailableDateToRent
+            };
+
+            await _unitOfWork.PostRoomRepository.Add(postRoom);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }

@@ -16,11 +16,11 @@ namespace SP25_RPSC.Data.Repositories.PostRepository
         Task<bool> InactivatePostAsync(string postId);
     }
 
-    public class PostRoomRepository : GenericRepository<Post>, IPostRepository
+    public class PostRepository : GenericRepository<Post>, IPostRepository
     {
         private readonly RpscContext _context;
 
-        public PostRoomRepository(RpscContext context) : base(context)
+        public PostRepository(RpscContext context) : base(context)
         {
             _context = context;
         }
