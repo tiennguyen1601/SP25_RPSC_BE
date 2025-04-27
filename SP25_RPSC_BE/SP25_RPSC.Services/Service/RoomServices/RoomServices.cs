@@ -513,10 +513,10 @@ namespace SP25_RPSC.Services.Service.RoomServices
             {
                 //room.Title = model.Title;
             }
-            if (model.AvailableDateToRent != null)
-            {
-                room.AvailableDateToRent = model.AvailableDateToRent;
-            }
+            //if (model.AvailableDateToRent != null)
+            //{
+            //    room.AvailableDateToRent = model.AvailableDateToRent;
+            //}
             if (model.Description != null)
             {
                 //room.Description = model.Description;
