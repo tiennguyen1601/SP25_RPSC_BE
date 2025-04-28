@@ -75,7 +75,7 @@ namespace SP25_RPSC.Services.Service.BackgroundService
                         // Check if post has expired
                         if (now >= expirationDate)
                         {
-                            _logger.LogInformation($"Deactivating expired post: {post.PostRoomId}, Title: {post.Title}");
+                            _logger.LogInformation($"Deactivating expired post: {post.PostRoomId}");
 
                             // Update status to Inactive
                             post.Status = StatusEnums.Inactive.ToString();
