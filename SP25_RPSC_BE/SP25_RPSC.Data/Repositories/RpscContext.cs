@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using SP25_RPSC.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SP25_RPSC.Data.Entities;
 
 namespace SP25_RPSC.Data.Repositories;
 
@@ -97,7 +97,7 @@ public partial class RpscContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer(GetConnectionString());
+       => optionsBuilder.UseSqlServer(GetConnectionString());
 
     private string GetConnectionString()
     {
@@ -106,6 +106,7 @@ public partial class RpscContext : DbContext
                 .AddJsonFile("appsettings.json", true, true).Build();
         return configuration["ConnectionStrings:DefaultConnectionString"];
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
@@ -552,14 +553,12 @@ public partial class RpscContext : DbContext
             entity.Property(e => e.PostRoomId)
                 .HasMaxLength(36)
                 .HasDefaultValueSql("(newid())");
-            entity.Property(e => e.AvailableDateToRent).HasColumnType("datetime");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.DateUpPost).HasColumnType("datetime");
             entity.Property(e => e.RoomId).HasMaxLength(36);
             entity.Property(e => e.Status).HasMaxLength(50);
-            entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.Room).WithMany(p => p.PostRooms)
@@ -658,10 +657,12 @@ public partial class RpscContext : DbContext
             entity.Property(e => e.RoomId)
                 .HasMaxLength(36)
                 .HasDefaultValueSql("(newid())");
+            entity.Property(e => e.AvailableDateToRent).HasColumnType("datetime");
             entity.Property(e => e.Location).HasMaxLength(255);
             entity.Property(e => e.RoomNumber).HasMaxLength(50);
             entity.Property(e => e.RoomTypeId).HasMaxLength(36);
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.RoomType).WithMany(p => p.Rooms)

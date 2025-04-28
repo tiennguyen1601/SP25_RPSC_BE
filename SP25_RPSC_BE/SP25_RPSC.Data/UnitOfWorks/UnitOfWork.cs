@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;

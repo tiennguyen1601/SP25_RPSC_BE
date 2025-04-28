@@ -17,6 +17,12 @@ public partial class Room
 
     public string? RoomTypeId { get; set; }
 
+    public string? Title { get; set; }
+
+    public string? Description { get; set; }
+
+    public DateTime? AvailableDateToRent { get; set; }
+
     public virtual ICollection<CustomerContract> CustomerContracts { get; set; } = new List<CustomerContract>();
 
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

@@ -15,7 +15,7 @@ namespace SP25_RPSC.Data.Models.RoomModel.RequestModel
 
         //public string? Title { get; set; }
 
-        public string? Description { get; set; }
+        //public string? Description { get; set; }
 
         public string roomtypeId { get; set; }
 
