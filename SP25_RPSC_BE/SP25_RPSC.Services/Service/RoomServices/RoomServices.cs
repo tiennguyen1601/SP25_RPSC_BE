@@ -674,6 +674,11 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 //AvailableDateToRent = model.AvailableDateToRent
             };
 
+            room.Title = model.Title;
+            room.Description = model.Description;
+            room.AvailableDateToRent = model.AvailableDateToRent;
+
+            await _unitOfWork.RoomRepository.Update(room);
             await _unitOfWork.PostRoomRepository.Add(postRoom);
             await _unitOfWork.SaveAsync();
 
