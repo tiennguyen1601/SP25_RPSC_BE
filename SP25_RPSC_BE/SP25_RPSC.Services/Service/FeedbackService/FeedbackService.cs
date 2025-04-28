@@ -503,8 +503,8 @@ namespace SP25_RPSC.Services.Service.FeedbackService
                     {
                         RoomId = feedback.RentalRoom.RoomId,
                         RoomNumber = feedback.RentalRoom.RoomNumber ?? string.Empty,
-                        Title = feedback.RentalRoom.Title ?? string.Empty,
-                        Description = feedback.RentalRoom.Description ?? string.Empty,
+                        //Title = feedback.RentalRoom.Title ?? string.Empty,
+                        //Description = feedback.RentalRoom.Description ?? string.Empty,
                         RoomTypeName = feedback.RentalRoom.RoomType?.RoomTypeName ?? string.Empty,
                         Address = feedback.RentalRoom.Location ?? string.Empty,
                         Images = roomImages

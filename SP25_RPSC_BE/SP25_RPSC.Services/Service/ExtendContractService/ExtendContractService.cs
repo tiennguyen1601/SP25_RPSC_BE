@@ -390,7 +390,7 @@ namespace SP25_RPSC.Services.Service.ExtendContractService
                 LandLordName = r.Landlord?.User?.FullName ?? "Unknown",
 
                 RoomId = r.Contract?.RentalRoom?.RoomId,
-                RoomTitle = r.Contract?.RentalRoom?.Title,
+                //RoomTitle = r.Contract?.RentalRoom?.Title,
                 RoomNumber = r.Contract?.RentalRoom?.RoomNumber
             })
             .OrderByDescending(r => r.CreatedAt)
