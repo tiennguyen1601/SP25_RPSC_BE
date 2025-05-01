@@ -110,7 +110,7 @@ using System.Threading.Tasks;
                 _logger.LogError(ex, "Error occurred while checking contract expiries.");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
        }
 
 

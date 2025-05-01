@@ -17,6 +17,9 @@ namespace SP25_RPSC.Data.Models.LContractModel.Request
         public DateTime StartDate { get; set; }
         public string PackageName { get; set; } = null!;
         public string ServiceName { get; set; } = null!;
+        public int? PriorityTime { get; set; }
+        public int? MaxPost { get; set; }
+        public string Label { get; set; } = null!;
         public DateTime PaymentDate { get; set; }
         public int Duration { get; set; }
         public double Price { get; set; }
