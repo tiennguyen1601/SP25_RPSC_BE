@@ -11,6 +11,7 @@ namespace SP25_RPSC.Data.Repositories.PostRepository
 {
     public interface IPostRoomRepository : IGenericRepository<PostRoom>
     {
+        Task<List<PostRoom>> GetPostRoomByRoomId(string roomId);
     }
 
     public class PostRoomRepository : GenericRepository<PostRoom>, IPostRoomRepository
@@ -22,5 +23,9 @@ namespace SP25_RPSC.Data.Repositories.PostRepository
             _context = context;
         }
 
+        public async Task<List<PostRoom>> GetPostRoomByRoomId(string roomId)
+        {
+            return await _context.PostRooms.Where(x => x.RoomId.Equals(roomId)).ToListAsync();
+        }
     }
 }

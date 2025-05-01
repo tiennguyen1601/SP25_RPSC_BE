@@ -300,6 +300,15 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 minPrice, maxPrice, roomTypeName, district, amenityIds
             );
 
+            foreach(var room in rooms)
+            {
+                var postRooms = await _unitOfWork.PostRoomRepository.GetPostRoomByRoomId(room.RoomId);
+                if (postRooms == null)
+                {
+                    rooms.Remove(room);
+                }
+            }
+
             var result = _mapper.Map<List<RoomResponseModel>>(rooms);
 
             foreach (var room in result)
