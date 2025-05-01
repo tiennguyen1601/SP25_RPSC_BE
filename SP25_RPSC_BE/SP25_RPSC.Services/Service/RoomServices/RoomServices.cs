@@ -46,14 +46,14 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             var landlordId = roomType.LandlordId;
 
-            var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
-                contract => contract.LandlordId == landlordId && contract.Status == StatusEnums.Active.ToString()
-            )).FirstOrDefault();
+            //var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
+            //    contract => contract.LandlordId == landlordId && contract.Status == StatusEnums.Active.ToString()
+            //)).FirstOrDefault();
 
-            if (activeContract == null)
-            {
-                throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
-            }
+            //if (activeContract == null)
+            //{
+            //    throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
+            //}
 
             var roomPrice = new List<RoomPrice>
             {
@@ -107,15 +107,15 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 throw new Exception("Landlord not found."); 
             }
 
-            landlord.NumberRoom -= 1;
+            //landlord.NumberRoom -= 1;
 
-            if (landlord.NumberRoom == 0)
-            {
-                activeContract.Status = StatusEnums.Expired.ToString();
-                await _unitOfWork.LandlordContractRepository.Update(activeContract);
-            }
+            //if (landlord.NumberRoom == 0)
+            //{
+            //    activeContract.Status = StatusEnums.Expired.ToString();
+            //    await _unitOfWork.LandlordContractRepository.Update(activeContract);
+            //}
 
-            await _unitOfWork.LandlordRepository.Update(landlord);
+            //await _unitOfWork.LandlordRepository.Update(landlord);
 
             await _unitOfWork.SaveAsync();
 
@@ -659,6 +659,14 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 throw new Exception("Cannot create post for a room that is not available.");
             }
 
+            var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
+                     contract => contract.LandlordId == landlord.LandlordId && contract.Status == StatusEnums.Active.ToString()
+            )).FirstOrDefault();
+
+            if (activeContract == null)
+            {
+                throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
+            }
 
             var existingActivePost = (await _unitOfWork.PostRoomRepository.Get(
                 filter: p => p.RoomId == model.RoomId && p.Status == "Active"
@@ -687,6 +695,15 @@ namespace SP25_RPSC.Services.Service.RoomServices
             room.Description = model.Description;
             room.AvailableDateToRent = model.AvailableDateToRent;
 
+            landlord.NumberRoom -= 1;
+
+            if (landlord.NumberRoom == 0)
+            {
+                activeContract.Status = StatusEnums.Expired.ToString();
+                await _unitOfWork.LandlordContractRepository.Update(activeContract);
+            }
+
+            await _unitOfWork.LandlordRepository.Update(landlord);
             await _unitOfWork.RoomRepository.Update(room);
             await _unitOfWork.PostRoomRepository.Add(postRoom);
             await _unitOfWork.SaveAsync();
