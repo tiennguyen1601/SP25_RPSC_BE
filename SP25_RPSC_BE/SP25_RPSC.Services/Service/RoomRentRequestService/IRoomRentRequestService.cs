@@ -14,5 +14,6 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
         Task<List<CustomerRequestRes>> GetCustomersByRoomRentRequestsId(string roomRentRequestsId);
         Task<bool> AcceptCustomerAndRejectOthers(string token, string roomRentRequestsId, string selectedCustomerId, HttpContext context);
         Task<bool> ConfirmContractAndCreateRoomStay(string token, ContractUploadRequest request);
+        Task<bool> UpdateContractTermAsync(string token, ContractUploadRequest request);
     }
 }

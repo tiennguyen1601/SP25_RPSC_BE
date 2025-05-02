@@ -103,15 +103,17 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
         {
             return await _context.Rooms
                 .Include(r => r.RoomType)
-                .ThenInclude(rt => rt.Address)
+                    .ThenInclude(rt => rt.Address)
                 .Include(r => r.RoomImages)
                 .Include(r => r.RoomPrices)
                 .Include(r => r.RoomAmentiesLists)
-                .ThenInclude(ra => ra.RoomAmenty)
+                    .ThenInclude(ra => ra.RoomAmenty)
                 .Include(r => r.RoomType.RoomServices)
-                .ThenInclude(rs => rs.RoomServicePrices)
+                    .ThenInclude(rs => rs.RoomServicePrices)
+                .Include(r => r.PostRooms)
                 .Where(r => r.RoomType != null && r.RoomType.LandlordId == landlordId)
                 .ToListAsync();
         }
+
     }
 }

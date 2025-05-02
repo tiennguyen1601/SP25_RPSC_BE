@@ -937,6 +937,80 @@ namespace SP25_RPSC.Services.Utils.Email
     </div>
 </div>";
         }
+        public static string UserInactivated(string userName, string reason)
+        {
+            return $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>Tài khoản đã bị vô hiệu hóa</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }}
+            .header {{
+                background-color: #f8f9fa;
+                padding: 15px;
+                text-align: center;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }}
+            .content {{
+                padding: 20px;
+                background-color: #ffffff;
+                border-radius: 5px;
+                border: 1px solid #e9ecef;
+            }}
+            .footer {{
+                text-align: center;
+                margin-top: 20px;
+                font-size: 12px;
+                color: #6c757d;
+            }}
+            h1 {{
+                color: #dc3545;
+                font-size: 24px;
+            }}
+            .reason {{
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-left: 4px solid #dc3545;
+                margin: 15px 0;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h1>Thông báo vô hiệu hóa tài khoản</h1>
+        </div>
+        <div class='content'>
+            <p>Xin chào <strong>{userName}</strong>,</p>
+            
+            <p>Chúng tôi gửi email này để thông báo rằng tài khoản của bạn trên hệ thống SP25_RPSC đã bị vô hiệu hóa.</p>
+            
+            <div class='reason'>
+                <strong>Lý do:</strong>
+                <p>{reason}</p>
+            </div>
+            
+            <p>Nếu bạn cho rằng đây là sự nhầm lẫn hoặc bạn có thắc mắc về quyết định này, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi để được giải đáp.</p>
+            
+            <p>Trân trọng,<br>
+            Đội ngũ SP25_RPSC</p>
+        </div>
+        <div class='footer'>
+            <p>© 2025 SP25_RPSC. Tất cả các quyền được bảo lưu.</p>
+        </div>
+    </body>
+    </html>
+    ";
+        }
 
     }
 }
