@@ -714,6 +714,27 @@ namespace SP25_RPSC.Controllers.Controllers
             }
         }
 
-
+        [HttpPut("inactive-user")]
+        public async Task<IActionResult> InactiveUser([FromBody] InactiveUserRequest request)
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var result = await _customerService.InactiveUser(token, request);
+                return Ok(new { success = true, message = "User has been inactivated successfully" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
