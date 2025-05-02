@@ -244,7 +244,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 ContractId = Guid.NewGuid().ToString(),
                 StartDate = customerRequestedDate,
                 EndDate = endDate,
-                Status = "Pending",
+                Status = "Proccessing",
                 CreatedDate = DateTime.UtcNow,
                 UpdatedDate = DateTime.UtcNow,
                 TenantId = selectedCustomerId,
@@ -359,6 +359,50 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 await _unitOfWork.SaveAsync();
 
                 await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new ApiException(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+        public async Task<bool> UpdateContractTermAsync(string token, ContractUploadRequest request)
+        {
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var tokenModel = _decodeTokenHandler.decode(token);
+                var userId = tokenModel.userid;
+
+                var landlord = (await _unitOfWork.LandlordRepository
+                                    .Get(filter: l => l.UserId == userId))
+                                    .FirstOrDefault();
+                if (landlord == null) throw new ApiException(HttpStatusCode.NotFound, "Landlord not found");
+
+                var contract = (await _unitOfWork.CustomerContractRepository
+                                .Get(filter: c => c.ContractId == request.ContractId))
+                                .FirstOrDefault();
+                if (contract == null) throw new ApiException(HttpStatusCode.NotFound, "Contract not found");
+
+                string contractPdfUrl = "";
+                if (request.ContractFile != null)
+                {
+                    var uploadResult = await _cloudinaryStorageService.UploadImageAsync(new List<IFormFile> { request.ContractFile });
+                    contractPdfUrl = uploadResult.FirstOrDefault();
+                }
+                else
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "No contract file provided");
+                }
+
+                contract.Term = contractPdfUrl;
+                contract.UpdatedDate = DateTime.UtcNow;
+
+                _unitOfWork.CustomerContractRepository.Update(contract);
+                await _unitOfWork.SaveAsync();
+                await transaction.CommitAsync();
+
                 return true;
             }
             catch (Exception ex)

@@ -378,6 +378,22 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+        [HttpGet]
+        [Route("Get-Room-for-post")]
+        public async Task<ActionResult> GetRoomForPost()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var rooms = await _roomService.GetAvailableRoomsByLandlordAsync(token);
 
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get Room for post successfully",
+                Data = rooms
+            };
+
+            return StatusCode(response.Code, response);
+        }
     }
 }

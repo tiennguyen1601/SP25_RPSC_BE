@@ -25,5 +25,6 @@ namespace SP25_RPSC.Services.Service.RoomServices
         Task<bool> InactiveRoom (string roomId, string token);
         Task<bool> CreatePostRoom(string token, PostRoomCreateRequestModel model);
         Task<PostRoomDetailResponseModel> GetPostRoomById(string postRoomId);
+        Task<List<RoomAvailableDto>> GetAvailableRoomsByLandlordAsync(string token);
     }
 }
