@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Services.Service.LandlordService;
 using System.Net;
@@ -70,6 +71,33 @@ namespace SP25_RPSC.Controllers.Controllers
                 string token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 var result = await _landlordService.AcceptTenantLeaveRoomRequest(token, requestId);
                 return Ok(new { success = result, message = "Tenant leave room request has been accepted successfully." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("kick-tenant-by-landlord")]
+        public async Task<IActionResult> KickTenant([FromBody] KickTenantReq request)
+        {
+            try
+            {
+                string token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var result = await _landlordService.KickTenantbyLanlord(token, request);
+                return Ok(new { success = result, message = "Tenant has been removed from the room successfully." });
             }
             catch (UnauthorizedAccessException ex)
             {

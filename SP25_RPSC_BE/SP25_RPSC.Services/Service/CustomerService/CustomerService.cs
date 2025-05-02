@@ -1311,7 +1311,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.RoomStayCustomerRepository.Update(checkMemberKicked);
             await _unitOfWork.SaveAsync();
 
-            var kickReason = ReasonEnums.KickRoommateReason.ToString();
+            var kickReason = ReasonEnums.KickTenantReason.ToString();
             if (!string.IsNullOrEmpty(kickRoommateReq.reason)) { kickReason = kickRoommateReq.reason; }
 
             if (checkMemberKicked.Customer?.User != null)
