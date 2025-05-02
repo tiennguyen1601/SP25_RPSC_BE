@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Models.CustomerModel.Request
 {
-    public class KickRoommateReq
+    public class KickTenantReq
     {
         public string customerId { get; set; }
         public string reason { get; set; } = "";

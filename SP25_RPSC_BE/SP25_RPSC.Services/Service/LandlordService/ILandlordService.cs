@@ -1,4 +1,5 @@
 ﻿using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 using SP25_RPSC.Data.Models.CustomerModel.Response;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,6 @@ namespace SP25_RPSC.Services.Service.LandlordService
         Task<ListTenantLeaveRoomRes> GetListTenantLeaveRoomRequest(string token);
         Task<DetailTenantLeaveRoomRes> GetDetailTenantLeaveRoomRequest(string cmoId);
         Task<bool> AcceptTenantLeaveRoomRequest(string token, string requestId);
-
+        //Task<bool> KickTenantbyLanlord(string token, KickTenantReq request);
     }
 }

@@ -2,6 +2,7 @@
 using CloudinaryDotNet.Actions;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
@@ -464,5 +465,147 @@ namespace SP25_RPSC.Services.Service.LandlordService
             return true;
         }
 
+        //public async Task<bool> KickTenantbyLanlord(string token, KickTenantReq request)
+        //{
+        //    if (string.IsNullOrEmpty(token))
+        //    {
+        //        throw new UnauthorizedAccessException("Invalid or expired token.");
+        //    }
+
+        //    var tokenModel = _decodeTokenHandler.decode(token);
+        //    var userId = tokenModel.userid;
+
+        //    var landlord = (await _unitOfWork.LandlordRepository.Get(filter: c => c.UserId == userId,
+        //            includeProperties: "User")).FirstOrDefault();
+        //    if (landlord == null)
+        //    {
+        //        throw new UnauthorizedAccessException("Landlord not found.");
+        //    }
+
+        //    //var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc => rsc.LandlordId == landlord.LandlordId
+        //    //        && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+        //    //if (roomStayCustomer == null)
+        //    //{
+        //    //    throw new KeyNotFoundException("You do not in any room.");
+        //    //}
+        //    //if (!roomStayCustomer.Type.Equals(CustomerTypeEnums.Tenant.ToString()))
+        //    //{
+        //    //    throw new UnauthorizedAccessException("This is kick roommate out of room API for tenant!");
+        //    //}
+
+        //    //var roomStay = await _unitOfWork.RoomStayRepository.GetByIDAsync(roomStayCustomer.RoomStayId);
+        //    //if (roomStay == null)
+        //    //{
+        //    //    throw new KeyNotFoundException("Room stay information not found.");
+        //    //}
+
+        //    //var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomStay.RoomId);
+        //    //if (room == null)
+        //    //{
+        //    //    throw new KeyNotFoundException("Room information not found.");
+        //    //}
+
+        //    var memberKickedId = request.customerId;
+        //    if (string.IsNullOrEmpty(memberKickedId))
+        //    {
+        //        throw new KeyNotFoundException("Customer Id is requied!");
+        //    }
+
+        //    var memberKicked = (await _unitOfWork.CustomerRepository.Get(filter: c => c.CustomerId == memberKickedId,
+        //            includeProperties: "User")).FirstOrDefault();
+        //    if (memberKickedId == null)
+        //    {
+        //        throw new UnauthorizedAccessException("The selected member kick not found.");
+        //    }
+
+        //    var checkMemberKicked = (await _unitOfWork.RoomStayCustomerRepository.Get(
+        //            filter: c => c.CustomerId == memberKickedId
+        //                    && c.RoomStayId == roomStay.RoomStayId
+        //                    && c.Status.Equals(StatusEnums.Active.ToString())
+        //                    && c.Type.Equals(CustomerTypeEnums.Member.ToString()),
+        //            includeProperties: "Customer,Customer.User")).FirstOrDefault();
+        //    if (checkMemberKicked == null)
+        //    {
+        //        throw new KeyNotFoundException("The selected member is not in your room or they have left.");
+        //    }
+
+        //    List<string> evidenceImageUrls = new List<string>();
+        //    if (kickRoommateReq.evidenceImages != null && kickRoommateReq.evidenceImages.Any())
+        //    {
+        //        try
+        //        {
+        //            evidenceImageUrls = await _cloudinaryStorageService.UploadImageAsync(kickRoommateReq.evidenceImages);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw new Exception($"Failed to upload evidence images: {ex.Message}");
+        //        }
+        //    }
+
+        //    checkMemberKicked.Status = StatusEnums.Inactive.ToString();
+        //    await _unitOfWork.RoomStayCustomerRepository.Update(checkMemberKicked);
+        //    await _unitOfWork.SaveAsync();
+
+        //    var kickReason = ReasonEnums.KickRoommateReason.ToString();
+        //    if (!string.IsNullOrEmpty(kickRoommateReq.reason)) { kickReason = kickRoommateReq.reason; }
+
+        //    if (checkMemberKicked.Customer?.User != null)
+        //    {
+        //        var requesterEmail = checkMemberKicked.Customer.User.Email;
+        //        var roommateName = checkMemberKicked.Customer.User.FullName ?? "";
+        //        var tenantName = customer.User.FullName ?? "Người chịu trách nhiệm chính";
+        //        //var roomTitle = room.Title ?? "Phòng trọ";
+        //        var roomNumbser = room.RoomNumber ?? "";
+        //        var roomAddress = room.Location ?? "Không có địa chỉ";
+        //        var date = DateTime.Now.ToString("dd/MM/yyyy");
+
+        //        var kickRoommateMail = EmailTemplate.RoommateKicked(
+        //            roommateName,
+        //            tenantName,
+        //            //roomTitle,
+        //            roomNumbser,
+        //            roomAddress,
+        //            kickReason,
+        //            date);
+
+        //        await _emailService.SendEmail(
+        //            requesterEmail,
+        //            "Thông báo chấm dứt ở ghép",
+        //            kickRoommateMail);
+        //    }
+
+
+        //    var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.LandlordId == roomStay.LandlordId,
+        //            includeProperties: "User")).FirstOrDefault();
+        //    if (landlord != null && landlord.User != null)
+        //    {
+        //        var landlordEmail = landlord.User.Email;
+        //        var landlordName = landlord.User.FullName ?? "Chủ nhà";
+        //        var roommateName = checkMemberKicked.Customer?.User?.FullName ?? "Thành viên";
+        //        var tenantName = customer.User.FullName ?? "Người chịu trách nhiệm chính";
+        //        // var roomTitle = room.Title ?? "Phòng trọ";
+        //        var roomNumber = room.RoomNumber ?? "";
+        //        var roomAddress = room.Location ?? "Không có địa chỉ";
+        //        var date = DateTime.Now.ToString("dd/MM/yyyy");
+
+        //        var landlordNotificationMail = EmailTemplate.RoommateKickedLandlordNoti(
+        //            landlordName,
+        //            tenantName,
+        //            roommateName,
+        //            //roomTitle,
+        //            roomNumber,
+        //            roomAddress,
+        //            kickReason,
+        //            date,
+        //            evidenceImageUrls);
+
+        //        await _emailService.SendEmail(
+        //            landlordEmail,
+        //            "Thông báo: Thành viên kết thúc ở ghép",
+        //            landlordNotificationMail);
+        //    }
+
+        //    return true;
+        //}
     }
 }
