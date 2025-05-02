@@ -124,6 +124,9 @@ namespace SP25_RPSC.Services.Service.PaymentService
                 LandlordSignatureUrl = cusSignUrl,
                 PackageName = package!.Type,
                 ServiceName = package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).Name,
+                MaxPost = (int)package.MaxPost,
+                Label = package.Label,
+                PriorityTime = package.PriorityTime,
                 StartDate = currContract != null ? currContract.EndDate.HasValue ? currContract.EndDate.Value.AddDays(1) : DateTime.Now : DateTime.Now,
                 PaymentDate = DateTime.Now,
                 SignedDate = signedDate,
@@ -186,7 +189,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             {
                 CancleUrl = "https://easyroomie.vercel.app/landlord/confirmpayment",
                 RedirectUrl = "https://easyroomie.vercel.app/landlord/confirmpayment",
-                PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Name + package!.Type,
+                PackageName = package!.Type + package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == paymentInfo.ServiceDetailId).Name,
                 Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == paymentInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             });
 
@@ -262,7 +265,7 @@ namespace SP25_RPSC.Services.Service.PaymentService
             {
                 CancleUrl = "https://easyroomie.vercel.app/landlord/confirmpayment",
                 RedirectUrl = "https://easyroomie.vercel.app/landlord/confirmpayment",
-                PackageName = package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == extendInfo.ServiceDetailId).Name + package!.Type,
+                PackageName = package!.Type + package!.ServiceDetails.FirstOrDefault(s => s.ServiceDetailId == extendInfo.ServiceDetailId).Name,
                 Amount = (int)package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == extendInfo.ServiceDetailId).PricePackages.FirstOrDefault(x => x.ApplicableDate <= DateTime.Now).Price,
             });
 
@@ -343,6 +346,10 @@ namespace SP25_RPSC.Services.Service.PaymentService
                             LandlordName = Landlord.User.FullName,
                             LandlordSignatureUrl = upTran.Lcontract.LandlordSignatureUrl,
                             PackageName = package!.Type,
+                            ServiceName = package!.ServiceDetails.FirstOrDefault(x => x.ServiceDetailId == upTran.Lcontract.ServiceDetailId).Name,
+                            MaxPost = (int)package.MaxPost,
+                            Label = package.Label,
+                            PriorityTime = package.PriorityTime,
                             StartDate = (DateTime)upTran.Lcontract.StartDate,
                             PaymentDate = (DateTime)upTran.Lcontract.Transactions.OrderBy(t => t.PaymentDate).FirstOrDefault()!.PaymentDate,
                             SignedDate = (DateTime)upTran.Lcontract.SignedDate,

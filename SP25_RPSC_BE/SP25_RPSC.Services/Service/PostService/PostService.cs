@@ -239,8 +239,8 @@ namespace SP25_RPSC.Services.Service.PostService
                     RoomId = post.RentalRoom.RoomId,
                     LandlordName = post.RentalRoom.RoomType?.Landlord?.User?.FullName ?? "Unknown",
                     RoomNumber = post.RentalRoom.RoomNumber,
-                    Title = post.RentalRoom.Title,
-                    Description = post.RentalRoom.Description,
+                    //Title = post.RentalRoom.Title,
+                    //Description = post.RentalRoom.Description,
                     Location = post.RentalRoom.Location,
                     RoomTypeName = post.RentalRoom.RoomType.RoomTypeName,
                     Price = roomPrice, // Su dung gia phong tai thoi diem dang bai

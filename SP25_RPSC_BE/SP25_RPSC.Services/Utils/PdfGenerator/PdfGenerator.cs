@@ -98,16 +98,23 @@ Chức vụ: Chủ trọ";
             // Contract Details
             DrawCenteredText("Điều 1: Nội dung hợp đồng", fontBold, currentY);
             currentY += 20;
-            string section1 = @$"Bên A đồng ý cung cấp cho Bên B gói dịch vụ {request.PackageName}-{request.ServiceName}, bao gồm quyền đăng tải bài viết trong thời gian {request.Duration} ngày, kể từ ngày ký hợp đồng.";
+            string section1 = @$"Bên A đồng ý cung cấp cho Bên B gói dịch vụ {request.PackageName} sử dụng trong {request.ServiceName}.
+Gói dịch vụ bao gồm:
+- Quyền đăng tải {request.MaxPost} bài đăng
+- Hiển thị nhãn ưu tiên: {request.Label} 
+- Bài đăng được ưu tiên hiển thị đầu trang trong {request.PriorityTime} giờ.";
             DrawParagraph(section1, fontContent, lineHeight);
             currentY += 15;
 
             // Duration
             DrawCenteredText("Điều 2: Thời hạn hợp đồng", fontBold, currentY);
             currentY += 20;
-            string section2 = @$"Hợp đồng có hiệu lực từ ngày {request.StartDate:dd/MM/yyyy} đến ngày {request.StartDate.AddMonths(request.Duration):dd/MM/yyyy}.";
+            string section2 = @$"Hợp đồng có hiệu lực từ ngày {request.StartDate:dd/MM/yyyy} đến ngày {request.StartDate.AddDays(request.Duration):dd/MM/yyyy}.";
             DrawParagraph(section2, fontContent, lineHeight);
             currentY += 15;
+
+            // next page
+            AddNewPage();
 
             // Payment and Terms
             DrawCenteredText("Điều 3: Phí dịch vụ và phương thức thanh toán", fontBold, currentY);
@@ -124,15 +131,13 @@ Phương thức thanh toán: CHUYỂN KHOẢN.";
 - Cung cấp dịch vụ đúng nội dung đã cam kết.
 - Đảm bảo hệ thống hoạt động ổn định.
 - Hỗ trợ kỹ thuật trong quá trình sử dụng dịch vụ.";
-            
-
-            // next page
-            AddNewPage();
+            DrawParagraph(section4, fontContent, lineHeight);
+            currentY += 15;
             string section5 = @$"Bên B:
 - Thanh toán đầy đủ và đúng hạn.
 - Sử dụng dịch vụ đúng mục đích, không vi phạm pháp luật.
 - Chịu trách nhiệm về nội dung đăng tải trên hệ thống.";
-            DrawParagraph(section4, fontContent, lineHeight);
+            DrawParagraph(section5, fontContent, lineHeight);
             currentY += 15;
 
             // Termination Clause
@@ -147,14 +152,16 @@ Phương thức thanh toán: CHUYỂN KHOẢN.";
             // Dispute Resolution
             DrawCenteredText("Điều 6: Giải quyết tranh chấp", fontBold, currentY);
             currentY += 20;
-            string section7 = @$"Mọi tranh chấp phát sinh sẽ được giải quyết thông qua thương lượng. Nếu không thành, sẽ đưa ra tòa án có thẩm quyền.";
+            string section7 = @$"Mọi tranh chấp phát sinh sẽ được giải quyết thông qua thương lượng. 
+Nếu không thành, sẽ đưa ra tòa án có thẩm quyền.";
             DrawParagraph(section7, fontContent, lineHeight);
             currentY += 15;
 
             // Execution Clause
             DrawCenteredText("Điều 7: Điều khoản thi hành", fontBold, currentY);
             currentY += 20;
-            string section8 = @$"Hợp đồng có hiệu lực từ ngày ký và được lập thành hai (02) bản, mỗi bên giữ một (01) bản có giá trị pháp lý như nhau.";
+            string section8 = @$"Hợp đồng có hiệu lực từ ngày ký và được lập thành hai (02) bản, 
+mỗi bên giữ một (01) bản có giá trị pháp lý như nhau.";
             DrawParagraph(section8, fontContent, lineHeight);
             currentY += 20;
 

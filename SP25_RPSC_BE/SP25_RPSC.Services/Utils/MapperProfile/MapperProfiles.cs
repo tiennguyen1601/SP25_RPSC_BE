@@ -23,6 +23,12 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
     {
         public MapperProfiles()
         {
+
+            CreateMap<Room, RoomAvailableDto>()
+           .ForMember(dest => dest.FirstImageUrl, opt => opt.Ignore())
+           .ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomType.RoomTypeName));
+
+
             CreateMap<Landlord, LandlordResponseUptModel>()
             .ForMember(dest => dest.LandlordId, opt => opt.MapFrom(src => src.LandlordId))
             .ForMember(dest => dest.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
@@ -209,17 +215,26 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Duration))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
-
             CreateMap<RoomStay, RoomStayDto>()
-            .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.Room.RoomNumber))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Room.Title))
-            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Room.Description))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Room.Location))
-            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
-            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
-            .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-            .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Room.RoomImages.Select(img => img.ImageUrl).ToList()));
+                .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.Room.RoomNumber))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Room.Location))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Room.RoomImages.Select(img => img.ImageUrl).ToList()))
+                .ForMember(dest => dest.RoomPrices, opt => opt.MapFrom(src => src.Room.RoomPrices))
+                .ForMember(dest => dest.RoomAmenties, opt => opt.MapFrom(src => src.Room.RoomAmentiesLists));
+
+            CreateMap<RoomAmentiesList, RoomAmenityDto>()
+                .ForMember(dest => dest.AmenityId, opt => opt.MapFrom(src => src.RoomAmenty.RoomAmentyId))
+                .ForMember(dest => dest.AmenityName, opt => opt.MapFrom(src => src.RoomAmenty.Name));
+
+
+
+            CreateMap<RoomPrice, RoomPriceDto>();
+
+
 
             CreateMap<RoomStayCustomer, RoomStayCustomerDto>()
                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.FullName : null))
@@ -250,8 +265,8 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             CreateMap<Room, RoomDto>()
                         .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
                         .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RoomNumber))
-                        .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-                        .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                        //.ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                        //.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                         .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                         .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
                         .ForMember(dest => dest.RoomImages, opt => opt.MapFrom(src => src.RoomImages))
@@ -264,29 +279,37 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
                         .ForMember(dest => dest.Area, opt => opt.MapFrom(src => src.RoomType.Area))
                         .ForMember(dest => dest.Square, opt => opt.MapFrom(src => src.RoomType.Square))
                         .ForMember(dest => dest.RoomTypeDescription, opt => opt.MapFrom(src => src.RoomType.Description))
-                        .ForMember(dest => dest.MaxOccupancy, opt => opt.MapFrom(src => src.RoomType.MaxOccupancy));
+                        .ForMember(dest => dest.MaxOccupancy, opt => opt.MapFrom(src => src.RoomType.MaxOccupancy))
+                        .ForMember(dest => dest.PostRooms, opt => opt.MapFrom(src => src.PostRooms));
+
+            CreateMap<PostRoom, PostRoomDto>();
 
 
+            // Mapping từ Room sang ListRoomResByRoomTypeId
             CreateMap<Room, ListRoomResByRoomTypeId>()
-            .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
-            .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RoomNumber))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-            .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
-            .ForMember(dest => dest.RoomTypeId, opt => opt.MapFrom(src => src.RoomTypeId))
-            .ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomType.RoomTypeName ?? "N/A"))
-            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.RoomPrices
-                .OrderByDescending(p => p.ApplicableDate)
-                .FirstOrDefault().Price))
-                        .ForMember(dest => dest.RoomImages, opt => opt.MapFrom(src => src.RoomImages.Select(img => img.ImageUrl).ToList()))
-                       .ForMember(dest => dest.Amenties, opt => opt.MapFrom(src => src.RoomAmentiesLists));
+                .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
+                .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RoomNumber))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
+                .ForMember(dest => dest.RoomTypeId, opt => opt.MapFrom(src => src.RoomTypeId))
+                .ForMember(dest => dest.RoomTypeName, opt => opt.MapFrom(src => src.RoomType != null ? src.RoomType.RoomTypeName : "N/A"))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
+                    src.RoomPrices != null && src.RoomPrices.Any()
+                        ? src.RoomPrices.OrderByDescending(p => p.ApplicableDate).First().Price
+                        : 0)) // Gán giá trị mặc định nếu không có giá
+                .ForMember(dest => dest.RoomImages, opt => opt.MapFrom(src =>
+                    src.RoomImages != null
+                        ? src.RoomImages.Select(img => img.ImageUrl).ToList()
+                        : new List<string>()))
+                .ForMember(dest => dest.Amenties, opt => opt.MapFrom(src => src.RoomAmentiesLists));
 
+            // Mapping từ RoomAmentiesList sang RoomAmentyDto
             CreateMap<RoomAmentiesList, RoomAmentyDto>()
-                        .ForMember(dest => dest.RoomAmentyId, opt => opt.MapFrom(src => src.RoomAmentyId))
-                        .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
-                        .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoomAmenty.Name))  
-                        .ForMember(dest => dest.Compensation, opt => opt.MapFrom(src => src.RoomAmenty.Compensation));  
+                .ForMember(dest => dest.RoomAmentyId, opt => opt.MapFrom(src => src.RoomAmentyId))
+                .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoomAmenty != null ? src.RoomAmenty.Name : ""))
+                .ForMember(dest => dest.Compensation, opt => opt.MapFrom(src => src.RoomAmenty != null ? src.RoomAmenty.Compensation : 0));
+
 
 
             CreateMap<RoomImage, RoomImageDto>();
@@ -312,8 +335,8 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             CreateMap<Room, RoomCusDto>()
                 .ForMember(dest => dest.RoomId, opt => opt.MapFrom(src => src.RoomId))
                 .ForMember(dest => dest.RoomNumber, opt => opt.MapFrom(src => src.RoomNumber))
-                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                //.ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                //.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
                 .ForMember(dest => dest.RoomCusImages, opt => opt.MapFrom(src => src.RoomImages)) 
@@ -541,7 +564,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
 
 
             CreateMap<Post, PostViewModel>()
-           .ForMember(dest => dest.RoomTitle, opt => opt.MapFrom(src => src.RentalRoom!.Title))
+           //.ForMember(dest => dest.RoomTitle, opt => opt.MapFrom(src => src.RentalRoom!.Title))
            .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.User!.Email))
            .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.User!.FullName))
            .ForMember(dest => dest.CustomerPhone, opt => opt.MapFrom(src => src.User!.PhoneNumber))

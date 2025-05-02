@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Repositories;
 using SP25_RPSC.Data.Repositories.AddressRepository;
 using SP25_RPSC.Data.Repositories.BussinessImageRepository;
@@ -87,6 +88,7 @@ namespace SP25_RPSC.Data.UnitOfWorks
         private IRoomAmentyListRepository _roomAmentyListRepository;
         private ICustomerMoveOutRepository _customerMoveOutRepository;
         private IExtendCcontractRepository _extendCcontractRepository;
+        private IPostRoomRepository _postRoomRepository;
 
         public UnitOfWork(RpscContext context)
         {
@@ -386,6 +388,14 @@ namespace SP25_RPSC.Data.UnitOfWorks
             get
             {
                 return _extendContractRequestRepository ??= new ExtendContractRequestRepository(_context);
+            }
+        }
+
+        public IPostRoomRepository PostRoomRepository
+        {
+            get
+            {
+                return _postRoomRepository ??= new PostRoomRepository(_context);
             }
         }
 

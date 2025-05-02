@@ -40,11 +40,12 @@ namespace SP25_RPSC.Services.Service.RoomStayService
                 (string.IsNullOrEmpty(searchQuery) || rs.Room.RoomNumber.Contains(searchQuery));
 
             var roomStays = await _unitOfWork.RoomStayRepository.Get(
-                includeProperties: "Room,Room.RoomImages",
-                filter: searchFilter,
-                pageIndex: pageIndex,
-                pageSize: pageSize
-            );
+    includeProperties: "Room,Room.RoomImages,Room.RoomPrices,Room.RoomAmentiesLists.RoomAmenty",
+    filter: searchFilter,
+    pageIndex: pageIndex,
+    pageSize: pageSize
+);
+
 
             var totalRoomStays = await _unitOfWork.RoomStayRepository.CountAsync(searchFilter);
 

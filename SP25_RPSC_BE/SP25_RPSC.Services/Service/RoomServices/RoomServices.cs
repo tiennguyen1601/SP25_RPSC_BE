@@ -46,32 +46,32 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             var landlordId = roomType.LandlordId;
 
-            var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
-                contract => contract.LandlordId == landlordId && contract.Status == StatusEnums.Active.ToString()
-            )).FirstOrDefault();
+            //var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
+            //    contract => contract.LandlordId == landlordId && contract.Status == StatusEnums.Active.ToString()
+            //)).FirstOrDefault();
 
-            if (activeContract == null)
-            {
-                throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
-            }
+            //if (activeContract == null)
+            //{
+            //    throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
+            //}
 
             var roomPrice = new List<RoomPrice>
-    {
-        new RoomPrice
-        {
-            RoomPriceId = Guid.NewGuid().ToString(),
-            Price = model.price,
-            ApplicableDate = DateTime.Now,
-        }
-    };
+            {
+                new RoomPrice
+                {
+                    RoomPriceId = Guid.NewGuid().ToString(),
+                    Price = model.price,
+                    ApplicableDate = DateTime.Now,
+                }
+            };
 
             var room = new Room
             {
                 RoomId = Guid.NewGuid().ToString(),
                 RoomNumber = model.RoomNumber,
-                Title = model.Title,
-                AvailableDateToRent = model.AvailableDateToRent,
-                Description = model.Description,
+                //Title = model.Title,
+                //AvailableDateToRent = model.AvailableDateToRent,
+                //Description = model.Description,
                 Location = model.Location,
                 Status = "Available",
                 UpdatedAt = DateTime.Now,
@@ -107,15 +107,15 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 throw new Exception("Landlord not found."); 
             }
 
-            landlord.NumberRoom -= 1;
+            //landlord.NumberRoom -= 1;
 
-            if (landlord.NumberRoom == 0)
-            {
-                activeContract.Status = StatusEnums.Expired.ToString();
-                await _unitOfWork.LandlordContractRepository.Update(activeContract);
-            }
+            //if (landlord.NumberRoom == 0)
+            //{
+            //    activeContract.Status = StatusEnums.Expired.ToString();
+            //    await _unitOfWork.LandlordContractRepository.Update(activeContract);
+            //}
 
-            await _unitOfWork.LandlordRepository.Update(landlord);
+            //await _unitOfWork.LandlordRepository.Update(landlord);
 
             await _unitOfWork.SaveAsync();
 
@@ -139,7 +139,8 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 room.RoomRentRequests.Any(r => r.Status == "Pending") &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  room.RoomNumber.Contains(searchQuery) ||
-                 room.Title.Contains(searchQuery));
+                 room.Title.Contains(searchQuery)
+                 );
 
             var rooms = await _unitOfWork.RoomRepository.Get(
                 includeProperties: "RoomType,RoomRentRequests.CustomerRentRoomDetailRequests,RoomImages,RoomPrices",
@@ -236,11 +237,11 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 room.RoomTypeId == roomTypeId &&
                 (string.IsNullOrEmpty(searchQuery) ||
                  room.RoomNumber.Contains(searchQuery) ||
-                 room.Title.Contains(searchQuery)) &&
-                (string.IsNullOrEmpty(status) || room.Status == status);  
+                 room.Title.Contains(searchQuery) &&
+                (string.IsNullOrEmpty(status) || room.Status == status));  
 
             var rooms = await _unitOfWork.RoomRepository.Get(
-                includeProperties: "RoomType,RoomImages,RoomPrices,RoomAmentiesLists",
+               includeProperties: "RoomType,RoomImages,RoomPrices,RoomAmentiesLists.RoomAmenty",
                 filter: searchFilter,
                 pageIndex: pageIndex,
                 pageSize: pageSize
@@ -298,6 +299,15 @@ namespace SP25_RPSC.Services.Service.RoomServices
             var rooms = await _unitOfWork.RoomRepository.GetFilteredRoomsAsync(
                 minPrice, maxPrice, roomTypeName, district, amenityIds
             );
+
+            foreach(var room in rooms)
+            {
+                var postRooms = await _unitOfWork.PostRoomRepository.GetPostRoomByRoomId(room.RoomId);
+                if (postRooms == null)
+                {
+                    rooms.Remove(room);
+                }
+            }
 
             var result = _mapper.Map<List<RoomResponseModel>>(rooms);
 
@@ -441,7 +451,11 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             var allRooms = await _unitOfWork.RoomRepository.GetRoomsByLandlordIdAsync(landlord.LandlordId);
 
-            var pagedRooms = allRooms
+            var filteredRooms = allRooms
+                .Where(r => r.Status == "Available" && r.PostRooms != null && r.PostRooms.Any())
+                .ToList();
+
+            var pagedRooms = filteredRooms
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -462,6 +476,7 @@ namespace SP25_RPSC.Services.Service.RoomServices
             return roomDtos;
         }
 
+
         public async Task<bool> UpdateRoom(string roomId, RoomUpdateRequestModel model, string token)
         {
             var tokenModel = _decodeTokenHandler.decode(token);
@@ -481,47 +496,43 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 throw new Exception("Room not found.");
             }
 
-            if (landlord.LandlordId != room.RoomType.LandlordId)
-            {
-                throw new UnauthorizedAccessException("You are not authorized to update this room. Only the landlord can update their rooms.");
-            }
 
             if (room.Status == "Renting")
             {
                 throw new Exception("Cannot update room that is currently being rented.");
             }
 
-            if(model.RoomTypeId != null)
-            {
-                var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(model.RoomTypeId);
-                if (roomType == null)
-                {
-                    throw new Exception("RoomType not found.");
-                }
+            //if(model.RoomTypeId != null)
+            //{
+            //    var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(model.RoomTypeId);
+            //    if (roomType == null)
+            //    {
+            //        throw new Exception("RoomType not found.");
+            //    }
 
-                if (roomType.LandlordId != landlord.LandlordId)
-                {
-                    throw new UnauthorizedAccessException("You can only assign room types that belong to you.");
-                }
-            }
+            //    if (roomType.LandlordId != landlord.LandlordId)
+            //    {
+            //        throw new UnauthorizedAccessException("You can only assign room types that belong to you.");
+            //    }
+            //}
             if(model.RoomNumber != null)
             {
                 room.RoomNumber = model.RoomNumber;
             }
-            if (model.Title != null)
-            {
-                room.Title = model.Title;
-            }
-            if (model.AvailableDateToRent != null)
-            {
-                room.AvailableDateToRent = model.AvailableDateToRent;
-            }
-            if (model.Description != null)
-            {
-                room.Description = model.Description;
-            }
+            //if (model.Title != null)
+            //{
+            //    //room.Title = model.Title;
+            //}
+            //if (model.AvailableDateToRent != null)
+            //{
+            //    room.AvailableDateToRent = model.AvailableDateToRent;
+            //}
+            //if (model.Description != null)
+            //{
+            //    //room.Description = model.Description;
+            //}
             room.UpdatedAt = DateTime.Now;
-            room.RoomTypeId = model.RoomTypeId;
+            //room.RoomTypeId = model.RoomTypeId;
 
             if (model.Price > 0)
             {
@@ -605,18 +616,225 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 throw new Exception("Room not found.");
             }
 
-            if (landlord.LandlordId != room.RoomType.LandlordId)
-            {
-                throw new UnauthorizedAccessException("You are not authorized to inactive this room. Only the landlord can update their rooms.");
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(room.RoomTypeId);
 
+            if (landlord.LandlordId != roomType.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to modify this room. Only the landlord can update their rooms.");
             }
 
-            room.Status = StatusEnums.Inactive.ToString();
+            if (room.Status == StatusEnums.Available.ToString())
+            {
+                room.Status = StatusEnums.Inactive.ToString();
+            }
+            else if (room.Status == StatusEnums.Inactive.ToString())
+            {
+                room.Status = StatusEnums.Available.ToString();
+            }
+            else
+            {
+                throw new InvalidOperationException("Room status is neither Available nor Inactive.");
+            }
 
             await _unitOfWork.RoomRepository.Update(room);
             await _unitOfWork.SaveAsync();
 
             return true;
         }
+
+
+        public async Task<bool> CreatePostRoom(string token, PostRoomCreateRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(model.RoomId);
+            if (room == null)
+            {
+                throw new Exception("Room not found.");
+            }
+
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(room.RoomTypeId);
+            if (roomType == null || roomType.LandlordId != landlord.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to create a post for this room.");
+            }
+
+            if (room.Status != "Available")
+            {
+                throw new Exception("Cannot create post for a room that is not available.");
+            }
+
+            var activeContract = (await _unitOfWork.LandlordContractRepository.Get(
+                     contract => contract.LandlordId == landlord.LandlordId && contract.Status == StatusEnums.Active.ToString()
+            )).FirstOrDefault();
+
+            if (activeContract == null)
+            {
+                throw new Exception("Your Service Package are Expired or you didn't buy Service Package");
+            }
+
+            var existingActivePost = (await _unitOfWork.PostRoomRepository.Get(
+                filter: p => p.RoomId == model.RoomId && p.Status == "Active"
+            )).FirstOrDefault();
+
+            if (existingActivePost != null)
+            {
+                throw new Exception("This room already has an active post.");
+            }
+
+            var postRoom = new PostRoom
+            {
+                PostRoomId = Guid.NewGuid().ToString(),
+                //Title = model.Title,
+                //Description = model.Description,
+                DateUpPost = DateTime.Now,
+                DateExist = model.DateExist,
+                Status = "Active",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                RoomId = model.RoomId,
+                //AvailableDateToRent = model.AvailableDateToRent
+            };
+
+            room.Title = model.Title;
+            room.Description = model.Description;
+            room.AvailableDateToRent = model.AvailableDateToRent;
+
+            landlord.NumberRoom -= 1;
+
+            if (landlord.NumberRoom == 0)
+            {
+                activeContract.Status = StatusEnums.Expired.ToString();
+                await _unitOfWork.LandlordContractRepository.Update(activeContract);
+            }
+
+            await _unitOfWork.LandlordRepository.Update(landlord);
+            await _unitOfWork.RoomRepository.Update(room);
+            await _unitOfWork.PostRoomRepository.Add(postRoom);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
+        public async Task<PostRoomDetailResponseModel> GetPostRoomById(string postRoomId)
+        {
+            // Get the post room with related entities
+            var postRoom = (await _unitOfWork.PostRoomRepository.Get(
+                filter: p => p.PostRoomId == postRoomId,
+                includeProperties: "Room,Room.RoomType,Room.RoomType.Landlord,Room.RoomType.Landlord.User,Room.RoomImages,Room.RoomPrices,Room.RoomAmentiesLists.RoomAmenty"
+            )).FirstOrDefault();
+
+            if (postRoom == null)
+            {
+                throw new KeyNotFoundException($"Post room with ID {postRoomId} not found.");
+            }
+
+            // Get the latest price for the room
+            var latestPrice = postRoom.Room.RoomPrices
+                .OrderByDescending(p => p.ApplicableDate)
+                .FirstOrDefault();
+
+            // Get active contract for landlord to determine package priority
+            var activeContract = postRoom.Room.RoomType.Landlord.LandlordContracts?
+                .Where(c => c.Status == "Active")
+                .OrderByDescending(c => c.CreatedDate)
+                .FirstOrDefault();
+
+            // Map amenities
+            var amenities = postRoom.Room.RoomAmentiesLists
+                .Select(ra => new AmenityResponseModel
+                {
+                    AmenityId = ra.RoomAmenty.RoomAmentyId,
+                    AmenityName = ra.RoomAmenty.Name,
+                    Description = ra.RoomAmenty.Compensation.ToString()
+                }).ToList();
+
+            // Create landlord info
+            var landlordInfo = new LandlordInfoResponseModel
+            {
+                LandlordId = postRoom.Room.RoomType.Landlord.LandlordId,
+                FullName = postRoom.Room.RoomType.Landlord.User.FullName,
+                Email = postRoom.Room.RoomType.Landlord.User.Email,
+                PhoneNumber = postRoom.Room.RoomType.Landlord.User.PhoneNumber,
+                AvatarUrl = postRoom.Room.RoomType.Landlord.User.Avatar
+            };
+
+            // Create response model
+            var response = new PostRoomDetailResponseModel
+            {
+                PostRoomId = postRoom.PostRoomId,
+                //Title = postRoom.Title,
+                //Description = postRoom.Description,
+                DateUpPost = postRoom.DateUpPost,
+                DateExist = postRoom.DateExist,
+                Status = postRoom.Status,
+                //AvailableDateToRent = postRoom.AvailableDateToRent,
+                CreatedAt = postRoom.CreatedAt,
+                UpdatedAt = postRoom.UpdatedAt,
+                RoomDetail = new RoomDetailForPostResponseModel
+                {
+                    RoomId = postRoom.Room.RoomId,
+                    RoomNumber = postRoom.Room.RoomNumber,
+                    Status = postRoom.Room.Status,
+                    Location = postRoom.Room.Location,
+                    RoomTypeName = postRoom.Room.RoomType.RoomTypeName,
+                    Square = postRoom.Room.RoomType.Square,
+                    Area = postRoom.Room.RoomType.Area,
+                    Price = latestPrice?.Price ?? 0,
+                    Images = postRoom.Room.RoomImages.Select(img => img.ImageUrl).ToList(),
+                    Amenities = amenities
+                },
+                Landlord = landlordInfo,
+                PackageLabel = activeContract?.Package?.Label,
+                PackagePriorityTime = activeContract?.Package?.PriorityTime
+            };
+
+            return response;
+        }
+        public async Task<List<RoomAvailableDto>> GetAvailableRoomsByLandlordAsync(string token)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
+
+            var rooms = await _unitOfWork.RoomRepository.Get(
+                filter: r => r.Status == "Available" &&
+                             r.RoomType != null &&
+                             r.RoomType.LandlordId == landlord.LandlordId &&
+                             !r.PostRooms.Any(),
+                includeProperties: "RoomImages,PostRooms,RoomType"
+            );
+
+            var roomList = rooms.ToList();
+
+            var dtoList = _mapper.Map<List<RoomAvailableDto>>(roomList);
+
+            for (int i = 0; i < dtoList.Count; i++)
+            {
+                var room = roomList[i];
+                dtoList[i].FirstImageUrl = room.RoomImages.FirstOrDefault()?.ImageUrl;
+                dtoList[i].RoomTypeName = room.RoomType?.RoomTypeName;
+            }
+
+            return dtoList;
+        }
+
+
     }
 }

@@ -98,5 +98,31 @@ namespace SP25_RPSC.Controllers.Controllers
                 Message = "Upload Contract and create roomstay successfully."
             });
         }
+        [HttpPost]
+        [Route("Update-Contract")]
+        public async Task<ActionResult> UpdateContract(
+[FromForm] ContractUploadRequest request)
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var result = await _roomRentRequestService.UpdateContractTermAsync(
+                    token, request);
+
+            if (!result)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Failed to process update Contract ."
+                });
+            }
+
+            return StatusCode((int)HttpStatusCode.OK, new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Update Contract successfully."
+            });
+        }
     }
 }

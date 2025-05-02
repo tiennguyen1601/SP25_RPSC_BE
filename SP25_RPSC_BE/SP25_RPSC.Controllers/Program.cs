@@ -88,6 +88,7 @@ builder.Services.AddScoped<ICustomerRentRoomDetailRequestService, CustomerRentRo
 builder.Services.AddScoped<IExtendContractService, ExtendContractService>();
 builder.Services.AddHostedService<ContractExpiryCheckService>();
 builder.Services.AddHostedService<ContractAutoDeactivateService>();
+builder.Services.AddHostedService<PostRoomExpirationService>();
 
 
 //builder.Services.AddControllers().AddJsonOptions(options =>

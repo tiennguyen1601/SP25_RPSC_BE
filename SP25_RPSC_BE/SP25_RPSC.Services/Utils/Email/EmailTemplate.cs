@@ -720,7 +720,7 @@ namespace SP25_RPSC.Services.Utils.Email
 </div>";
         }
 
-        public static string RoommateKicked(string roommateName, string tenantName, string roomTitle, string roomNumber, string roomAddress, string reason, string moveOutDate)
+        public static string RoommateKicked(string roommateName, string tenantName, string roomNumber, string roomAddress, string reason, string moveOutDate)
         {
             return $@"
 <div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
@@ -733,7 +733,7 @@ namespace SP25_RPSC.Services.Utils.Email
         <p style='font-size: 14px;'>Chúng tôi thông báo rằng bạn sẽ không còn là thành viên của phòng trọ này từ ngày <strong>{moveOutDate}</strong>.</p>
         
         <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
-            <p><strong>Phòng trọ:</strong> {roomTitle}</p>
+            
             <p><strong>Số phòng:</strong> {roomNumber}</p>
             <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
             <p><strong>Chủ phòng:</strong> {tenantName}</p>                
@@ -751,7 +751,7 @@ namespace SP25_RPSC.Services.Utils.Email
         }
 
         public static string RoommateKickedLandlordNoti(string landlordName, string tenantName,
-                                                        string roommateName, string roomTitle, string roomNumber, string roomAddress,
+                                                        string roommateName, string roomNumber, string roomAddress,
                                                         string reason, string moveOutDate, List<string> evidenceImageUrls = null)
         {
             // Tạo phần HTML hiển thị ảnh bằng chứng
@@ -781,7 +781,7 @@ namespace SP25_RPSC.Services.Utils.Email
         <p style='font-size: 14px;'>Chúng tôi thông báo rằng có một thành viên sẽ rời khỏi phòng trọ của bạn từ ngày <strong>{moveOutDate}</strong>.</p>
         
         <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #4a86e8; margin: 15px 0;'>
-            <p><strong>Phòng trọ:</strong> {roomTitle}</p>
+            
             <p><strong>Số phòng:</strong> {roomNumber}</p>
             <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
             <p><strong>Chủ phòng:</strong> {tenantName}</p>

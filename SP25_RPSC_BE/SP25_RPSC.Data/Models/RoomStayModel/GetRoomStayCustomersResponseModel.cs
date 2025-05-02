@@ -52,13 +52,21 @@ namespace SP25_RPSC.Data.Models.RoomStay
         public decimal? Square { get; set; }
         public string? RoomTypeDescription { get; set; }
         public int? MaxOccupancy { get; set; }
-        public decimal? Price { get; set; } 
-
+        public decimal? Price { get; set; }
+        public List<PostRoomDto> PostRooms { get; set; } = new();
         public List<RoomImageDto> RoomImages { get; set; } = new();
         public List<RoomAmentiesListDto> RoomAmentiesLists { get; set; } = new();
         public List<RoomServiceDto> RoomServices { get; set; } = new();
     }
-
+    public class PostRoomDto
+    {
+        public string PostRoomId { get; set; }
+        public DateTime? DateUpPost { get; set; }
+        public int? DateExist { get; set; }
+        public string? Status { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
     public class RoomAmentiesListDto
     {
         public string AmenityId { get; set; } = null!;

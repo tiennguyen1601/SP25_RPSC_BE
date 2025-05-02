@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SP25_RPSC.Data.Models.ResultModel;
@@ -318,6 +319,81 @@ namespace SP25_RPSC.Controllers.Controllers
                     Message = ex.Message
                 });
             }
+        }
+
+        [HttpPost]
+        [Route("Create-PostRoom")]
+        //[Authorize(Roles = "Landlord")]
+        public async Task<ActionResult> CreatePostRoom([FromBody] PostRoomCreateRequestModel model)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.Unauthorized,
+                        Message = "Authorization token is required"
+                    });
+                }
+
+                var result = await _roomService.CreatePostRoom(token, model);
+
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Post room created successfully"
+                    });
+                }
+
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Post room cannot be created"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = ex.Message
+                });
+            }
+        }
+        [HttpGet]
+        [Route("Get-Room-for-post")]
+        public async Task<ActionResult> GetRoomForPost()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var rooms = await _roomService.GetAvailableRoomsByLandlordAsync(token);
+
+            ResultModel response = new ResultModel
+            {
+                IsSuccess = true,
+                Code = (int)HttpStatusCode.OK,
+                Message = "Get Room for post successfully",
+                Data = rooms
+            };
+
+            return StatusCode(response.Code, response);
         }
     }
 }
