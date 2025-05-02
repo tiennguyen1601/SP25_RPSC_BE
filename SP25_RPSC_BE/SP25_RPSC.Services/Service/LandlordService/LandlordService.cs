@@ -2,6 +2,7 @@
 using CloudinaryDotNet.Actions;
 using SP25_RPSC.Data.Entities;
 using SP25_RPSC.Data.Enums;
+using SP25_RPSC.Data.Models.CustomerModel.Request;
 using SP25_RPSC.Data.Models.CustomerModel.Response;
 using SP25_RPSC.Data.UnitOfWorks;
 using SP25_RPSC.Services.Service.EmailService;
@@ -464,5 +465,121 @@ namespace SP25_RPSC.Services.Service.LandlordService
             return true;
         }
 
+        public async Task<bool> KickTenantbyLanlord(string token, KickTenantReq request)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: c => c.UserId == userId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("Landlord not found.");
+            }
+
+
+            var memberKickedId = request.customerId;
+            if (string.IsNullOrEmpty(memberKickedId))
+            {
+                throw new KeyNotFoundException("Customer Id is requied!");
+            }
+
+            var memberKicked = (await _unitOfWork.CustomerRepository.Get(filter: c => c.CustomerId == memberKickedId,
+                    includeProperties: "User")).FirstOrDefault();
+            if (memberKickedId == null)
+            {
+                throw new UnauthorizedAccessException("The selected member kick not found.");
+            }
+
+            var roomStayCustomer = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                            filter: rsc => rsc.LandlordId == landlord.LandlordId && 
+                            rsc.CustomerId == memberKickedId &&
+                            rsc.Status.Equals(StatusEnums.Active.ToString())
+                            )).FirstOrDefault();
+            if (roomStayCustomer == null)
+            {
+                throw new KeyNotFoundException("The selected member is not in your room or they have left.");
+            }
+
+            var roomStay = await _unitOfWork.RoomStayRepository.GetByIDAsync(roomStayCustomer.RoomStayId);
+            if (roomStay == null)
+            {
+                throw new KeyNotFoundException("Room stay information not found.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(roomStay.RoomId);
+            if (room == null)
+            {
+                throw new KeyNotFoundException("Room information not found.");
+            }
+
+
+            List<string> evidenceImageUrls = new List<string>();
+            if (request.evidenceImages != null && request.evidenceImages.Any())
+            {
+                try
+                {
+                    evidenceImageUrls = await _cloudinaryStorageService.UploadImageAsync(request.evidenceImages);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to upload evidence images: {ex.Message}");
+                }
+            }
+
+            roomStayCustomer.Status = StatusEnums.Inactive.ToString();
+            await _unitOfWork.RoomStayCustomerRepository.Update(roomStayCustomer);
+            await _unitOfWork.SaveAsync();
+
+            // Check if there are any remaining active tenants in the room
+            var remainingTenants = await _unitOfWork.RoomStayCustomerRepository.Get(
+                filter: rsc => rsc.RoomStayId == roomStay.RoomStayId
+                        && rsc.Status.Equals(StatusEnums.Active.ToString())
+                        && rsc.Type.Equals(CustomerTypeEnums.Tenant.ToString()));
+
+            // If no tenants remain, update room to Available
+            if (remainingTenants == null || !remainingTenants.Any())
+            {
+                room.Status = StatusEnums.Available.ToString();
+                await _unitOfWork.RoomRepository.Update(room);
+
+                roomStay.Status = StatusEnums.Inactive.ToString();
+                await _unitOfWork.RoomStayRepository.Update(roomStay);
+            }
+
+            var kickReason = ReasonEnums.KickRoommateReason.ToString();
+            if (!string.IsNullOrEmpty(request.reason)) { kickReason = request.reason; }
+
+            if (roomStayCustomer.Customer?.User != null)
+            {
+                var requesterEmail = roomStayCustomer.Customer.User.Email;
+                var tenantName = roomStayCustomer.Customer.User.FullName ?? "";
+                var landlordName = landlord.User.FullName ?? "Chủ trọ";
+                var roomNumber = room.RoomNumber ?? "";
+                var roomAddress = room.Location ?? "Không có địa chỉ";
+                var date = DateTime.Now.ToString("dd/MM/yyyy");
+
+                var kickTenantMail = EmailTemplate.TenantKickedByLandlord(
+                    tenantName,
+                    landlordName,
+                    roomNumber,
+                    roomAddress,
+                    kickReason,
+                    date,
+                    evidenceImageUrls);
+
+                await _emailService.SendEmail(
+                    requesterEmail,
+                    "Thông báo chấm dứt thuê phòng",
+                    kickTenantMail);
+            }
+
+            return true;
+        }
     }
 }
