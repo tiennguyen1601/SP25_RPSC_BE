@@ -55,7 +55,7 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.Request
 
         public RoomServicePriceRequest Price { get; set; }
     }
-
+     
     public class RoomServicePriceRequest
     {
 
