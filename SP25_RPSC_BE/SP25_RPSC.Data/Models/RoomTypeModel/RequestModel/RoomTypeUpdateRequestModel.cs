@@ -24,7 +24,7 @@ namespace SP25_RPSC.Data.Models.RoomTypeModel.RequestModel
 
     public class RoomServiceRequestUpdate
     {
-        public Guid? RoomServiceId { get; set; } // Optional for existing services
+        public string? RoomServiceId { get; set; } // Optional for existing services
         public string RoomServiceName { get; set; }
         public string Description { get; set; }
         public RoomServicePriceRequest Price { get; set; }
