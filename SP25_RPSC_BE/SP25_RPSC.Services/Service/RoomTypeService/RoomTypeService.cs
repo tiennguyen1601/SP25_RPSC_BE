@@ -134,14 +134,14 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                     RoomServiceName = s.RoomServiceName,
                     Description = s.Description,
                     Status = StatusEnums.Active.ToString(),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     RoomServicePrices = new List<RoomServicePrice>
                     {
                     new RoomServicePrice
                     {
                     RoomServicePriceId = Guid.NewGuid().ToString(),
                     Price = s.Price.Price,
-                    ApplicableDate = DateTime.UtcNow,
+                    ApplicableDate = DateTime.Now,
                     RoomServiceId = serviceId
                     }
                     }   
@@ -158,7 +158,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                 MaxOccupancy = model.MaxOccupancy,
                 Status = StatusEnums.Available.ToString(),
                 RoomServices = roomTypeServices,
-                UpdatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.Now,
                 Landlord = existingUser,
                 Address = address,
             };
@@ -265,7 +265,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             existingRoomType.Square = model.Square;
             existingRoomType.Description = model.Description;
             existingRoomType.MaxOccupancy = model.MaxOccupancy;
-            existingRoomType.UpdatedAt = DateTime.UtcNow;
+            existingRoomType.UpdatedAt = DateTime.Now;
 
             if (existingRoomType.Address == null)
             {
@@ -316,7 +316,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
             foreach (var service in servicesToDeactivate)
             {
                 service.Status = StatusEnums.Inactive.ToString();
-                service.UpdatedAt = DateTime.UtcNow;
+                service.UpdatedAt = DateTime.Now;
                 await _unitOfWork.RoomServiceRepository.Update(service);
             }
 
@@ -327,7 +327,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
 
                 existingService.RoomServiceName = serviceModel.RoomServiceName;
                 existingService.Description = serviceModel.Description;
-                existingService.UpdatedAt = DateTime.UtcNow;
+                existingService.UpdatedAt = DateTime.Now;
                 existingService.Status = StatusEnums.Active.ToString();
 
                 // Thêm giá mới vào list RoomServicePrices
@@ -335,11 +335,11 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                 {
                     RoomServicePriceId = Guid.NewGuid().ToString(),
                     Price = serviceModel.Price.Price,
-                    ApplicableDate = DateTime.UtcNow,
+                    ApplicableDate = DateTime.Now,
                     RoomServiceId = existingService.RoomServiceId
                 };
 
-                existingService.RoomServicePrices.Add(newPrice);
+                await _unitOfWork.RoomServicePriceRepository.Add(newPrice);
 
                 await _unitOfWork.RoomServiceRepository.Update(existingService);
             }
@@ -357,7 +357,7 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                         RoomServiceName = sm.RoomServiceName,
                         Description = sm.Description,
                         Status = StatusEnums.Active.ToString(),
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         RoomServicePrices = new List<RoomServicePrice>
                         {
                     new RoomServicePrice
