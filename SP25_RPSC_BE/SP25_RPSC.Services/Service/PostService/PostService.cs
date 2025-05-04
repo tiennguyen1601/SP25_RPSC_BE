@@ -654,7 +654,7 @@ namespace SP25_RPSC.Services.Service.PostService
                         cr.Status == StatusEnums.Pending.ToString() &&
                         cr.RequestId == roommateRequests.RequestId);
 
-                if (hasRequests != null || hasRequests.Any())
+                if (hasRequests != null && hasRequests.Any())
                 {
                     throw new InvalidOperationException("This post cannot be inactivated because it has room sharing requests.");
                 }
