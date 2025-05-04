@@ -1311,7 +1311,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
             await _unitOfWork.RoomStayCustomerRepository.Update(checkMemberKicked);
             await _unitOfWork.SaveAsync();
 
-            var kickReason = ReasonEnums.KickRoommateReason.ToString();
+            var kickReason = ReasonEnums.KickTenantReason.ToString();
             if (!string.IsNullOrEmpty(kickRoommateReq.reason)) { kickReason = kickRoommateReq.reason; }
 
             if (checkMemberKicked.Customer?.User != null)
@@ -1451,6 +1451,65 @@ namespace SP25_RPSC.Services.Service.CustomerService
             }).ToList();
 
             return response;
+        }
+
+        public async Task<bool> InactiveUser(string token, InactiveUserRequest model)
+        {
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            // Decode token and verify admin role
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var adminId = tokenModel.userid;
+            var admin = await _unitOfWork.UserRepository.GetUserById(adminId);
+
+            if (admin == null || admin.RoleId != "3")
+            {
+                throw new UnauthorizedAccessException("Only administrators can inactive users.");
+            }
+
+            // Get the user to be inactivated
+            var user = await _unitOfWork.UserRepository.GetUserById(model.UserId)
+                ?? throw new ApiException(HttpStatusCode.NotFound, "User not found.");
+
+            // Check if user is already inactive
+            if (user.Status == StatusEnums.Inactive.ToString())
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "User is already inactive.");
+            }
+
+            // Check if user is a customer and has an active room stay
+            var customer = await _unitOfWork.CustomerRepository.GetCustomerByUserId(model.UserId);
+            if (customer != null)
+            {
+                var activeRoomStay = (await _unitOfWork.RoomStayCustomerRepository.Get(
+                    filter: rsc => rsc.CustomerId == customer.CustomerId && rsc.Status == "Active"
+                )).FirstOrDefault();
+
+                if (activeRoomStay != null)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.BadRequest,
+                        "Cannot inactive a user who is currently staying in a room. The user must move out first."
+                    );
+                }
+            }
+
+            // Set user status to inactive
+            user.Status = StatusEnums.Inactive.ToString();
+            user.UpdateAt = DateTime.UtcNow;
+
+            // Update database
+            await _unitOfWork.UserRepository.Update(user);
+            await _unitOfWork.SaveAsync();
+
+            // Send email notification to the user
+            var inactiveUserEmail = EmailTemplate.UserInactivated(user.FullName, model.Reason);
+            await _emailService.SendEmail(user.Email, "Tài khoản của bạn đã bị vô hiệu hóa", inactiveUserEmail);
+
+            return true;
         }
     }
 }

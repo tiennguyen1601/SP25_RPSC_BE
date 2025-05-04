@@ -220,6 +220,17 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
 
             request.Status = "Active";
 
+            var postRoom = (await _unitOfWork.PostRoomRepository.Get(
+                filter: pr => pr.RoomId == room.RoomId && pr.Status == "Active"
+            )).FirstOrDefault();
+
+            if (postRoom != null)
+            {
+                postRoom.Status = "Inactive";
+                postRoom.UpdatedAt = DateTime.UtcNow;
+            }
+
+
             var signedDate = DateTime.Now;
 
             // Get the current room price
@@ -250,7 +261,7 @@ namespace SP25_RPSC.Services.Service.RoomRentRequestService
                 TenantId = selectedCustomerId,
                 RentalRoomId = room.RoomId
             };
-
+            
             // Chuẩn bị dữ liệu cho hợp đồng
             var contractRequestDTO = new CustomerContractRequestDTO
             {
