@@ -16,6 +16,7 @@ using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using Microsoft.Extensions.Hosting;
 using SP25_RPSC.Services.Utils.Email;
 using CloudinaryDotNet;
+using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 
 namespace SP25_RPSC.Services.Service.PostService
 {
@@ -239,8 +240,8 @@ namespace SP25_RPSC.Services.Service.PostService
                     RoomId = post.RentalRoom.RoomId,
                     LandlordName = post.RentalRoom.RoomType?.Landlord?.User?.FullName ?? "Unknown",
                     RoomNumber = post.RentalRoom.RoomNumber,
-                    //Title = post.RentalRoom.Title,
-                    //Description = post.RentalRoom.Description,
+                    Title = post.RentalRoom.Title,
+                    Description = post.RentalRoom.Description,
                     Location = post.RentalRoom.Location,
                     RoomTypeName = post.RentalRoom.RoomType.RoomTypeName,
                     Price = roomPrice, // Su dung gia phong tai thoi diem dang bai
@@ -257,6 +258,34 @@ namespace SP25_RPSC.Services.Service.PostService
             };
             return postDetailResponse;
         }
+
+        public async Task<List<FeedbackTenantResponseModel>> GetFeedbacksByRevieweeIdIdAsync(string userId)
+        {
+            
+
+
+            var feedbacks = await _unitOfWork.FeedbackRepository.Get(
+                includeProperties: "Reviewer,ImageRves",
+                filter: f => f.RevieweeId == userId && f.Status == "Active",
+                orderBy: q => q.OrderByDescending(f => f.CreatedDate)
+            );
+
+            var response = feedbacks.Select(f => new FeedbackTenantResponseModel
+            {
+                Description = f.Description,
+                Type = f.Type,
+                CreatedDate = f.CreatedDate,
+                Rating = f.Rating,
+                ReviewerId = f.ReviewerId,
+                ReviewerName = f.Reviewer?.FullName,
+                RevieweeId = f.RevieweeId,
+                ImageUrls = f.ImageRves.Select(i => i.ImageRfurl).ToList()
+            }).ToList();
+
+            return response;
+        }
+
+
 
         public async Task<PagedResult<RoommatePostRes>> GetRoommatePosts(string token, RoommatePostSearchReq search)
         {

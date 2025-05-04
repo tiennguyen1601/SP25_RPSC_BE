@@ -114,6 +114,17 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+        
+        [HttpGet("feedback/{userId}")]
+        public async Task<IActionResult> GetFeebackDetail(string userId)
+        {
+            var room = await _postService.GetFeedbacksByRevieweeIdIdAsync(userId);
+
+            if (room == null)
+                return NotFound("Feedback not found");
+
+            return Ok(room);
+        }
 
         [HttpPost("create-roommate-post")]
         public async Task<IActionResult> CreateRoommatePost([FromBody] CreateRoommatePostReq request)
