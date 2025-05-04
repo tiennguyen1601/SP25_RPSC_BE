@@ -394,6 +394,20 @@ namespace SP25_RPSC.Services.Service.LandlordService
 
                 roomStay.Status = StatusEnums.Inactive.ToString();
                 await _unitOfWork.RoomStayRepository.Update(roomStay);
+
+                var customerContract = (await _unitOfWork.CustomerContractRepository.Get(filter: cc =>
+                    cc.TenantId == cusMove.CustomerId &&
+                    cc.RentalRoomId == room.RoomId &&
+                    cc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+                if (customerContract == null)
+                {
+                    throw new KeyNotFoundException("Customer contract not found.");
+                }
+
+                customerContract.Status = StatusEnums.Inactive.ToString();
+                customerContract.UpdatedDate = DateTime.Now;
+                await _unitOfWork.CustomerContractRepository.Update(customerContract);
+                await _unitOfWork.SaveAsync();
             }
 
 
@@ -550,6 +564,20 @@ namespace SP25_RPSC.Services.Service.LandlordService
 
                 roomStay.Status = StatusEnums.Inactive.ToString();
                 await _unitOfWork.RoomStayRepository.Update(roomStay);
+
+                var customerContract = (await _unitOfWork.CustomerContractRepository.Get(filter: cc =>
+                        cc.TenantId == memberKicked.CustomerId &&
+                        cc.RentalRoomId == room.RoomId &&
+                        cc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+                if (customerContract == null)
+                {
+                    throw new KeyNotFoundException("Customer contract not found.");
+                }
+
+                customerContract.Status = StatusEnums.Inactive.ToString();
+                customerContract.UpdatedDate = DateTime.Now;
+                await _unitOfWork.CustomerContractRepository.Update(customerContract);
+                await _unitOfWork.SaveAsync();
             }
 
             var kickReason = ReasonEnums.KickRoommateReason.ToString();
