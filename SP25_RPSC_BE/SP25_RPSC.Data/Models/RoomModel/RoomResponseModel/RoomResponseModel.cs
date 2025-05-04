@@ -23,6 +23,9 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
 
         public string PackageLabel { get; set; }
         public int? PackagePriorityTime { get; set; }
+        public int TotalFeedbacks { get; set; }
+        public double AverageRating { get; set; }
+
     }
 
 

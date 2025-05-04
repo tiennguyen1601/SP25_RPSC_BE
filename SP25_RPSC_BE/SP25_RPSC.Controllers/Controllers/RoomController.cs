@@ -144,23 +144,45 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpGet("rooms")]
         public async Task<IActionResult> GetAllRooms(
-            [FromQuery] decimal? minPrice,
-            [FromQuery] decimal? maxPrice,
-            [FromQuery] string? roomTypeName,
-            [FromQuery] string? district,
-            [FromQuery] List<string>? amenityIds)
+    [FromQuery] decimal? minPrice,
+    [FromQuery] decimal? maxPrice,
+    [FromQuery] string? roomTypeName,
+    [FromQuery] string? district,
+    [FromQuery] List<string>? amenityIds,
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 10)
         {
             var sanitizedAmenityIds = amenityIds ?? new List<string>();
 
-            var rooms = await _roomService.GetAllRoomsAsync(
+            var (rooms, totalActivePosts, totalRooms) = await _roomService.GetAllRoomsAsync(
                 minPrice,
                 maxPrice,
                 roomTypeName,
                 district,
-                sanitizedAmenityIds
+                sanitizedAmenityIds,
+                pageIndex,
+                pageSize
             );
 
-            return Ok(rooms);
+            return Ok(new
+            {
+                TotalActivePosts = totalActivePosts, // Tổng số bài đăng đang hoạt động (PostRoom)
+                TotalFilteredRooms = totalRooms,     // Tổng số phòng sau lọc (phục vụ phân trang)
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                Rooms = rooms
+            });
+        }
+
+        [HttpGet("feedback/{roomId}")]
+        public async Task<IActionResult> GetFeebackDetail(string roomId)
+        {
+            var room = await _roomService.GetFeedbacksByRoomIdAsync(roomId);
+
+            if (room == null)
+                return NotFound("Feedback not found");
+
+            return Ok(room);
         }
 
         [HttpGet("rooms/{roomId}")]
