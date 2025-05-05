@@ -190,6 +190,7 @@ namespace SP25_RPSC.Services.Service.PostService
 
             int totalRoomers = post.RentalRoom.RoomStays
                     .SelectMany(rs => rs.RoomStayCustomers)
+                    .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
                     .Count();
 
             // Get room services with prices that were valid at the time the post was created

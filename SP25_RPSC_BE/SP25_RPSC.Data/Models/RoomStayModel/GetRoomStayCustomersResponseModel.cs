@@ -19,6 +19,7 @@ namespace SP25_RPSC.Data.Models.RoomStay
         public string? CustomerId { get; set; }
         public string? CustomerName { get; set; }
         public string? CustomerEmail { get; set; }
+        public string? CustomerPhoneNumber { get; set; }
         public string? Preferences { get; set; }
         public string? LifeStyle { get; set; }
         public string? BudgetRange { get; set; }

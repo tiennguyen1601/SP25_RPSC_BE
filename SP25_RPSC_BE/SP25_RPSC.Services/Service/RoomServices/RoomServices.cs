@@ -368,6 +368,13 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             var result = _mapper.Map<RoomDetailResponseModel>(room);
 
+            result.PostRoomId = room.PostRooms?
+                .Where(p => p.Status == "Active")
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefault()?.PostRoomId;
+
+
+
             var activeContract = room.RoomType?.Landlord?.LandlordContracts?
                 .Where(c => c.Status == "Active")
                 .OrderByDescending(c => c.CreatedDate)
