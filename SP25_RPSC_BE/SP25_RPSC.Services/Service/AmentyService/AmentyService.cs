@@ -164,7 +164,7 @@ namespace SP25_RPSC.Services.Service.AmentyService
             }
 
             await _unitOfWork.RoomAmentyRepository.Delete(amenity);
-            await _unitOfWork.SaveAsync();
+            //await _unitOfWork.SaveAsync();
 
             return true;
         }
