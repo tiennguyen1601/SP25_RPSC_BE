@@ -10,6 +10,7 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
     {
         public List<RoomServiceResponseModel> RoomServices { get; set; }
         public LandlordResponseModel Landlord { get; set; }
+        public string? PostRoomId { get; set; }
     }
 
     public class RoomServiceResponseModel

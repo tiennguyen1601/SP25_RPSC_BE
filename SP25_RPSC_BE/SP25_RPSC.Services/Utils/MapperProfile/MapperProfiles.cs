@@ -239,6 +239,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             CreateMap<RoomStayCustomer, RoomStayCustomerDto>()
                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.FullName : null))
                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.Email : null))
+               .ForMember(dest => dest.CustomerPhoneNumber, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.PhoneNumber : null))
                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.Address : null))
                .ForMember(dest => dest.Avatar, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.User.Avatar : null))
                .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId))

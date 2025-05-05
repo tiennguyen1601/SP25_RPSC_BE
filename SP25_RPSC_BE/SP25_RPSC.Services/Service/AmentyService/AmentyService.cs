@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -90,6 +91,82 @@ namespace SP25_RPSC.Services.Service.AmentyService
             };
         }
 
+        public async Task<bool> UpdateAmenity(RoomAmentyRequestUpdateModel model, string token, string amenityId)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
 
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+            if (landlord == null)
+            {
+                return false;
+            }
+
+            var amenity = (await _unitOfWork.RoomAmentyRepository.Get(
+                filter: a => a.RoomAmentyId == amenityId && a.LandlordId == landlord.LandlordId
+            )).FirstOrDefault();
+
+            var amenityList = (await _unitOfWork.RoomAmentyListRepository.Get(
+                filter: x => x.RoomAmentyId == amenity.RoomAmentyId)).FirstOrDefault();
+
+            if (amenityList != null)
+            {
+                throw new Exception("Cannot update amenity that it already in room");
+            }
+
+            if (amenity == null)
+            {
+                throw new Exception("RoomAmenity not found");
+            }
+
+            if (!String.IsNullOrEmpty(model.Name))
+            {
+                amenity.Name = model.Name;
+            }
+            if (model.Compensation != null)
+            {
+                amenity.Compensation = model.Compensation;
+            }
+
+
+            await _unitOfWork.RoomAmentyRepository.Update(amenity);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteAmenity(string token, string amenityId)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId)).FirstOrDefault();
+            if (landlord == null)
+            {
+                return false;
+            }
+
+            var amenity = (await _unitOfWork.RoomAmentyRepository.Get(
+                filter: a => a.RoomAmentyId == amenityId && a.LandlordId == landlord.LandlordId
+            )).FirstOrDefault();
+
+            var amenityList = (await _unitOfWork.RoomAmentyListRepository.Get(
+                filter: x => x.RoomAmentyId == amenity.RoomAmentyId)).FirstOrDefault();
+
+            if (amenityList != null)
+            {
+                throw new Exception("Cannot delete amenity that it already in room");
+            }
+
+            if (amenity == null)
+            {
+                throw new Exception("RoomAmenity not found");
+            }
+
+            await _unitOfWork.RoomAmentyRepository.DeleteAmenity(amenity);
+            //await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }

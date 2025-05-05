@@ -11,5 +11,7 @@ namespace SP25_RPSC.Services.Service.AmentyService
     {
         Task<bool> CreateAmenty (RoomAmentyRequestCreateModel model, string token);
         Task<GetAllAmentiesResponseModel> GetAllAmentiesByLandlordId(string searchQuery, int pageIndex, int pageSize, string token);
+        Task<bool> UpdateAmenity(RoomAmentyRequestUpdateModel model, string token, string amenityId);
+        Task<bool> DeleteAmenity(string token, string amenityId);
     }
 }

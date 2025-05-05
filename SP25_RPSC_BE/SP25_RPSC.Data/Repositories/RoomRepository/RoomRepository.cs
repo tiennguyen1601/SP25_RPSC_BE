@@ -121,8 +121,10 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
                     .ThenInclude(ral => ral.RoomAmenty)
                 .Include(r => r.RoomType.RoomServices)
                     .ThenInclude(rs => rs.RoomServicePrices)
+                .Include(r => r.PostRooms) // thêm dòng này
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
         }
+
 
         public async Task<List<Room>> GetRoomsByLandlordIdAsync(string landlordId)
         {
