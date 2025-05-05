@@ -163,7 +163,7 @@ namespace SP25_RPSC.Services.Service.AmentyService
                 throw new Exception("RoomAmenity not found");
             }
 
-            await _unitOfWork.RoomAmentyRepository.Delete(amenity);
+            await _unitOfWork.RoomAmentyRepository.DeleteAmenity(amenity);
             //await _unitOfWork.SaveAsync();
 
             return true;
