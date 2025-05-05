@@ -62,5 +62,93 @@ namespace SP25_RPSC.Controllers.Controllers
                 Data = result
             });
         }
+
+        [HttpPut]
+        [Route("Update-Amenity/{amenityId}")]
+        public async Task<ActionResult> UpdateAmenity(string amenityId, [FromBody] RoomAmentyRequestUpdateModel model)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Authorization token is required" });
+                }
+
+                var result = await _amentyService.UpdateAmenity(model, token, amenityId);
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Amenity updated successfully"
+                    });
+                }
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Amenity could not be updated"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { isSuccess = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpDelete]
+        [Route("Delete-Amenity/{amenityId}")]
+        public async Task<ActionResult> DeleteAmenity(string amenityId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Authorization token is required" });
+                }
+
+                var result = await _amentyService.DeleteAmenity( token, amenityId);
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Amenity updated successfully"
+                    });
+                }
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Amenity could not be updated"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { isSuccess = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = ex.Message
+                });
+            }
+        }
     }
 }
