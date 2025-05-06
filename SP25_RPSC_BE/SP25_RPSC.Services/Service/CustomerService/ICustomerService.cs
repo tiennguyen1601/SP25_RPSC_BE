@@ -20,6 +20,7 @@ namespace SP25_RPSC.Services.Service.CustomerService
         Task<bool> RequestLeaveRoomByTenant(string token, TenantRoomLeavingReq request);
         Task<bool> KickRoommateByTenant(string token, KickRoommateReq kickRoommateReq);
         Task<List<PastRoommateRes>> GetPastRoommates(string token);
-        Task<bool> InactiveUser(string token, InactiveUserRequest model);
+        Task<bool> InactiveCustomer(string token, InactiveCustomerReq model);
+        Task<bool> ReactiveCustomer(string token, string userId);
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SP25_RPSC.Data.Models.CustomerModel.Request
 {
-    public class InactiveUserRequest
+    public class InactiveCustomerReq
     {
         [Required(ErrorMessage = "User ID is required")]
         public string UserId { get; set; }

@@ -318,9 +318,6 @@ namespace SP25_RPSC.Services.Service.LandlordService
                 throw new KeyNotFoundException("Room not found.");
             }
 
-            customerMoveOut.Status = 1;
-            await _unitOfWork.CustomerMoveOutRepository.Update(customerMoveOut);
-
             var roomStayCustomerMove = (await _unitOfWork.RoomStayCustomerRepository.Get(filter: rsc =>
                     rsc.Customer.CustomerId == cusMove.CustomerId
                     && rsc.RoomStayId == roomStay.RoomStayId
@@ -409,6 +406,11 @@ namespace SP25_RPSC.Services.Service.LandlordService
                 await _unitOfWork.CustomerContractRepository.Update(customerContract);
                 await _unitOfWork.SaveAsync();
             }
+
+
+
+            customerMoveOut.Status = 1;
+            await _unitOfWork.CustomerMoveOutRepository.Update(customerMoveOut);
 
 
 
