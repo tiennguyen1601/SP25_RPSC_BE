@@ -433,5 +433,56 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+        [HttpGet("my-received-feedbacks")]
+        public async Task<IActionResult> GetFeedbacksByRevieweeId()
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+                var feedbacks = await _feedbackService.GetFeedbacksByRevieweeIdIdAsync(token);
+
+                if (feedbacks == null || !feedbacks.Any())
+                {
+                    return NotFound(new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.NotFound,
+                        Message = "Bạn chưa nhận được feedback nào."
+                    });
+                }
+
+                return Ok(new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Lấy feedback thành công.",
+                    Data = feedbacks
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning($"Authorization error: {ex.Message}");
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Lỗi khi lấy feedback: {ex.Message}");
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = "Đã xảy ra lỗi khi xử lý yêu cầu.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+
     }
 }

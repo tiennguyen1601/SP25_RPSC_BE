@@ -989,76 +989,53 @@ namespace SP25_RPSC.Services.Utils.Email
         public static string UserInactivated(string userName, string reason)
         {
             return $@"
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <title>Tài khoản đã bị vô hiệu hóa</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-            }}
-            .header {{
-                background-color: #f8f9fa;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px;
-                margin-bottom: 20px;
-            }}
-            .content {{
-                padding: 20px;
-                background-color: #ffffff;
-                border-radius: 5px;
-                border: 1px solid #e9ecef;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 20px;
-                font-size: 12px;
-                color: #6c757d;
-            }}
-            h1 {{
-                color: #dc3545;
-                font-size: 24px;
-            }}
-            .reason {{
-                background-color: #f8f9fa;
-                padding: 15px;
-                border-left: 4px solid #dc3545;
-                margin: 15px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class='header'>
-            <h1>Thông báo vô hiệu hóa tài khoản</h1>
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
         </div>
-        <div class='content'>
-            <p>Xin chào <strong>{userName}</strong>,</p>
-            
-            <p>Chúng tôi gửi email này để thông báo rằng tài khoản của bạn trên hệ thống EasyRoomie đã bị vô hiệu hóa.</p>
-            
-            <div class='reason'>
-                <strong>Lý do:</strong>
-                <p>{reason}</p>
-            </div>
-            
-            <p>Nếu bạn cho rằng đây là sự nhầm lẫn hoặc bạn có thắc mắc về quyết định này, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi để được giải đáp.</p>
-            
-            <p>Trân trọng,<br>
-            Đội ngũ EasyRoomie</p>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo vô hiệu hóa tài khoản</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{userName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi gửi email này để thông báo rằng tài khoản của bạn trên hệ thống EasyRoomie đã bị vô hiệu hóa.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Lý do:</strong> {reason}</p>
         </div>
-        <div class='footer'>
-            <p>© 2025 EasyRoomie. Tất cả các quyền được bảo lưu.</p>
+        
+        <p style='font-size: 14px;'>Khi tài khoản bị vô hiệu hóa, bạn sẽ không thể đăng nhập hoặc sử dụng các dịch vụ của EasyRoomie cho đến khi tài khoản được kích hoạt lại.</p>
+        <p style='font-size: 14px;'>Nếu bạn cho rằng đây là sự nhầm lẫn hoặc bạn có thắc mắc về quyết định này, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi để được giải đáp.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string UserReactivated(string userName)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
         </div>
-    </body>
-    </html>
-    ";
+        <h2 style='color: #28a745; text-align: center;'>Thông báo kích hoạt lại tài khoản</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{userName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi vui mừng thông báo rằng tài khoản của bạn trên hệ thống EasyRoomie đã được kích hoạt lại thành công.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #28a745; margin: 15px 0;'>
+            <p style='font-size: 14px;'>Từ bây giờ, bạn có thể đăng nhập và sử dụng đầy đủ các tính năng của EasyRoomie như trước.</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Bạn có thể tiếp tục sử dụng các dịch vụ của chúng tôi như tìm phòng, tìm người ở ghép hoặc quản lý thông tin cá nhân của bạn.</p>
+        <p style='font-size: 14px;'>Nếu bạn gặp bất kỳ vấn đề nào khi sử dụng tài khoản, đừng ngần ngại liên hệ với đội hỗ trợ của chúng tôi.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
         }
 
     }

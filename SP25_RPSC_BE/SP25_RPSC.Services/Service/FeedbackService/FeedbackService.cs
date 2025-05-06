@@ -117,7 +117,7 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             }
 
             await _unitOfWork.FeedbackRepository.Add(feedback);
-            await _unitOfWork.SaveAsync(); 
+            await _unitOfWork.SaveAsync();
             return true;
         }
 
@@ -152,7 +152,7 @@ namespace SP25_RPSC.Services.Service.FeedbackService
             }
 
             var feedbackCheck = (await _unitOfWork.FeedbackRepository.Get(
-                filter: fb => fb.ReviewerId == userId && 
+                filter: fb => fb.ReviewerId == userId &&
                         fb.RevieweeId == reviewee.User.UserId &&
                         fb.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
             if (feedbackCheck != null)
@@ -519,6 +519,38 @@ namespace SP25_RPSC.Services.Service.FeedbackService
                    .ToList();
 
             return result;
+        }
+
+        public async Task<List<FeedbackTenantResponseModel>> GetFeedbacksByRevieweeIdIdAsync(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var feedbacks = await _unitOfWork.FeedbackRepository.Get(
+                includeProperties: "Reviewer,ImageRves",
+                filter: f => f.RevieweeId == userId && f.Status == "Active",
+                orderBy: q => q.OrderByDescending(f => f.CreatedDate)
+            );
+
+            var response = feedbacks.Select(f => new FeedbackTenantResponseModel
+            {
+                Description = f.Description,
+                Type = f.Type,
+                CreatedDate = f.CreatedDate,
+                Rating = f.Rating,
+                ReviewerId = f.ReviewerId,
+                ReviewerName = f.Reviewer?.FullName,
+                ReviewerAvatar = f.Reviewer?.Avatar,
+                RevieweeId = f.RevieweeId,
+                ImageUrls = f.ImageRves.Select(i => i.ImageRfurl).ToList()
+            }).ToList();
+
+            return response;
         }
     }
 }
