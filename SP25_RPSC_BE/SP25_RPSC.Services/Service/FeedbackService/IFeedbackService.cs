@@ -20,6 +20,6 @@ namespace SP25_RPSC.Services.Service.FeedbackService
         Task<bool> CreateFeedBackRoommate(FeedBackRoommateRequestModel request, string token);
         Task<bool> UpdateFeedbackRoommate(UpdateFeedbackRoommateReq request, string token);
         Task<bool> DeleteFeedbackRoommate(string feedbackId, string token);
-
+        Task<List<FeedbackTenantResponseModel>> GetFeedbacksByRevieweeIdIdAsync(string token);
     }
 }
