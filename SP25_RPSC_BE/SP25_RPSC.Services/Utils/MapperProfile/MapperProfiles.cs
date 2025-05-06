@@ -556,6 +556,7 @@ namespace SP25_RPSC.Services.Utils.MapperProfile
             CreateMap<Address, AddressDTO>();
             CreateMap<Landlord, LandlordResponseModel>()
                 .ForMember(dest => dest.LandlordId, opt => opt.MapFrom(src => src.LandlordId))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.LandlordName, opt => opt.MapFrom(src => src.User.FullName));
 
             CreateMap<RoomPrice, RoomPriceResponseModel>();

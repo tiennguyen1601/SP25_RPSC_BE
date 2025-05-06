@@ -252,13 +252,14 @@ namespace SP25_RPSC.Services.Service.RoomStayService
             var landlordName = roomStay.Landlord?.User?.FullName;
             var landlordAva = roomStay.Landlord?.User?.Avatar;
             var landlordId = roomStay.Landlord?.LandlordId;
-
+            var userLandlordId = (await _unitOfWork.LandlordRepository.Get(filter: c => c.LandlordId.Equals(landlordId))).FirstOrDefault();
 
             var roomStayResponse = _mapper.Map<RoomStayDetailsResponseModel>(roomStay);
             roomStayResponse.Room.Price = latestPrice;
             roomStayResponse.LandlordName = landlordName;
             roomStayResponse.LandlordAvatar = landlordAva;
             roomStayResponse.LandlordId = landlordId;
+            roomStayResponse.UserId = userLandlordId.UserId;
 
             roomStayResponse.RoomStayCustomerType = roomStayCustomer.Type;
 

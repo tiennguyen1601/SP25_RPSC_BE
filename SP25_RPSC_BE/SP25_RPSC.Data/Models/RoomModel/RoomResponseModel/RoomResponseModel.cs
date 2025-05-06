@@ -44,6 +44,7 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
         public string LandlordId { get; set; }
         public string LandlordName { get; set; }
         public string CompanyName { get; set; }
+        public string UserId { get; set; }
     }
 
     public class RoomPriceResponseModel
