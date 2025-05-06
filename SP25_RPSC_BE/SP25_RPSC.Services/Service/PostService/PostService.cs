@@ -184,7 +184,8 @@ namespace SP25_RPSC.Services.Service.PostService
             }
 
             var post = await _unitOfWork.PostRepository.GetById(postId);
-            if (post == null) {
+            if (post == null)
+            {
                 throw new KeyNotFoundException($"Post with ID {postId} not found.");
             }
 
@@ -196,19 +197,21 @@ namespace SP25_RPSC.Services.Service.PostService
             // Get room services with prices that were valid at the time the post was created
             var postCreationDate = post.CreatedAt ?? DateTime.Now;
             var roomServices = post.RentalRoom?.RoomType?.RoomServices?
-    .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
-    .Select(rs => new RoomServiceInfo
-    {
-        ServiceId = rs.RoomServiceId,
-        ServiceName = rs.RoomServiceName,
-        Description = rs.Description,
-        // Lấy giá dịch vụ hợp lệ, nếu có
-        Price = rs.RoomServicePrices?
-            .Where(rsp => rsp.ApplicableDate <= postCreationDate || rsp.ApplicableDate == null) // Check if ApplicableDate is NULL or before the post creation date
-            .OrderByDescending(rsp => rsp.ApplicableDate ?? DateTime.MinValue) // Order by ApplicableDate, using DateTime.MinValue if null
-            .FirstOrDefault()?.Price
-    })
-    .ToList() ?? new List<RoomServiceInfo>();
+                .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
+                .Select(rs => new RoomServiceInfo
+                {
+                    ServiceId = rs.RoomServiceId,
+                    ServiceName = rs.RoomServiceName,
+                    Description = rs.Description,
+                    Price = rs.RoomServicePrices?
+                        .Where(rsp =>
+                            (rsp.ApplicableDate.HasValue && rsp.ApplicableDate.Value.Date <= postCreationDate.Date) ||
+                            !rsp.ApplicableDate.HasValue)
+                        .OrderByDescending(rsp => rsp.ApplicableDate ?? DateTime.MinValue)
+                        .FirstOrDefault()?.Price
+                })
+                .ToList() ?? new List<RoomServiceInfo>();
+
 
 
             var roomPrice = post.RentalRoom.RoomPrices?
