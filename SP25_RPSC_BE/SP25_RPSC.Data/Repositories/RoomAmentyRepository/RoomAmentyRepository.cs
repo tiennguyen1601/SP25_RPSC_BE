@@ -10,7 +10,7 @@ namespace SP25_RPSC.Data.Repositories.RoomAmentyRepository
 {
     public interface IRoomAmentyRepository : IGenericRepository<RoomAmenty>
     {
-
+        Task<bool> DeleteAmenity(RoomAmenty amenity);
     }
 
     public class RoomAmentyRepository : GenericRepository<RoomAmenty>, IRoomAmentyRepository
@@ -20,6 +20,13 @@ namespace SP25_RPSC.Data.Repositories.RoomAmentyRepository
         public RoomAmentyRepository(RpscContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<bool> DeleteAmenity(RoomAmenty amenity)
+        {
+            _context.RoomAmenties.Remove(amenity);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
