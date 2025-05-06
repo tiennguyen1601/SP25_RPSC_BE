@@ -36,15 +36,17 @@ namespace SP25_RPSC.Services.Service.RoomStayService
             var landlordId = landlord.LandlordId;
 
             Expression<Func<RoomStay, bool>> searchFilter = rs =>
-                rs.LandlordId == landlordId &&
-                (string.IsNullOrEmpty(searchQuery) || rs.Room.RoomNumber.Contains(searchQuery));
+    rs.LandlordId == landlordId &&
+    rs.Room.Status == "Renting" &&
+    (string.IsNullOrEmpty(searchQuery) || rs.Room.RoomNumber.Contains(searchQuery));
+    
 
             var roomStays = await _unitOfWork.RoomStayRepository.Get(
-    includeProperties: "Room,Room.RoomImages,Room.RoomPrices,Room.RoomAmentiesLists.RoomAmenty",
-    filter: searchFilter,
-    pageIndex: pageIndex,
-    pageSize: pageSize
-);
+                    includeProperties: "Room,Room.RoomImages,Room.RoomPrices,Room.RoomAmentiesLists.RoomAmenty",
+                    filter: searchFilter,
+                    pageIndex: pageIndex,
+                    pageSize: pageSize
+                );
 
 
             var totalRoomStays = await _unitOfWork.RoomStayRepository.CountAsync(searchFilter);
@@ -250,13 +252,14 @@ namespace SP25_RPSC.Services.Service.RoomStayService
             var landlordName = roomStay.Landlord?.User?.FullName;
             var landlordAva = roomStay.Landlord?.User?.Avatar;
             var landlordId = roomStay.Landlord?.LandlordId;
-
+            var userLandlordId = (await _unitOfWork.LandlordRepository.Get(filter: c => c.LandlordId.Equals(landlordId))).FirstOrDefault();
 
             var roomStayResponse = _mapper.Map<RoomStayDetailsResponseModel>(roomStay);
             roomStayResponse.Room.Price = latestPrice;
             roomStayResponse.LandlordName = landlordName;
             roomStayResponse.LandlordAvatar = landlordAva;
             roomStayResponse.LandlordId = landlordId;
+            roomStayResponse.UserId = userLandlordId.UserId;
 
             roomStayResponse.RoomStayCustomerType = roomStayCustomer.Type;
 

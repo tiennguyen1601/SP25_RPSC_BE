@@ -107,6 +107,14 @@ namespace SP25_RPSC.Services.Service.CustomerRentRoomDetailRequestServices
             //    throw new ApiException(HttpStatusCode.BadRequest, "Check-in time must be after room availability date to rent.");
             //}
 
+            var customerRoomStay = (await _unitOfWork.RoomStayCustomerRepository.Get(
+            filter: rsc => rsc.CustomerId == customer.CustomerId && rsc.Status.Equals(StatusEnums.Active.ToString()))).FirstOrDefault();
+
+            if (customerRoomStay != null)
+            {
+                throw new ApiException(HttpStatusCode.BadRequest, "You are already staying in a room. You cannot request to rent another room.");
+            }
+
             var existingRequests = await _unitOfWork.CustomerRentRoomDetailRequestRepositories.GetRoomRentRequestByCustomerId(customer.CustomerId);
             var hasPendingRequestForSameRoom = existingRequests
                 .Any(r => r.RoomRentRequests.RoomId == model.RoomId &&

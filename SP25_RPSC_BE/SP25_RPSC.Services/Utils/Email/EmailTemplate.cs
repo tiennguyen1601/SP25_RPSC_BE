@@ -798,6 +798,55 @@ namespace SP25_RPSC.Services.Utils.Email
     </div>
 </div>";
         }
+
+        public static string TenantKickedByLandlord(string tenantName, string landlordName, string roomNumber, string roomAddress, string reason, string moveOutDate, List<string> evidenceImageUrls = null)
+        {
+            // Tạo phần HTML hiển thị ảnh bằng chứng
+            StringBuilder evidenceImagesHtml = new StringBuilder();
+            if (evidenceImageUrls != null && evidenceImageUrls.Any())
+            {
+                evidenceImagesHtml.Append("<div style='margin-top: 15px;'>");
+                evidenceImagesHtml.Append("<h4 style='color: #dc3545;'>Bằng chứng:</h4>");
+                evidenceImagesHtml.Append("<div style='display: flex; flex-wrap: wrap; gap: 10px;'>");
+                foreach (var imageUrl in evidenceImageUrls)
+                {
+                    evidenceImagesHtml.Append($"<div style='flex: 0 0 250px; max-width: 250px;'>");
+                    evidenceImagesHtml.Append($"<img src=\"{imageUrl}\" alt=\"Bằng chứng\" style='width: 100%; max-height: 180px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);'/>");
+                    evidenceImagesHtml.Append("</div>");
+                }
+                evidenceImagesHtml.Append("</div></div>");
+            }
+
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo chấm dứt hợp đồng thuê phòng</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{tenantName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi thông báo rằng chủ nhà đã quyết định chấm dứt hợp đồng thuê phòng của bạn từ ngày <strong>{moveOutDate}</strong>.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Số phòng:</strong> {roomNumber}</p>
+            <p><strong>Địa chỉ phòng:</strong> {roomAddress}</p>
+            <p><strong>Chủ nhà:</strong> {landlordName}</p>                
+            <p><strong>Lý do:</strong> {reason}</p>
+            <p>Liên hệ với<strong> {landlordName}</strong> để xác nhận lại nếu thông tin có sai sót.</p
+        </div>
+        
+        {evidenceImagesHtml}
+        
+        <p style='font-size: 14px;'>Vui lòng thu dọn đồ đạc cá nhân và bàn giao phòng đúng hạn theo quy định trong hợp đồng thuê phòng.</p>
+        <p style='font-size: 14px;'>Nếu bạn cần hỗ trợ tìm kiếm phòng mới, vui lòng sử dụng ứng dụng EasyRoomie hoặc liên hệ với chúng tôi để được trợ giúp.</p>
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào hoặc cho rằng quyết định này không công bằng, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+
         public static string ExtendContractRejected(string customerName, string contractId, string reason)
         {
             return $@"
@@ -930,6 +979,57 @@ namespace SP25_RPSC.Services.Utils.Email
         
         <p style='font-size: 14px;'>Bài đăng này đã bị vô hiệu hóa bởi chủ nhà, vì vậy tất cả các yêu cầu ở ghép liên quan đều bị hủy.</p>
         <p style='font-size: 14px;'>Đừng lo, vẫn còn rất nhiều cơ hội ở ghép khác cho bạn trên nền tảng EasyRoomie.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+        public static string UserInactivated(string userName, string reason)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #dc3545; text-align: center;'>Thông báo vô hiệu hóa tài khoản</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{userName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi gửi email này để thông báo rằng tài khoản của bạn trên hệ thống EasyRoomie đã bị vô hiệu hóa.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #dc3545; margin: 15px 0;'>
+            <p><strong>Lý do:</strong> {reason}</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Khi tài khoản bị vô hiệu hóa, bạn sẽ không thể đăng nhập hoặc sử dụng các dịch vụ của EasyRoomie cho đến khi tài khoản được kích hoạt lại.</p>
+        <p style='font-size: 14px;'>Nếu bạn cho rằng đây là sự nhầm lẫn hoặc bạn có thắc mắc về quyết định này, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi để được giải đáp.</p>
+        
+        <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
+        <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>
+        <p style='font-size: 14px; color: #777;'>Trân trọng,<br/><strong>Đội ngũ EasyRoomie</strong></p>
+    </div>
+</div>";
+        }
+
+        public static string UserReactivated(string userName)
+        {
+            return $@"
+<div style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;'>
+    <div style='background: #ffffff; padding: 25px; max-width: 600px; margin: auto; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);'>
+        <div style='text-align: center; margin-bottom: 20px;'>
+            <img src=""{logoUrl}"" alt=""EasyRoomie Logo"" style='max-width: 200px;'/> 
+        </div>
+        <h2 style='color: #28a745; text-align: center;'>Thông báo kích hoạt lại tài khoản</h2>
+        <p style='font-size: 16px;'>Xin chào <strong>{userName}</strong>,</p>
+        <p style='font-size: 14px;'>Chúng tôi vui mừng thông báo rằng tài khoản của bạn trên hệ thống EasyRoomie đã được kích hoạt lại thành công.</p>
+        
+        <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #28a745; margin: 15px 0;'>
+            <p style='font-size: 14px;'>Từ bây giờ, bạn có thể đăng nhập và sử dụng đầy đủ các tính năng của EasyRoomie như trước.</p>
+        </div>
+        
+        <p style='font-size: 14px;'>Bạn có thể tiếp tục sử dụng các dịch vụ của chúng tôi như tìm phòng, tìm người ở ghép hoặc quản lý thông tin cá nhân của bạn.</p>
+        <p style='font-size: 14px;'>Nếu bạn gặp bất kỳ vấn đề nào khi sử dụng tài khoản, đừng ngần ngại liên hệ với đội hỗ trợ của chúng tôi.</p>
         
         <hr style='border: none; border-bottom: 1px solid #eee; margin: 20px 0;'/>    
         <p style='font-size: 14px; color: #777;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email: <a href='mailto:easyroomie.rpsc@gmail.com' style='color: #4a86e8; text-decoration: none;'>easyroomie.rpsc@gmail.com</a></p>

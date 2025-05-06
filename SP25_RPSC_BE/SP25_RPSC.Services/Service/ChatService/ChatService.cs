@@ -85,10 +85,15 @@ namespace SP25_RPSC.Services.Service.ChatService
             );
 
             var latestChats = chatHistory
-                .GroupBy(chat => new { chat.SenderId, chat.ReceiverId })  
-                .Select(group => group.OrderByDescending(chat => chat.CreateAt).FirstOrDefault())
-                .Where(chat => chat != null)
-                .ToList();
+    .GroupBy(chat => new
+    {
+        User1 = string.Compare(chat.SenderId, chat.ReceiverId) < 0 ? chat.SenderId : chat.ReceiverId,
+        User2 = string.Compare(chat.SenderId, chat.ReceiverId) < 0 ? chat.ReceiverId : chat.SenderId
+    })
+    .Select(group => group.OrderByDescending(chat => chat.CreateAt).FirstOrDefault())
+    .Where(chat => chat != null)
+    .ToList();
+
 
             return latestChats.Select(chat => new ChatHistoryResModel
             {

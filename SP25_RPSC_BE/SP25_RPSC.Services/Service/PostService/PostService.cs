@@ -16,6 +16,7 @@ using SP25_RPSC.Services.Utils.DecodeTokenHandler;
 using Microsoft.Extensions.Hosting;
 using SP25_RPSC.Services.Utils.Email;
 using CloudinaryDotNet;
+using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 
 namespace SP25_RPSC.Services.Service.PostService
 {
@@ -183,30 +184,33 @@ namespace SP25_RPSC.Services.Service.PostService
             }
 
             var post = await _unitOfWork.PostRepository.GetById(postId);
-            if (post == null) {
+            if (post == null)
+            {
                 throw new KeyNotFoundException($"Post with ID {postId} not found.");
             }
 
             int totalRoomers = post.RentalRoom.RoomStays
                     .SelectMany(rs => rs.RoomStayCustomers)
+                    .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
                     .Count();
 
             // Get room services with prices that were valid at the time the post was created
             var postCreationDate = post.CreatedAt ?? DateTime.Now;
             var roomServices = post.RentalRoom?.RoomType?.RoomServices?
-    .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
-    .Select(rs => new RoomServiceInfo
-    {
-        ServiceId = rs.RoomServiceId,
-        ServiceName = rs.RoomServiceName,
-        Description = rs.Description,
-        // Lấy giá dịch vụ hợp lệ, nếu có
-        Price = rs.RoomServicePrices?
-            .Where(rsp => rsp.ApplicableDate <= postCreationDate || rsp.ApplicableDate == null) // Check if ApplicableDate is NULL or before the post creation date
-            .OrderByDescending(rsp => rsp.ApplicableDate ?? DateTime.MinValue) // Order by ApplicableDate, using DateTime.MinValue if null
-            .FirstOrDefault()?.Price
-    })
-    .ToList() ?? new List<RoomServiceInfo>();
+                .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
+                .Select(rs => new RoomServiceInfo
+                {
+                    ServiceId = rs.RoomServiceId,
+                    ServiceName = rs.RoomServiceName,
+                    Description = rs.Description,
+                    Price = rs.RoomServicePrices?
+                        .Where(rsp =>
+                            (rsp.ApplicableDate.HasValue && rsp.ApplicableDate.Value.Date <= postCreationDate.Date) ||
+                            !rsp.ApplicableDate.HasValue)
+                        .OrderByDescending(rsp => rsp.ApplicableDate ?? DateTime.MinValue)
+                        .FirstOrDefault()?.Price
+                })
+                .ToList() ?? new List<RoomServiceInfo>();
 
 
             var roomPrice = post.RentalRoom.RoomPrices?
@@ -239,8 +243,8 @@ namespace SP25_RPSC.Services.Service.PostService
                     RoomId = post.RentalRoom.RoomId,
                     LandlordName = post.RentalRoom.RoomType?.Landlord?.User?.FullName ?? "Unknown",
                     RoomNumber = post.RentalRoom.RoomNumber,
-                    //Title = post.RentalRoom.Title,
-                    //Description = post.RentalRoom.Description,
+                    Title = post.RentalRoom.Title,
+                    Description = post.RentalRoom.Description,
                     Location = post.RentalRoom.Location,
                     RoomTypeName = post.RentalRoom.RoomType.RoomTypeName,
                     Price = roomPrice, // Su dung gia phong tai thoi diem dang bai
@@ -257,6 +261,34 @@ namespace SP25_RPSC.Services.Service.PostService
             };
             return postDetailResponse;
         }
+
+        public async Task<List<FeedbackTenantResponseModel>> GetFeedbacksByRevieweeIdIdAsync(string userId)
+        {
+            
+
+
+            var feedbacks = await _unitOfWork.FeedbackRepository.Get(
+                includeProperties: "Reviewer,ImageRves",
+                filter: f => f.RevieweeId == userId && f.Status == "Active",
+                orderBy: q => q.OrderByDescending(f => f.CreatedDate)
+            );
+
+            var response = feedbacks.Select(f => new FeedbackTenantResponseModel
+            {
+                Description = f.Description,
+                Type = f.Type,
+                CreatedDate = f.CreatedDate,
+                Rating = f.Rating,
+                ReviewerId = f.ReviewerId,
+                ReviewerName = f.Reviewer?.FullName,
+                RevieweeId = f.RevieweeId,
+                ImageUrls = f.ImageRves.Select(i => i.ImageRfurl).ToList()
+            }).ToList();
+
+            return response;
+        }
+
+
 
         public async Task<PagedResult<RoommatePostRes>> GetRoommatePosts(string token, RoommatePostSearchReq search)
         {
@@ -384,7 +416,7 @@ namespace SP25_RPSC.Services.Service.PostService
 
             return age;
         }
-        public async Task<RoommatePostRes> GetPostRoommateByCustomerId(string token)
+        public async Task<RoommatePostRes> GetPostRoommateByCustomer(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -396,7 +428,7 @@ namespace SP25_RPSC.Services.Service.PostService
 
             var customer = (await _unitOfWork.CustomerRepository.Get(
                 filter: c => c.UserId == userId,
-                includeProperties: "User" // Đảm bảo thông tin User được bao gồm
+                includeProperties: "User" 
             )).FirstOrDefault();
 
             if (customer == null)
@@ -439,7 +471,62 @@ namespace SP25_RPSC.Services.Service.PostService
             return postDetailResponse;
         }
 
-        public async Task<RoommatePostRes> UpdateRoommatePost(string token, string postId, UpdateRoommatePostReq request)
+        public async Task<List<RoommatePostRes>> GetAllPostRoommateByCustomer(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+            }
+
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+
+            var customer = (await _unitOfWork.CustomerRepository.Get(
+                filter: c => c.UserId == userId,
+                includeProperties: "User"
+            )).FirstOrDefault();
+
+            if (customer == null)
+            {
+                throw new UnauthorizedAccessException("Customer not found.");
+            }
+
+            var posts = await _unitOfWork.PostRepository.Get(
+                filter: p => p.UserId == userId,
+                orderBy: p => p.OrderByDescending(c => c.CreatedAt),
+                includeProperties: "RentalRoom" 
+            );
+
+            if (posts == null || !posts.Any())
+            {
+                throw new KeyNotFoundException($"No posts found for the customer with ID {userId}.");
+            }
+
+            var customerInfo = new
+            {
+                customerName = customer.User?.FullName,
+                customerEmail = customer.User?.Email,
+                customerPhoneNumber = customer.User?.PhoneNumber
+            };
+
+            var postResponses = posts.Select(post => new RoommatePostRes
+            {
+                PostId = post.PostId,
+                Title = post.Title,
+                Description = post.Description,
+                Location = post.RentalRoom?.Location,
+                Price = post.Price,
+                Status = post.Status,
+                CreatedAt = post.CreatedAt,
+                CustomerName = customerInfo.customerName,
+                CustomerEmail = customerInfo.customerEmail,
+                CustomerPhoneNumber = customerInfo.customerPhoneNumber
+            }).ToList();
+
+            return postResponses;
+        }
+
+            public async Task<RoommatePostRes> UpdateRoommatePost(string token, string postId, UpdateRoommatePostReq request)
         {
             if (token == null)
             {
@@ -472,6 +559,43 @@ namespace SP25_RPSC.Services.Service.PostService
             if (hasRequests.Count > 0)
             {
                 throw new InvalidOperationException("This post cannot be updated because it has pending or active requests.");
+            }
+
+
+            var rentalRoom = (await _unitOfWork.RoomRepository.Get(
+                                filter: r => r.RoomId == post.RentalRoomId,
+                                includeProperties: "RoomType,RoomPrices")).FirstOrDefault();
+            if (rentalRoom == null)
+            {
+                throw new ArgumentException("Room not found.");
+            }
+            if (rentalRoom.RoomType == null)
+            {
+                throw new ArgumentException("RoomType not found");
+            }
+
+            // lay gia phong
+            var currentRoomPrice = rentalRoom.RoomPrices
+                   .Where(rp => rp.ApplicableDate <= DateTime.Now)
+                   .OrderByDescending(rp => rp.ApplicableDate)
+                   .FirstOrDefault();
+
+            if (currentRoomPrice == null || !currentRoomPrice.Price.HasValue)
+            {
+                currentRoomPrice = rentalRoom.RoomPrices
+                    .OrderByDescending(rp => rp.ApplicableDate)
+                    .FirstOrDefault();
+
+                if (currentRoomPrice == null || !currentRoomPrice.Price.HasValue)
+                {
+                    throw new ArgumentException("Room price information not found or invalid");
+                }
+            }
+
+            // gia sharing kh dc > gia phong
+            if (request.Price > currentRoomPrice.Price)
+            {
+                throw new InvalidOperationException($"Sharing price ({request.Price}) cannot exceed the room's price ({currentRoomPrice.Price}).");
             }
 
             // Update post properties
@@ -562,7 +686,7 @@ namespace SP25_RPSC.Services.Service.PostService
                         cr.Status == StatusEnums.Pending.ToString() &&
                         cr.RequestId == roommateRequests.RequestId);
 
-                if (hasRequests != null || hasRequests.Any())
+                if (hasRequests != null && hasRequests.Any())
                 {
                     throw new InvalidOperationException("This post cannot be inactivated because it has room sharing requests.");
                 }

@@ -164,7 +164,9 @@ namespace SP25_RPSC.Services.Service.RoomServices
             {
                 RoomId = room.RoomId,
                 RoomTypeId = room.RoomTypeId,
-                RoomRentRequestsId = room.RoomRentRequests.FirstOrDefault()?.RoomRentRequestsId ?? "",
+                RoomRentRequestsId = room.RoomRentRequests
+    .FirstOrDefault(r => r.Status == "Pending")?.RoomRentRequestsId ?? "",
+
                 RoomNumber = room.RoomNumber,
                 Title = room.Title,
                 Description = room.Description,
@@ -289,37 +291,24 @@ namespace SP25_RPSC.Services.Service.RoomServices
             };
         }
 
-        public async Task<List<RoomResponseModel>> GetAllRoomsAsync(
-            decimal? minPrice = null,
-            decimal? maxPrice = null,
-            string roomTypeName = null,
-            string district = null,
-            List<string> amenityIds = null)
+        public async Task<(List<RoomResponseModel> Rooms, int TotalPosts, int TotalRooms)> GetAllRoomsAsync(
+                           decimal? minPrice = null,
+                           decimal? maxPrice = null,
+                           string roomTypeName = null,
+                           string district = null,
+                           List<string> amenityIds = null,
+                           int pageIndex = 1,
+                           int pageSize = 10)
         {
-            var rooms = await _unitOfWork.RoomRepository.GetFilteredRoomsAsync(
-                minPrice, maxPrice, roomTypeName, district, amenityIds
-            );
+            var pagedResult = await _unitOfWork.RoomRepository.GetFilteredRoomsAsync(
+                minPrice, maxPrice, roomTypeName, district, amenityIds, pageIndex, pageSize);
 
-            foreach(var room in rooms)
-            {
-                var postRooms = await _unitOfWork.PostRoomRepository.GetPostRoomByRoomId(room.RoomId);
-                if (postRooms == null)
-                {
-                    rooms.Remove(room);
-                }
-            }
-
-            var result = _mapper.Map<List<RoomResponseModel>>(rooms);
+            var result = _mapper.Map<List<RoomResponseModel>>(pagedResult.Rooms);
 
             foreach (var room in result)
             {
-                var roomEntity = rooms.FirstOrDefault(r => r.RoomId == room.RoomId);
+                var roomEntity = pagedResult.Rooms.FirstOrDefault(r => r.RoomId == room.RoomId);
                 var contracts = roomEntity?.RoomType?.Landlord?.LandlordContracts;
-
-                if (contracts == null || !contracts.Any())
-                {
-                    Console.WriteLine($"No contracts found for room {room.RoomId}");
-                }
 
                 var activeContract = contracts?
                     .Where(c => c.Status == "Active")
@@ -328,13 +317,48 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
                 room.PackageLabel = activeContract?.Package?.Label;
                 room.PackagePriorityTime = activeContract?.Package?.PriorityTime;
+
+               
+                var feedbacks = roomEntity?.Feedbacks?.Where(f => f.Rating.HasValue).ToList() ?? new List<Feedback>();
+                room.TotalFeedbacks = feedbacks.Count;
+                room.AverageRating = feedbacks.Any() ? Math.Round(feedbacks.Average(f => f.Rating.Value), 1) : 0;
             }
 
-            return result
+
+            var orderedRooms = result
                 .OrderByDescending(r => r.PackagePriorityTime ?? 0)
                 .ThenByDescending(r => r.UpdatedAt)
                 .ToList();
+
+            return (orderedRooms, pagedResult.TotalActivePosts, pagedResult.TotalRooms);
         }
+
+        public async Task<List<FeedbackResponseModel>> GetFeedbacksByRoomIdAsync(string rentalRoomId)
+        {
+            var feedbacks = await _unitOfWork.FeedbackRepository.Get(
+                includeProperties: "Reviewer,ImageRves",
+                filter: f => f.RentalRoomId == rentalRoomId && f.Status == "Active",
+                orderBy: q => q.OrderByDescending(f => f.CreatedDate)
+            );
+
+            var response = feedbacks.Select(f => new FeedbackResponseModel
+            {
+                Description = f.Description,
+                Type = f.Type,
+                CreatedDate = f.CreatedDate,
+                Rating = f.Rating,
+                ReviewerId = f.ReviewerId,
+                ReviewerName = f.Reviewer?.FullName,
+                RentalRoomId = f.RentalRoomId,
+                ImageUrls = f.ImageRves.Select(i => i.ImageRfurl).ToList()
+            }).ToList();
+
+            return response;
+        }
+
+
+
+
 
         public async Task<RoomDetailResponseModel> GetRoomDetailByIdAsync(string roomId)
         {
@@ -343,6 +367,13 @@ namespace SP25_RPSC.Services.Service.RoomServices
             if (room == null) return null;
 
             var result = _mapper.Map<RoomDetailResponseModel>(room);
+
+            result.PostRoomId = room.PostRooms?
+                .Where(p => p.Status == "Active")
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefault()?.PostRoomId;
+
+
 
             var activeContract = room.RoomType?.Landlord?.LandlordContracts?
                 .Where(c => c.Status == "Active")
@@ -814,12 +845,13 @@ namespace SP25_RPSC.Services.Service.RoomServices
             }
 
             var rooms = await _unitOfWork.RoomRepository.Get(
-                filter: r => r.Status == "Available" &&
-                             r.RoomType != null &&
-                             r.RoomType.LandlordId == landlord.LandlordId &&
-                             !r.PostRooms.Any(),
-                includeProperties: "RoomImages,PostRooms,RoomType"
-            );
+                        filter: r => r.Status == "Available" &&
+                                     r.RoomType != null &&
+                                     r.RoomType.LandlordId == landlord.LandlordId &&
+                                     !r.PostRooms.Any(p => p.Status == "Active"),
+                        includeProperties: "RoomImages,PostRooms,RoomType"
+                    );
+
 
             var roomList = rooms.ToList();
 
@@ -835,6 +867,116 @@ namespace SP25_RPSC.Services.Service.RoomServices
             return dtoList;
         }
 
+        public async Task<bool> UpdatePostRoom(string token, string postRoomId, PostRoomUpdateRequestModel model)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
 
+            var postRoom = await _unitOfWork.PostRoomRepository.GetByIDAsync(postRoomId);
+            if (postRoom == null)
+            {
+                throw new Exception("Post room not found.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(postRoom.RoomId);
+            if (room == null)
+            {
+                throw new Exception("Room not found.");
+            }
+
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(room.RoomTypeId);
+
+            if (roomType == null || roomType.LandlordId != landlord.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to update this post.");
+            }
+
+            if (postRoom.Status != "Active")
+            {
+                throw new Exception("Cannot update a post that is not active.");
+            }
+
+         
+            postRoom.DateExist = model.DateExist;
+            postRoom.UpdatedAt = DateTime.Now;
+
+           
+            room.Title = model.Title;
+            room.Description = model.Description;
+            room.AvailableDateToRent = model.AvailableDateToRent;
+
+        
+            await _unitOfWork.PostRoomRepository.Update(postRoom);
+            await _unitOfWork.RoomRepository.Update(room);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
+
+        public async Task<bool> InactivePostRoom(string token, string postRoomId)
+        {
+            var tokenModel = _decodeTokenHandler.decode(token);
+            var userId = tokenModel.userid;
+            var landlord = (await _unitOfWork.LandlordRepository.Get(filter: l => l.UserId == userId))
+                            .FirstOrDefault();
+            if (landlord == null)
+            {
+                throw new UnauthorizedAccessException("User is not a landlord.");
+            }
+
+            var postRoom = await _unitOfWork.PostRoomRepository.GetByIDAsync(postRoomId);
+            if (postRoom == null)
+            {
+                throw new Exception("Post room not found.");
+            }
+
+            var room = await _unitOfWork.RoomRepository.GetByIDAsync(postRoom.RoomId);
+            if (room == null)
+            {
+                throw new Exception("Room not found.");
+            }
+
+            var roomType = await _unitOfWork.RoomTypeRepository.GetByIDAsync(room.RoomTypeId);
+            if (roomType == null || roomType.LandlordId != landlord.LandlordId)
+            {
+                throw new UnauthorizedAccessException("You are not authorized to deactivate this post.");
+            }
+
+            if (postRoom.Status != "Active")
+            {
+                throw new Exception("Post is already inactive.");
+            }
+
+      
+            postRoom.Status = "Inactive";
+            postRoom.UpdatedAt = DateTime.Now;
+
+            //var expiredContract = (await _unitOfWork.LandlordContractRepository.Get(
+            //    contract => contract.LandlordId == landlord.LandlordId && contract.Status == StatusEnums.Expired.ToString()
+            //)).FirstOrDefault();
+
+            //if (expiredContract != null)
+            //{
+            //    // Check if contract end date is still valid
+            //    if (expiredContract.EndDate > DateTime.Now)
+            //    {
+            //        expiredContract.Status = StatusEnums.Active.ToString();
+            //        await _unitOfWork.LandlordContractRepository.Update(expiredContract);
+            //    }
+            //}
+
+            await _unitOfWork.PostRoomRepository.Update(postRoom);
+            await _unitOfWork.RoomRepository.Update(room);
+            //await _unitOfWork.LandlordRepository.Update(landlord);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }

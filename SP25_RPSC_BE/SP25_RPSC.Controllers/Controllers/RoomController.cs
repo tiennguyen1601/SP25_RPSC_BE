@@ -144,23 +144,45 @@ namespace SP25_RPSC.Controllers.Controllers
 
         [HttpGet("rooms")]
         public async Task<IActionResult> GetAllRooms(
-            [FromQuery] decimal? minPrice,
-            [FromQuery] decimal? maxPrice,
-            [FromQuery] string? roomTypeName,
-            [FromQuery] string? district,
-            [FromQuery] List<string>? amenityIds)
+    [FromQuery] decimal? minPrice,
+    [FromQuery] decimal? maxPrice,
+    [FromQuery] string? roomTypeName,
+    [FromQuery] string? district,
+    [FromQuery] List<string>? amenityIds,
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 10)
         {
             var sanitizedAmenityIds = amenityIds ?? new List<string>();
 
-            var rooms = await _roomService.GetAllRoomsAsync(
+            var (rooms, totalActivePosts, totalRooms) = await _roomService.GetAllRoomsAsync(
                 minPrice,
                 maxPrice,
                 roomTypeName,
                 district,
-                sanitizedAmenityIds
+                sanitizedAmenityIds,
+                pageIndex,
+                pageSize
             );
 
-            return Ok(rooms);
+            return Ok(new
+            {
+                TotalActivePosts = totalActivePosts, // Tổng số bài đăng đang hoạt động (PostRoom)
+                TotalFilteredRooms = totalRooms,     // Tổng số phòng sau lọc (phục vụ phân trang)
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                Rooms = rooms
+            });
+        }
+
+        [HttpGet("feedback/{roomId}")]
+        public async Task<IActionResult> GetFeebackDetail(string roomId)
+        {
+            var room = await _roomService.GetFeedbacksByRoomIdAsync(roomId);
+
+            if (room == null)
+                return NotFound("Feedback not found");
+
+            return Ok(room);
         }
 
         [HttpGet("rooms/{roomId}")]
@@ -394,6 +416,112 @@ namespace SP25_RPSC.Controllers.Controllers
             };
 
             return StatusCode(response.Code, response);
+        }
+
+        [HttpPut]
+        [Route("Update-PostRoom/{postRoomId}")]
+        public async Task<ActionResult> UpdatePostRoom(string postRoomId, [FromBody] PostRoomUpdateRequestModel model)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.Unauthorized,
+                        Message = "Authorization token is required"
+                    });
+                }
+                var result = await _roomService.UpdatePostRoom(token, postRoomId, model);
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Post room updated successfully"
+                    });
+                }
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Post room cannot be updated"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpPut]
+        [Route("Inactive-PostRoom/{postRoomId}")]
+        public async Task<ActionResult> InactivePostRoom(string postRoomId)
+        {
+            try
+            {
+                string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new ResultModel
+                    {
+                        IsSuccess = false,
+                        Code = (int)HttpStatusCode.Unauthorized,
+                        Message = "Authorization token is required"
+                    });
+                }
+                var result = await _roomService.InactivePostRoom(token, postRoomId);
+                if (result)
+                {
+                    return Ok(new ResultModel
+                    {
+                        IsSuccess = true,
+                        Code = (int)HttpStatusCode.OK,
+                        Message = "Post room deactivated successfully"
+                    });
+                }
+                return BadRequest(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.BadRequest,
+                    Message = "Post room cannot be deactivated"
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.Unauthorized,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResultModel
+                {
+                    IsSuccess = false,
+                    Code = (int)HttpStatusCode.InternalServerError,
+                    Message = ex.Message
+                });
+            }
         }
     }
 }

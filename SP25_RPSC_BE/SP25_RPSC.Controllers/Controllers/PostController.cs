@@ -114,6 +114,17 @@ namespace SP25_RPSC.Controllers.Controllers
                 });
             }
         }
+        
+        [HttpGet("feedback/{userId}")]
+        public async Task<IActionResult> GetFeebackDetail(string userId)
+        {
+            var room = await _postService.GetFeedbacksByRevieweeIdIdAsync(userId);
+
+            if (room == null)
+                return NotFound("Feedback not found");
+
+            return Ok(room);
+        }
 
         [HttpPost("create-roommate-post")]
         public async Task<IActionResult> CreateRoommatePost([FromBody] CreateRoommatePostReq request)
@@ -148,7 +159,7 @@ namespace SP25_RPSC.Controllers.Controllers
 
             try
             {
-                var result = await _postService.GetPostRoommateByCustomerId(token);
+                var result = await _postService.GetPostRoommateByCustomer(token);
 
                 ResultModel response = new ResultModel
                 {
@@ -164,6 +175,34 @@ namespace SP25_RPSC.Controllers.Controllers
                 return StatusCode(500, new
                 {
                     Message = "An error occurred while getting roommate post by customer ID",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("Get-All-Roommate-Post-By-Customer")]
+        public async Task<ActionResult<RoommatePostDetailRes>> GetAllPostRoommateByCustomer()
+        {
+            string token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            try
+            {
+                var result = await _postService.GetAllPostRoommateByCustomer(token);
+
+                ResultModel response = new ResultModel
+                {
+                    IsSuccess = true,
+                    Code = (int)HttpStatusCode.OK,
+                    Message = "Get all roommate post by customer successfully",
+                    Data = result
+                };
+                return StatusCode(response.Code, response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "An error occurred while getting roommate post by customer",
                     Error = ex.Message
                 });
             }

@@ -23,6 +23,9 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
 
         public string PackageLabel { get; set; }
         public int? PackagePriorityTime { get; set; }
+        public int TotalFeedbacks { get; set; }
+        public double AverageRating { get; set; }
+
     }
 
 
@@ -41,6 +44,7 @@ namespace SP25_RPSC.Data.Models.RoomModel.RoomResponseModel
         public string LandlordId { get; set; }
         public string LandlordName { get; set; }
         public string CompanyName { get; set; }
+        public string UserId { get; set; }
     }
 
     public class RoomPriceResponseModel

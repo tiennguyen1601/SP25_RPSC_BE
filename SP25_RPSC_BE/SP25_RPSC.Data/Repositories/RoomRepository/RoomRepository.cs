@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SP25_RPSC.Data.Entities;
+using SP25_RPSC.Data.Models.RoomModel.RoomResponseModel;
 using SP25_RPSC.Data.Repositories.GenericRepositories;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
 {
     public interface IRoomRepository : IGenericRepository<Room>
     {
-        Task<List<Room>> GetFilteredRoomsAsync(decimal? minPrice, decimal? maxPrice, string roomTypeName, string district, List<string> amenityIds);
+        Task<PagedRoomResult> GetFilteredRoomsAsync(decimal? minPrice, decimal? maxPrice, string roomTypeName, string district, List<string> amenityIds, int pageIndex, int pageSize);
         Task<Room> GetRoomByIdAsync(string roomId);
         Task<List<Room>> GetRoomsByLandlordIdAsync(string landlordId);
     }
@@ -25,14 +26,16 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
             _context = context;
         }
 
-        public async Task<List<Room>> GetFilteredRoomsAsync(
-            decimal? minPrice,
-            decimal? maxPrice,
-            string roomTypeName,
-            string district,
-            List<string> amenityIds)
+        public async Task<PagedRoomResult> GetFilteredRoomsAsync(
+    decimal? minPrice,
+    decimal? maxPrice,
+    string roomTypeName,
+    string district,
+    List<string> amenityIds,
+    int pageIndex = 1,
+    int pageSize = 10)
         {
-            var query = _context.Rooms
+            var baseQuery = _context.Rooms
                 .Where(r => r.Status == "Available")
                 .Include(r => r.RoomType)
                     .ThenInclude(rt => rt.Address)
@@ -47,36 +50,58 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
                 .Include(r => r.RoomImages)
                 .Include(r => r.RoomAmentiesLists)
                     .ThenInclude(ral => ral.RoomAmenty)
+                .Include(r => r.PostRooms)
+                .Include(r => r.Feedbacks)
                 .AsQueryable();
 
+            // Apply filters
             if (!string.IsNullOrEmpty(roomTypeName))
             {
-                query = query.Where(r => r.RoomType.RoomTypeName == roomTypeName);
+                baseQuery = baseQuery.Where(r => r.RoomType.RoomTypeName == roomTypeName);
             }
 
             if (!string.IsNullOrEmpty(district))
             {
-                query = query.Where(r => r.RoomType.Address.District.Contains(district));
+                baseQuery = baseQuery.Where(r => r.RoomType.Address.District.Contains(district));
             }
 
             if (minPrice.HasValue)
             {
-                query = query.Where(r => r.RoomPrices.Any(p => p.Price >= minPrice.Value));
+                baseQuery = baseQuery.Where(r => r.RoomPrices.Any(p => p.Price >= minPrice.Value));
             }
 
             if (maxPrice.HasValue)
             {
-                query = query.Where(r => r.RoomPrices.Any(p => p.Price <= maxPrice.Value));
+                baseQuery = baseQuery.Where(r => r.RoomPrices.Any(p => p.Price <= maxPrice.Value));
             }
 
             if (amenityIds != null && amenityIds.Any())
             {
-                query = query.Where(r => r.RoomAmentiesLists
+                baseQuery = baseQuery.Where(r => r.RoomAmentiesLists
                     .Any(a => amenityIds.Contains(a.RoomAmenty.Name)));
             }
 
-            return await query.ToListAsync();
+            var filteredQuery = baseQuery.Where(r => r.PostRooms.Any(pr => pr.Status == "Active"));
+
+            var totalActivePosts = await _context.PostRooms.CountAsync(pr => pr.Status == "Active");
+
+            var totalRooms = await filteredQuery.CountAsync();
+
+            var rooms = await filteredQuery
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedRoomResult
+            {
+                TotalActivePosts = totalActivePosts,
+                TotalRooms = totalRooms,
+                Rooms = rooms
+            };
         }
+
+
+
 
         public async Task<Room> GetRoomByIdAsync(string roomId)
         {
@@ -96,8 +121,10 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
                     .ThenInclude(ral => ral.RoomAmenty)
                 .Include(r => r.RoomType.RoomServices)
                     .ThenInclude(rs => rs.RoomServicePrices)
+                .Include(r => r.PostRooms) // thêm dòng này
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
         }
+
 
         public async Task<List<Room>> GetRoomsByLandlordIdAsync(string landlordId)
         {
@@ -111,9 +138,14 @@ namespace SP25_RPSC.Data.Repositories.RoomRepository
                 .Include(r => r.RoomType.RoomServices)
                     .ThenInclude(rs => rs.RoomServicePrices)
                 .Include(r => r.PostRooms)
-                .Where(r => r.RoomType != null && r.RoomType.LandlordId == landlordId)
+                .Where(r =>
+                    r.RoomType != null &&
+                    r.RoomType.LandlordId == landlordId &&
+                    r.PostRooms.Any(pr => pr.Status == "Active")
+                )
                 .ToListAsync();
         }
+
 
     }
 }
