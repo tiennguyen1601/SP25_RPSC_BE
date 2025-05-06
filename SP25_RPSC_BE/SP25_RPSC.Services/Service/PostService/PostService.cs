@@ -212,20 +212,6 @@ namespace SP25_RPSC.Services.Service.PostService
                 })
                 .ToList() ?? new List<RoomServiceInfo>();
 
-                    .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
-                    .Select(rs => new RoomServiceInfo
-                    {
-                        ServiceId = rs.RoomServiceId,
-                        ServiceName = rs.RoomServiceName,
-                        Description = rs.Description,
-                        // Lấy giá dịch vụ hợp lệ, nếu có
-                        Price = rs.RoomServicePrices?
-                            .Where(rsp => rsp.ApplicableDate <= postCreationDate || rsp.ApplicableDate == null) // Check if ApplicableDate is NULL or before the post creation date
-                            .OrderByDescending(rsp => rsp.ApplicableDate ?? DateTime.MinValue) // Order by ApplicableDate, using DateTime.MinValue if null
-                            .FirstOrDefault()?.Price
-                    })
-                    .ToList() ?? new List<RoomServiceInfo>();
-
 
             var roomPrice = post.RentalRoom.RoomPrices?
                 .Where(rp => rp.ApplicableDate <= postCreationDate)
