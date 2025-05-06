@@ -292,13 +292,13 @@ namespace SP25_RPSC.Services.Service.RoomServices
         }
 
         public async Task<(List<RoomResponseModel> Rooms, int TotalPosts, int TotalRooms)> GetAllRoomsAsync(
-    decimal? minPrice = null,
-    decimal? maxPrice = null,
-    string roomTypeName = null,
-    string district = null,
-    List<string> amenityIds = null,
-    int pageIndex = 1,
-    int pageSize = 10)
+                           decimal? minPrice = null,
+                           decimal? maxPrice = null,
+                           string roomTypeName = null,
+                           string district = null,
+                           List<string> amenityIds = null,
+                           int pageIndex = 1,
+                           int pageSize = 10)
         {
             var pagedResult = await _unitOfWork.RoomRepository.GetFilteredRoomsAsync(
                 minPrice, maxPrice, roomTypeName, district, amenityIds, pageIndex, pageSize);

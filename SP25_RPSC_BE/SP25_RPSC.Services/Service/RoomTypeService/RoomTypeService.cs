@@ -223,6 +223,10 @@ namespace SP25_RPSC.Services.Service.RoomTypeService
                 throw new KeyNotFoundException("RoomType not found.");
             }
 
+            roomType.RoomServices = roomType.RoomServices
+                .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
+                .ToList();
+
             var roomTypeResponse = _mapper.Map<GetRoomTypeDetailResponseModel>(roomType);
 
             foreach (var roomService in roomType.RoomServices)
