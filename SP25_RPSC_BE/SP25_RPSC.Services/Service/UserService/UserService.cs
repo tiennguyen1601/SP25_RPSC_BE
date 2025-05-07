@@ -229,7 +229,7 @@ namespace SP25_RPSC.Services.Service.UserService
             }
             else
             {
-                landlord.Status = StatusEnums.Deactive.ToString();
+                landlord.Status = StatusEnums.Inactive.ToString();
                 subject = "Thông báo từ chối yêu cầu đăng ký";
                 htmlContent = EmailTemplate.LandlordRejection(landlord.User.FullName, rejectionReason);
             }

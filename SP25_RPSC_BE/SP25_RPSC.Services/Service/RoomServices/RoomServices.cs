@@ -373,8 +373,13 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefault()?.PostRoomId;
 
+            var post = (await _unitOfWork.PostRoomRepository
+                .Get(filter: ps => ps.RoomId == roomId && ps.Status == StatusEnums.Active.ToString()))
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefault();
 
 
+            var postDate = post.CreatedAt;
             var activeContract = room.RoomType?.Landlord?.LandlordContracts?
                 .Where(c => c.Status == "Active")
                 .OrderByDescending(c => c.CreatedDate)
@@ -385,7 +390,9 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             result.Landlord = _mapper.Map<LandlordResponseModel>(room.RoomType.Landlord);
 
-            result.RoomServices = room.RoomType.RoomServices.Select(rs => new RoomServiceResponseModel
+            result.RoomServices = room.RoomType.RoomServices
+                .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
+                .Select(rs => new RoomServiceResponseModel
             {
                 RoomServiceId = rs.RoomServiceId,
                 RoomServiceName = rs.RoomServiceName,
@@ -397,7 +404,10 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 {
                     Price = p.Price,
                     ApplicableDate = p.ApplicableDate
-                }).ToList()
+                })
+                .Take(1)
+                .Where(p => p.ApplicableDate <= postDate)
+                .ToList()
             }).ToList();
 
             return result;
