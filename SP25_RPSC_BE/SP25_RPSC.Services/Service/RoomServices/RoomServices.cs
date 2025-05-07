@@ -363,7 +363,6 @@ namespace SP25_RPSC.Services.Service.RoomServices
         public async Task<RoomDetailResponseModel> GetRoomDetailByIdAsync(string roomId)
         {
             var room = await _unitOfWork.RoomRepository.GetRoomByIdAsync(roomId);
-
             if (room == null) return null;
 
             var result = _mapper.Map<RoomDetailResponseModel>(room);
@@ -378,8 +377,9 @@ namespace SP25_RPSC.Services.Service.RoomServices
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefault();
 
+            // Check if post is null before accessing CreatedAt
+            var postDate = post?.CreatedAt ?? DateTime.Now;
 
-            var postDate = post.CreatedAt;
             var activeContract = room.RoomType?.Landlord?.LandlordContracts?
                 .Where(c => c.Status == "Active")
                 .OrderByDescending(c => c.CreatedDate)
@@ -387,28 +387,27 @@ namespace SP25_RPSC.Services.Service.RoomServices
 
             result.PackageLabel = activeContract?.Package?.Label;
             result.PackagePriorityTime = activeContract?.Package?.PriorityTime;
-
             result.Landlord = _mapper.Map<LandlordResponseModel>(room.RoomType.Landlord);
 
             result.RoomServices = room.RoomType.RoomServices
                 .Where(rs => rs.Status.Equals(StatusEnums.Active.ToString()))
                 .Select(rs => new RoomServiceResponseModel
-            {
-                RoomServiceId = rs.RoomServiceId,
-                RoomServiceName = rs.RoomServiceName,
-                Description = rs.Description,
-                Status = rs.Status,
-                CreatedAt = rs.CreatedAt,
-                UpdatedAt = rs.UpdatedAt,
-                Prices = rs.RoomServicePrices.Select(p => new RoomServicePriceResponseModel
                 {
-                    Price = p.Price,
-                    ApplicableDate = p.ApplicableDate
-                })
-                .Take(1)
-                .Where(p => p.ApplicableDate <= postDate)
-                .ToList()
-            }).ToList();
+                    RoomServiceId = rs.RoomServiceId,
+                    RoomServiceName = rs.RoomServiceName,
+                    Description = rs.Description,
+                    Status = rs.Status,
+                    CreatedAt = rs.CreatedAt,
+                    UpdatedAt = rs.UpdatedAt,
+                    Prices = rs.RoomServicePrices.Select(p => new RoomServicePriceResponseModel
+                    {
+                        Price = p.Price,
+                        ApplicableDate = p.ApplicableDate
+                    })
+                    .Where(p => p.ApplicableDate <= postDate)
+                    .Take(1)
+                    .ToList()
+                }).ToList();
 
             return result;
         }
